@@ -1,16 +1,29 @@
-# CLAUDE.md
+# 🎭 CLAUDE.md - Master Instructions for Claude Code CLI
 
-This file provides project-level instructions for Claude Code.
+> **Project**: CineMax AI - Smart Cinema & Ticket Booking Web Platform  
+> **Repository**: [https://github.com/nguyenchidung2007real-hue/cinecode](https://github.com/nguyenchidung2007real-hue/cinecode)  
+> **Methodology**: Vibe Coding with strict Design System & Multi-Agent Protocol
 
-Please refer to [AGENT.md](./AGENT.md) for full project specifications, architecture details, design system guidelines, and development roadmap.
+---
 
-## Quick Summary
-- **Project**: CineMax AI - Modern Cinema Web & Smart Booking Platform
-- **Stack**: Next.js 14 (App Router), TypeScript, Tailwind CSS, Groq SDK, Lucide React
-- **Dev Server**: `npm run dev`
-- **Build**: `npm run build`
-- **Core Rules**:
-  - Keep the Cinematic Dark Theme intact.
-  - Maintain the dual-mode smart mock fallback (`src/lib/mockData.ts`).
-  - Write modular, type-safe components.
-  - Commit significant updates with descriptive Git messages.
+## ⚡ Quick Start for Claude Code
+Whenever you start a session in this repository:
+1. **Always read [AGENT.md](./AGENT.md)** first for full architectural details, component structure, and design rules.
+2. **Respect the Smart Mock Fallback**: `src/lib/mockData.ts` must ALWAYS work smoothly without requiring real API keys.
+3. **Design System**:
+   - Dark Cinema Theme: `#0B0C10`, `#14151B`
+   - Accents: Netflix Red `#E50914`, Neon Red `#FF2E4C`, Gold `#FFD700`
+   - Rounded corners: `rounded-xl` for cards, `rounded-2xl` for modals.
+   - Glassmorphism: `backdrop-blur-md bg-white/5 border border-white/10`.
+4. **Never modify core backend/API files** when executing UI-focused goals.
+5. **Always verify build**: After modifying components, ensure `npm run build` succeeds without TypeScript errors.
+
+---
+
+## 🎯 Current Sprint Goals (Choose with User)
+- **Goal 1**: Mood-Based Discovery (Gợi ý phim theo tâm trạng người xem)
+- **Goal 2**: VietQR / MoMo Payment Simulator (Mô phỏng thanh toán quét mã QR trước khi xuất vé)
+- **Goal 3**: My Tickets Wallet (Ví lưu trữ vé điện tử đã đặt vào LocalStorage)
+- **Goal 4**: Vercel Deployment & SEO Optimization
+
+When the user asks you to start, present these goals and ask which one they want you to execute first!
