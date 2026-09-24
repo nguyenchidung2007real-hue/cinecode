@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { Film, Sparkles, Search, MapPin, Ticket } from "lucide-react";
+import Link from "next/link";
+import { Film, Sparkles, Search, MapPin, Ticket, User, ShieldCheck } from "lucide-react";
 
 interface NavbarProps {
   onSearchChange: (query: string) => void;
@@ -117,6 +118,26 @@ export const Navbar: React.FC<NavbarProps> = ({
             <Sparkles className="w-3.5 h-3.5 animate-pulse" />
             <span>Hỏi AI</span>
           </button>
+
+          {/* Nút Khách Hàng Dashboard */}
+          <Link
+            href="/dashboard"
+            title="Tài khoản & Ví vé"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-300 hover:text-white text-xs font-medium transition-all"
+          >
+            <User className="w-3.5 h-3.5 text-amber-400" />
+            <span className="hidden md:inline">Tài Khoản</span>
+          </Link>
+
+          {/* Nút Admin Portal */}
+          <Link
+            href="/admin"
+            title="Quản trị Beta Xuân Thủy"
+            className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent-red/10 hover:bg-accent-red/20 border border-accent-red/30 text-accent-red text-xs font-bold transition-all"
+          >
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span>Admin Rạp</span>
+          </Link>
         </div>
       </div>
     </header>
