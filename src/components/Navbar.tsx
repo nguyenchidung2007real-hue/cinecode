@@ -6,6 +6,8 @@ import { Film, Sparkles, Search, MapPin, Ticket } from "lucide-react";
 interface NavbarProps {
   onSearchChange: (query: string) => void;
   onOpenAiChat: () => void;
+  onOpenMyTickets: () => void;
+  ticketCount: number;
   selectedCity: string;
   onCityChange: (city: string) => void;
 }
@@ -13,6 +15,8 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({
   onSearchChange,
   onOpenAiChat,
+  onOpenMyTickets,
+  ticketCount,
   selectedCity,
   onCityChange,
 }) => {
@@ -61,8 +65,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         </div>
 
-        {/* Khu vực chọn Tỉnh/Thành & Nút AI Chat */}
-        <div className="flex items-center gap-3">
+        {/* Khu vực chọn Tỉnh/Thành & Nút Ví Vé & Nút AI Chat */}
+        <div className="flex items-center gap-2.5 sm:gap-3">
           <div className="hidden sm:flex items-center gap-1.5 bg-neutral-900/70 border border-neutral-800 px-3 py-1.5 rounded-lg text-xs text-neutral-300">
             <MapPin className="w-3.5 h-3.5 text-accent-red" />
             <select
@@ -76,9 +80,24 @@ export const Navbar: React.FC<NavbarProps> = ({
             </select>
           </div>
 
+          {/* Nút Ví Vé Của Tôi */}
+          <button
+            onClick={onOpenMyTickets}
+            className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-neutral-800/80 hover:bg-neutral-700 border border-neutral-700 text-neutral-200 text-xs font-medium transition-all"
+          >
+            <Ticket className="w-3.5 h-3.5 text-accent-red" />
+            <span className="hidden sm:inline">Vé Của Tôi</span>
+            {ticketCount > 0 && (
+              <span className="w-4 h-4 rounded-full bg-accent-red text-white text-[10px] font-bold flex items-center justify-center">
+                {ticketCount}
+              </span>
+            )}
+          </button>
+
+          {/* Nút Hỏi AI */}
           <button
             onClick={onOpenAiChat}
-            className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-accent-cyan/20 to-blue-500/20 border border-accent-cyan/50 text-accent-cyan hover:bg-accent-cyan/30 text-xs font-semibold shadow-sm transition-all transform hover:scale-105 active:scale-95"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-accent-cyan/20 to-blue-500/20 border border-accent-cyan/50 text-accent-cyan hover:bg-accent-cyan/30 text-xs font-semibold shadow-sm transition-all transform hover:scale-105 active:scale-95"
           >
             <Sparkles className="w-3.5 h-3.5 animate-pulse" />
             <span>Hỏi AI</span>
