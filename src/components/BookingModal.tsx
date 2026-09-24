@@ -86,7 +86,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
         const id = `${row}${i}`;
         const isBooked = bookedSeed.includes(id);
         const type = isCouple ? "couple" : isVip ? "vip" : "standard";
-        const price = isCouple ? 220000 : isVip ? 115000 : 90000;
+        const price = isCouple ? 130000 : isVip ? 75000 : 55000;
 
         seatsInRow.push({
           id,
@@ -225,7 +225,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   };
 
   // URL VietQR mẫu chuẩn Napas247
-  const vietQrUrl = `https://img.vietqr.io/image/MB-0388899999-compact2.png?amount=${grandTotal}&addInfo=${encodeURIComponent(`VECINEMAX ${selectedSeats.map(s => s.id).join("")}`)}&accountName=CINEMAX%20CINEMA%20VIETNAM`;
+  const vietQrUrl = `https://img.vietqr.io/image/MB-0388899999-compact2.png?amount=${grandTotal}&addInfo=${encodeURIComponent(`VECINEMAX ${selectedSeats.map(s => s.id).join("")}`)}&accountName=BETA%20CINEMAS%20XUAN%20THUY`;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md overflow-y-auto animate-in fade-in duration-200">

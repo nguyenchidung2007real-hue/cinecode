@@ -34,10 +34,10 @@ export const Footer: React.FC = () => {
           <div>
             <h4 className="font-bold text-white uppercase tracking-wider mb-3">Cụm Rạp Chiếu</h4>
             <ul className="space-y-2 text-neutral-400">
-              <li className="hover:text-white cursor-pointer">CGV Vincom Landmark 81</li>
+              <li className="hover:text-accent-red font-medium text-white/90 cursor-pointer">📍 Beta Cinemas Xuân Thủy (HITC Cầu Giấy)</li>
               <li className="hover:text-white cursor-pointer">CGV Vincom Bà Triệu</li>
               <li className="hover:text-white cursor-pointer">Lotte Cinema Keangnam</li>
-              <li className="hover:text-white cursor-pointer">BHD Star Bitexco</li>
+              <li className="hover:text-white cursor-pointer">CGV Vincom Landmark 81</li>
             </ul>
           </div>
 
