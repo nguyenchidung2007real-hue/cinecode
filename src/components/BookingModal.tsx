@@ -4,7 +4,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import { Movie, Seat, BookingInfo } from "@/types";
 import { MOCK_CINEMAS, MOCK_SHOWTIMES, CONCESSION_COMBOS } from "@/lib/mockData";
 import { formatVND } from "@/lib/utils";
-import { X, Check, Ticket, MapPin, Calendar, Clock, Armchair, QrCode, Download, ArrowRight, ArrowLeft, ShieldCheck, Timer } from "lucide-react";
+import { X, Check, Ticket, MapPin, Calendar, Clock, Armchair, QrCode, Download, ArrowRight, ArrowLeft, ShieldCheck, Timer, Copy, CreditCard } from "lucide-react";
 
 interface BookingModalProps {
   movie: Movie | null;
@@ -39,6 +39,17 @@ export const BookingModal: React.FC<BookingModalProps> = ({ movie, onClose, onBo
 
   // Phương thức thanh toán (vietqr / momo)
   const [paymentMethod, setPaymentMethod] = useState<"vietqr" | "momo">("vietqr");
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+
+  const handleCopy = (text: string, field: string) => {
+    try {
+      navigator.clipboard.writeText(text);
+      setCopiedField(field);
+      setTimeout(() => setCopiedField(null), 2000);
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   // Đếm ngược giữ ghế (300 giây = 5 phút)
   const [timeLeft, setTimeLeft] = useState(300);
@@ -527,25 +538,94 @@ export const BookingModal: React.FC<BookingModalProps> = ({ movie, onClose, onBo
               <span className="text-neutral-400">Ghế sẽ tự giải phóng nếu hết hạn</span>
             </div>
 
+            {/* Tùy chọn phương thức */}
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setPaymentMethod("vietqr")}
+                className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all border flex items-center justify-center gap-2 ${
+                  paymentMethod === "vietqr"
+                    ? "bg-blue-600/20 border-blue-500 text-blue-400 ring-1 ring-blue-500"
+                    : "bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-white"
+                }`}
+              >
+                <CreditCard className="w-3.5 h-3.5" />
+                <span>VietQR (Mọi Ngân Hàng)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setPaymentMethod("momo")}
+                className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all border flex items-center justify-center gap-2 ${
+                  paymentMethod === "momo"
+                    ? "bg-pink-600/20 border-pink-500 text-pink-400 ring-1 ring-pink-500"
+                    : "bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-white"
+                }`}
+              >
+                <div className="w-3.5 h-3.5 rounded-full bg-pink-500 flex items-center justify-center text-[8px] text-white font-black">M</div>
+                <span>Ví MoMo / QR Pay</span>
+              </button>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
               {/* Cột mã QR */}
-              <div className="flex flex-col items-center justify-center p-6 bg-white rounded-2xl shadow-xl text-black">
+              <div className="flex flex-col items-center justify-center p-5 bg-white rounded-2xl shadow-xl text-black">
                 <div className="flex items-center justify-between w-full border-b pb-2 mb-3">
-                  <span className="font-extrabold text-xs text-blue-700">NAPAS 247 | VIETQR</span>
-                  <span className="text-[10px] font-bold bg-blue-100 text-blue-800 px-2 py-0.5 rounded">MB BANK</span>
+                  <span className="font-extrabold text-xs text-blue-700">
+                    {paymentMethod === "vietqr" ? "NAPAS 247 | VIETQR" : "VÍ ĐIỆN TỬ MOMO"}
+                  </span>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                    paymentMethod === "vietqr" ? "bg-blue-100 text-blue-800" : "bg-pink-100 text-pink-800"
+                  }`}>
+                    {paymentMethod === "vietqr" ? "MB BANK" : "MOMO PAY"}
+                  </span>
                 </div>
 
                 <img
-                  src={vietQrUrl}
-                  alt="VietQR Chuyển Khoản"
-                  className="w-56 h-56 object-contain"
+                  src={paymentMethod === "vietqr" ? vietQrUrl : `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(`2|99|0388899999|CINEMAX CINEMA VN||0|0|${grandTotal}|VECINEMAX ${selectedSeats.map(s => s.id).join("")}`)}`}
+                  alt="Mã QR Thanh Toán"
+                  className="w-52 h-52 object-contain"
                 />
 
-                <div className="mt-3 text-center space-y-1">
-                  <p className="text-xs text-neutral-500">Người thụ hưởng: <strong className="text-neutral-800">CINEMAX CINEMA VN</strong></p>
-                  <p className="text-xs text-neutral-500">Số tài khoản: <strong className="text-neutral-900 font-mono">0388899999</strong></p>
-                  <p className="text-base font-black text-red-600">{formatVND(grandTotal)}</p>
-                  <p className="text-[10px] text-neutral-500 font-mono">Nội dung: VECINEMAX {selectedSeats.map(s => s.id).join("")}</p>
+                <div className="mt-3 w-full text-center space-y-1.5 border-t pt-2.5">
+                  <div className="flex items-center justify-between text-xs px-2">
+                    <span className="text-neutral-500">Số tài khoản / SĐT:</span>
+                    <button
+                      type="button"
+                      onClick={() => handleCopy("0388899999", "account")}
+                      className="flex items-center gap-1 font-mono font-bold text-neutral-900 hover:text-blue-600 bg-neutral-100 px-1.5 py-0.5 rounded"
+                    >
+                      <span>0388899999</span>
+                      <Copy className="w-3 h-3 text-neutral-500" />
+                      {copiedField === "account" && <span className="text-[9px] text-emerald-600 font-sans">Đã chép!</span>}
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs px-2">
+                    <span className="text-neutral-500">Số tiền:</span>
+                    <button
+                      type="button"
+                      onClick={() => handleCopy(grandTotal.toString(), "amount")}
+                      className="flex items-center gap-1 font-black text-red-600 bg-red-50 px-1.5 py-0.5 rounded"
+                    >
+                      <span>{formatVND(grandTotal)}</span>
+                      <Copy className="w-3 h-3 text-red-400" />
+                      {copiedField === "amount" && <span className="text-[9px] text-emerald-600 font-sans">Đã chép!</span>}
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs px-2">
+                    <span className="text-neutral-500">Nội dung:</span>
+                    <button
+                      type="button"
+                      onClick={() => handleCopy(`VECINEMAX ${selectedSeats.map(s => s.id).join("")}`, "content")}
+                      className="flex items-center gap-1 font-mono text-[11px] font-semibold text-neutral-800 bg-neutral-100 px-1.5 py-0.5 rounded"
+                    >
+                      <span>VECINEMAX {selectedSeats.map(s => s.id).join("")}</span>
+                      <Copy className="w-3 h-3 text-neutral-500" />
+                      {copiedField === "content" && <span className="text-[9px] text-emerald-600 font-sans">Đã chép!</span>}
+                    </button>
+                  </div>
                 </div>
               </div>
 
