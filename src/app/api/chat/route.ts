@@ -438,27 +438,37 @@ export async function POST(request: NextRequest): Promise<Response> {
         let produced = false;
 
         if (useGroq && apiKey) {
-          try {
-            const groq = new Groq({ apiKey });
-            const completion = await groq.chat.completions.create({
-              model: GROQ_MODEL,
-              messages: [{ role: "system", content: systemPrompt }, ...messages],
-              temperature: 0.6,
-              max_tokens: 700,
-              stream: true,
-            });
+          const groq = new Groq({ apiKey });
+          const modelsToTry = [
+            process.env.GROQ_MODEL,
+            "openai/gpt-oss-120b",
+            "qwen/qwen3.8-27b",
+            "llama-3.3-70b-versatile",
+          ].filter(Boolean) as string[];
 
-            for await (const chunk of completion) {
-              if (closed) break;
-              const delta = chunk.choices[0]?.delta?.content;
-              if (delta) {
-                // Hỗ trợ cả content và text để tương thích mọi phiên bản client
-                send({ content: delta, text: delta });
-                produced = true;
+          for (const modelName of modelsToTry) {
+            try {
+              const completion = await groq.chat.completions.create({
+                model: modelName,
+                messages: [{ role: "system", content: systemPrompt }, ...messages],
+                temperature: 0.6,
+                max_tokens: 700,
+                stream: true,
+              });
+
+              for await (const chunk of completion) {
+                if (closed) break;
+                const delta = chunk.choices[0]?.delta?.content;
+                if (delta) {
+                  send({ content: delta, text: delta });
+                  produced = true;
+                }
               }
+
+              if (produced) break;
+            } catch (error) {
+              console.warn(`[/api/chat] Groq lỗi với model ${modelName}, thử model tiếp theo:`, error);
             }
-          } catch (error) {
-            console.error("[/api/chat] Groq lỗi, chuyển sang phản hồi mock:", error);
           }
         }
 
