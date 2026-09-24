@@ -108,24 +108,27 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
 
             try {
               const parsed = JSON.parse(dataStr);
-              if (parsed.text) {
-                accumulated += parsed.text;
+              const textChunk = parsed.content || parsed.text;
+              if (textChunk) {
+                accumulated += textChunk;
                 setMessages((prev) =>
                   prev.map((msg) =>
                     msg.id === botMsgId ? { ...msg, content: accumulated } : msg
                   )
                 );
               }
-              if (parsed.type === "recommendation" && parsed.data) {
+              const rec = parsed.recommendation || (parsed.type === "recommendation" ? parsed.data : null);
+              if (rec) {
                 setMessages((prev) =>
                   prev.map((msg) =>
-                    msg.id === botMsgId ? { ...msg, recommendation: parsed.data } : msg
+                    msg.id === botMsgId ? { ...msg, recommendation: rec } : msg
                   )
                 );
               }
             } catch {
               // Bỏ qua lỗi parse từng chunk không hoàn chỉnh
             }
+
           }
         }
       }
