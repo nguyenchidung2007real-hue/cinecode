@@ -34,9 +34,11 @@ export default function HomePage() {
   // State các Modal
   const [activeDetailMovie, setActiveDetailMovie] = useState<Movie | null>(null);
   const [activeBookingMovie, setActiveBookingMovie] = useState<Movie | null>(null);
+  const [bookingInitialSeats, setBookingInitialSeats] = useState<string[]>([]);
   const [isAiChatOpen, setIsAiChatOpen] = useState(false);
   const [isMyTicketsOpen, setIsMyTicketsOpen] = useState(false);
   const [ticketCount, setTicketCount] = useState(0);
+
 
   // Đọc số lượng vé đã đặt
   useEffect(() => {
@@ -300,7 +302,11 @@ export default function HomePage() {
       {/* Modal Đặt Vé, Chọn Ghế, Thanh Toán VietQR & Xuất Vé QR Code */}
       <BookingModal
         movie={activeBookingMovie}
-        onClose={() => setActiveBookingMovie(null)}
+        initialSeats={bookingInitialSeats}
+        onClose={() => {
+          setActiveBookingMovie(null);
+          setBookingInitialSeats([]);
+        }}
         onBookingSuccess={handleBookingSuccess}
       />
 
@@ -310,11 +316,18 @@ export default function HomePage() {
         onClose={() => setIsMyTicketsOpen(false)}
       />
 
-      {/* Trợ lý AI Chat Widget phản hồi siêu tốc */}
+      {/* Trợ lý AI Chat Widget phản hồi siêu tốc & Đặt vé nhanh */}
       <AiChatWidget
         isOpen={isAiChatOpen}
         onToggle={() => setIsAiChatOpen(!isAiChatOpen)}
+        movies={movies}
+        onSelectMovieForBooking={(movie, seats) => {
+          setActiveBookingMovie(movie);
+          setBookingInitialSeats(seats || []);
+          setIsAiChatOpen(false);
+        }}
       />
+
 
       {/* Chân trang Footer */}
       <Footer />

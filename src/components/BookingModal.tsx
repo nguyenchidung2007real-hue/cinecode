@@ -10,14 +10,21 @@ interface BookingModalProps {
   movie: Movie | null;
   onClose: () => void;
   onBookingSuccess?: (booking: BookingInfo) => void;
+  initialSeats?: string[];
 }
 
 const ROWS = ["A", "B", "C", "D", "E", "F", "G", "H", "K"];
 const SEATS_PER_ROW = 12;
 
-export const BookingModal: React.FC<BookingModalProps> = ({ movie, onClose, onBookingSuccess }) => {
+export const BookingModal: React.FC<BookingModalProps> = ({
+  movie,
+  onClose,
+  onBookingSuccess,
+  initialSeats,
+}) => {
   // Trạng thái các bước (1: Suất chiếu, 2: Chọn ghế, 3: Bắp nước & Thông tin, 4: Quét mã QR thanh toán, 5: Vé điện tử QR)
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
+
 
   // Chọn rạp và suất chiếu
   const [selectedCinema, setSelectedCinema] = useState(MOCK_CINEMAS[0].name);
@@ -94,7 +101,31 @@ export const BookingModal: React.FC<BookingModalProps> = ({ movie, onClose, onBo
     });
   }, [movie]);
 
+  // Tự động ghim ghế khi được CineBot AI đề xuất qua Đặt vé nhanh
+  useEffect(() => {
+    if (movie && initialSeats && initialSeats.length > 0 && seatsMatrix.length > 0) {
+      const preselected: Seat[] = [];
+      seatsMatrix.forEach((row) => {
+        row.forEach((seat) => {
+          if (initialSeats.includes(seat.id) && seat.status === "available") {
+            preselected.push(seat);
+          }
+        });
+      });
+      if (preselected.length > 0) {
+        setSelectedSeats(preselected);
+        setStep(2);
+      }
+    } else if (!movie) {
+      setStep(1);
+      setSelectedSeats([]);
+      setCombos({});
+      setCompletedBooking(null);
+    }
+  }, [movie, initialSeats, seatsMatrix]);
+
   if (!movie) return null;
+
 
   const handleToggleSeat = (seat: Seat) => {
     if (seat.status === "booked") return;

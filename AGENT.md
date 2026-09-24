@@ -113,7 +113,8 @@ git push origin main
 - [x] **Goal 1**: Bổ sung bộ lọc phim theo tâm trạng (Mood-based Discovery) -> ĐÃ HOÀN THÀNH (Antigravity)
 - [x] **Goal 2**: Tích hợp mô phỏng thanh toán quét mã QR (VietQR / MoMo) trước khi xuất vé -> ĐÃ HOÀN THÀNH (Antigravity)
 - [x] **Goal 3**: Thêm tính năng "Ví Vé Của Tôi" (My Tickets) lưu trữ trên LocalStorage -> ĐÃ HOÀN THÀNH (Antigravity)
-- [ ] **Goal 4**: Chatbot phát hiện tâm trạng & Đặt vé nhanh (Claude lo Backend pure services, Antigravity lo UI Quick-Book) -> ĐANG TRIỂN KHAI
-- [ ] **Goal 5**: Hugging Face Semantic Search & RAG (Transformers.js / Jina)
+- [x] **Goal 4**: Chatbot phát hiện tâm trạng & Đặt vé nhanh (Claude lo Backend pure services, Antigravity lo UI Quick-Book) -> ĐÃ HOÀN THÀNH (Build 0 lỗi)
+- [ ] **Goal 5**: Hugging Face Semantic Search & RAG (Transformers.js / Jina) -> TIẾP THEO
 - [ ] **Goal 6**: Triển khai dự án lên Vercel để chạy online trên Internet
+
 

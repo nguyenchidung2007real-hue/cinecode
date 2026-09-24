@@ -70,4 +70,12 @@ export interface ChatMessage {
   role: "user" | "assistant" | "system";
   content: string;
   timestamp: string;
+  recommendation?: {
+    movieId: string | number;
+    movieTitle: string;
+    posterPath?: string;
+    reason: string;
+    suggestedSeats?: string[];
+  };
 }
+

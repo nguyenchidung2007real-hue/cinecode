@@ -1,31 +1,39 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { Sparkles, Send, X, Bot, User, Trash2, Zap } from "lucide-react";
-import { ChatMessage } from "@/types";
+import { Sparkles, Send, X, Bot, User, Trash2, Zap, Film, Armchair, Ticket, ArrowRight } from "lucide-react";
+import { ChatMessage, Movie } from "@/types";
+import { MOCK_MOVIES } from "@/lib/mockData";
 
 interface AiChatWidgetProps {
   isOpen: boolean;
   onToggle: () => void;
+  onSelectMovieForBooking?: (movie: Movie, suggestedSeats?: string[]) => void;
+  movies?: Movie[];
 }
 
 const INITIAL_MESSAGES: ChatMessage[] = [
   {
     id: "welcome-1",
     role: "assistant",
-    content: "Chào bạn! Tôi là **CineBot AI** 🤖🎬. Tôi có thể giúp bạn tìm phim hợp gu, chọn suất chiếu và tư vấn vị trí ghế ngồi đẹp nhất trong rạp. Bạn cần tôi hỗ trợ gì hôm nay?",
+    content: "Chào bạn! Tôi là **CineBot AI** 🤖🎬. Kể cho mình nghe tâm trạng hôm nay của bạn (áp lực, buồn, muốn cảm giác mạnh, hẹn hò...) hoặc số người đi xem, mình sẽ gợi ý phim hợp gu và chọn sẵn ghế đẹp nhất nhé!",
     timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
   },
 ];
 
 const SUGGESTIONS = [
-  "🎬 Gợi ý phim viễn tưởng / hành động hay nhất",
-  "🍿 Tư vấn vị trí ghế phòng IMAX Landmark 81",
-  "👻 Phim kinh dị nào đang hot tuần này?",
-  "👨‍👩‍👧‍👦 Phim hoạt hình phù hợp cho gia đình",
+  "🔥 Mình đang stress quá, cần phim xả hơi",
+  "🍿 Tư vấn vị trí ghế đẹp nhất phòng IMAX",
+  "👻 Thích cảm giác mạnh, rùng rợn giật gân",
+  "💕 Đi xem phim với người yêu thì ngồi đâu?",
 ];
 
-export const AiChatWidget: React.FC<AiChatWidgetProps> = ({ isOpen, onToggle }) => {
+export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
+  isOpen,
+  onToggle,
+  onSelectMovieForBooking,
+  movies = MOCK_MOVIES,
+}) => {
   const [messages, setMessages] = useState<ChatMessage[]>(INITIAL_MESSAGES);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
@@ -72,7 +80,11 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({ isOpen, onToggle }) 
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          messages: newMessages.map((m) => ({ role: m.role, content: m.content })),
+          messages: newMessages.map((m) => ({
+            role: m.role,
+            content: m.content,
+            recommendation: m.recommendation,
+          })),
         }),
       });
 
@@ -104,8 +116,15 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({ isOpen, onToggle }) 
                   )
                 );
               }
+              if (parsed.type === "recommendation" && parsed.data) {
+                setMessages((prev) =>
+                  prev.map((msg) =>
+                    msg.id === botMsgId ? { ...msg, recommendation: parsed.data } : msg
+                  )
+                );
+              }
             } catch {
-              // Ignore partial JSON parse errors in stream
+              // Bỏ qua lỗi parse từng chunk không hoàn chỉnh
             }
           }
         }
@@ -150,7 +169,7 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({ isOpen, onToggle }) 
 
       {/* Khung cửa sổ Chat */}
       {isOpen && (
-        <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 w-[95vw] sm:w-[420px] h-[550px] max-h-[85vh] glass-panel border border-neutral-700/80 rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 duration-200">
+        <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 w-[95vw] sm:w-[430px] h-[580px] max-h-[85vh] glass-panel border border-neutral-700/80 rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 duration-200">
           {/* Header Cửa sổ Chat */}
           <div className="px-4 py-3 bg-neutral-900/90 border-b border-neutral-800 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
@@ -161,12 +180,12 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({ isOpen, onToggle }) 
                 <div className="flex items-center gap-1.5">
                   <h4 className="font-extrabold text-sm text-white">CineBot AI</h4>
                   <span className="text-[10px] px-1.5 py-0.2 rounded font-mono font-bold bg-accent-cyan/20 text-accent-cyan border border-accent-cyan/40">
-                    Groq LPU
+                    Llama 3.3
                   </span>
                 </div>
                 <p className="text-[10px] text-emerald-400 flex items-center gap-1 font-medium">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  Sẵn sàng phản hồi tức thì
+                  Gợi ý tâm trạng & Ghế chuẩn
                 </p>
               </div>
             </div>
@@ -194,39 +213,101 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({ isOpen, onToggle }) 
             {messages.map((msg) => (
               <div
                 key={msg.id}
-                className={`flex gap-2.5 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-start"}`}
               >
-                {msg.role === "assistant" && (
-                  <div className="w-6 h-6 rounded-full bg-accent-red/20 text-accent-red border border-accent-red/30 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <Bot className="w-3.5 h-3.5" />
-                  </div>
-                )}
+                <div className={`flex gap-2.5 max-w-[90%] ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}>
+                  {msg.role === "assistant" && (
+                    <div className="w-6 h-6 rounded-full bg-accent-red/20 text-accent-red border border-accent-red/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Bot className="w-3.5 h-3.5" />
+                    </div>
+                  )}
 
-                <div
-                  className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 leading-relaxed shadow-sm ${
-                    msg.role === "user"
-                      ? "bg-accent-red text-white font-medium rounded-tr-none"
-                      : "bg-neutral-900 border border-neutral-800 text-neutral-200 rounded-tl-none"
-                  }`}
-                >
-                  <p className="whitespace-pre-wrap">{msg.content || "..."}</p>
-                  <span className="block text-[9px] text-neutral-400/80 text-right mt-1 font-mono">
-                    {msg.timestamp}
-                  </span>
+                  <div
+                    className={`rounded-2xl px-3.5 py-2.5 leading-relaxed shadow-sm ${
+                      msg.role === "user"
+                        ? "bg-accent-red text-white font-medium rounded-tr-none"
+                        : "bg-neutral-900 border border-neutral-800 text-neutral-200 rounded-tl-none"
+                    }`}
+                  >
+                    <p className="whitespace-pre-wrap">{msg.content || "..."}</p>
+                    <span className="block text-[9px] text-neutral-400/80 text-right mt-1 font-mono">
+                      {msg.timestamp}
+                    </span>
+                  </div>
+
+                  {msg.role === "user" && (
+                    <div className="w-6 h-6 rounded-full bg-neutral-800 text-neutral-300 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <User className="w-3.5 h-3.5" />
+                    </div>
+                  )}
                 </div>
 
-                {msg.role === "user" && (
-                  <div className="w-6 h-6 rounded-full bg-neutral-800 text-neutral-300 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <User className="w-3.5 h-3.5" />
+                {/* THẺ GỢI Ý ĐẶT VÉ NHANH (QUICK-BOOKING CARD) */}
+                {msg.role === "assistant" && msg.recommendation && (
+                  <div className="mt-2.5 ml-8 max-w-[85%] p-3 rounded-xl bg-gradient-to-br from-neutral-900/95 via-neutral-900/80 to-accent-red/10 border border-accent-red/40 shadow-xl shadow-black/50 backdrop-blur-md space-y-2.5 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                    <div className="flex items-start gap-2.5">
+                      {msg.recommendation.posterPath ? (
+                        <img
+                          src={msg.recommendation.posterPath}
+                          alt={msg.recommendation.movieTitle}
+                          className="w-12 h-16 object-cover rounded-lg shadow-md border border-neutral-700/60 flex-shrink-0"
+                        />
+                      ) : (
+                        <div className="w-12 h-16 bg-neutral-800 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <Film className="w-5 h-5 text-accent-red" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <span className="inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded bg-accent-red/20 text-accent-red border border-accent-red/30">
+                          <Sparkles className="w-2.5 h-2.5" /> Gợi ý chuẩn gu
+                        </span>
+                        <h5 className="font-extrabold text-white text-xs mt-1 truncate">
+                          {msg.recommendation.movieTitle}
+                        </h5>
+                        <p className="text-[10px] text-neutral-400 line-clamp-2 mt-0.5 leading-relaxed">
+                          {msg.recommendation.reason}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Vị trí ghế gợi ý */}
+                    {msg.recommendation.suggestedSeats && msg.recommendation.suggestedSeats.length > 0 && (
+                      <div className="flex items-center justify-between text-[10px] px-2.5 py-1.5 rounded-lg bg-neutral-950/80 border border-neutral-800">
+                        <span className="text-neutral-400 flex items-center gap-1">
+                          <Armchair className="w-3 h-3 text-accent-cyan" /> Ghế Sweet Spot:
+                        </span>
+                        <span className="font-mono font-bold text-accent-cyan tracking-wider">
+                          {msg.recommendation.suggestedSeats.join(", ")}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Nút Đặt Vé Nhanh */}
+                    <button
+                      onClick={() => {
+                        const targetId = msg.recommendation?.movieId;
+                        const foundMovie = movies.find(
+                          (m) => String(m.id) === String(targetId)
+                        );
+                        if (foundMovie && onSelectMovieForBooking) {
+                          onSelectMovieForBooking(foundMovie, msg.recommendation?.suggestedSeats);
+                        }
+                      }}
+                      className="w-full py-2 px-3 rounded-lg bg-gradient-to-r from-accent-red to-orange-600 hover:from-accent-redHover hover:to-orange-500 text-white font-extrabold text-[11px] flex items-center justify-center gap-1.5 shadow-md shadow-accent-red/20 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
+                    >
+                      <Ticket className="w-3.5 h-3.5" />
+                      Đặt vé nhanh ngay
+                      <ArrowRight className="w-3 h-3 ml-0.5" />
+                    </button>
                   </div>
                 )}
               </div>
             ))}
 
-            {/* Gợi ý câu hỏi nhanh */}
+            {/* Gợi ý câu hỏi nhanh theo tâm trạng */}
             {messages.length <= 2 && (
               <div className="pt-2">
-                <p className="text-[11px] font-semibold text-neutral-400 mb-2">Câu hỏi nhanh:</p>
+                <p className="text-[11px] font-semibold text-neutral-400 mb-2">Hỏi nhanh theo tâm trạng:</p>
                 <div className="flex flex-col gap-1.5">
                   {SUGGESTIONS.map((item, idx) => (
                     <button
@@ -257,7 +338,7 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({ isOpen, onToggle }) 
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Hỏi về phim, rạp hoặc vị trí ghế ngồi..."
+                placeholder="Chia sẻ tâm trạng hoặc hỏi vị trí ghế..."
                 disabled={isStreaming}
                 className="flex-1 bg-neutral-950 text-xs text-white placeholder-neutral-500 px-3.5 py-2.5 rounded-xl border border-neutral-800 focus:outline-none focus:border-accent-cyan transition-colors"
               />

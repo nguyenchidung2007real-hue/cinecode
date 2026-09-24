@@ -20,10 +20,13 @@ Whenever you start a session in this repository:
 
 ---
 
-## 🎯 Current Sprint Goals (Choose with User)
-- **Goal 1**: Mood-Based Discovery (Gợi ý phim theo tâm trạng người xem)
-- **Goal 2**: VietQR / MoMo Payment Simulator (Mô phỏng thanh toán quét mã QR trước khi xuất vé)
-- **Goal 3**: My Tickets Wallet (Ví lưu trữ vé điện tử đã đặt vào LocalStorage)
-- **Goal 4**: Vercel Deployment & SEO Optimization
+## 🎯 Current Sprint Goals & Progress
+- [x] **Goal 1**: Mood-Based Discovery (Gợi ý phim theo tâm trạng người xem) -> Done
+- [x] **Goal 2**: VietQR / MoMo Payment Simulator (Mô phỏng thanh toán quét mã QR trước khi xuất vé) -> Done
+- [x] **Goal 3**: My Tickets Wallet (Ví lưu trữ vé điện tử đã đặt vào LocalStorage) -> Done
+- [x] **Goal 4**: Chatbot phát hiện tâm trạng & Đặt vé nhanh (Claude Backend x Antigravity Frontend) -> Done (Build verified 0 errors)
+- [ ] **Goal 5**: Hugging Face Semantic Search & RAG (Transformers.js / Jina) -> NEXT SPRINT
+- [ ] **Goal 6**: Vercel Deployment & SEO Optimization
+
 
 When the user asks you to start, present these goals and ask which one they want you to execute first!
