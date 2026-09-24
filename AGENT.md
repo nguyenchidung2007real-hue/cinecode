@@ -110,7 +110,10 @@ git push origin main
 - [x] Trợ lý ảo AI tư vấn phim tốc độ cao (Groq LPU Llama 3.3)
 - [x] Quy trình đặt vé: Chọn rạp -> Chọn ghế -> Chọn bắp nước -> Xuất vé QR Code
 - [x] Đồng bộ Git & đẩy lên kho lưu trữ GitHub
-- [ ] **Goal 1**: Bổ sung bộ lọc phim theo tâm trạng (Mood-based Discovery)
-- [ ] **Goal 2**: Tích hợp mô phỏng thanh toán quét mã QR (VietQR / MoMo) trước khi xuất vé
-- [ ] **Goal 3**: Thêm tính năng "Ví Vé Của Tôi" (My Tickets) lưu trữ trên LocalStorage
-- [ ] **Goal 4**: Triển khai dự án lên Vercel để chạy online trên Internet
+- [x] **Goal 1**: Bổ sung bộ lọc phim theo tâm trạng (Mood-based Discovery) -> ĐÃ HOÀN THÀNH (Antigravity)
+- [x] **Goal 2**: Tích hợp mô phỏng thanh toán quét mã QR (VietQR / MoMo) trước khi xuất vé -> ĐÃ HOÀN THÀNH (Antigravity)
+- [x] **Goal 3**: Thêm tính năng "Ví Vé Của Tôi" (My Tickets) lưu trữ trên LocalStorage -> ĐÃ HOÀN THÀNH (Antigravity)
+- [ ] **Goal 4**: Chatbot phát hiện tâm trạng & Đặt vé nhanh (Claude lo Backend pure services, Antigravity lo UI Quick-Book) -> ĐANG TRIỂN KHAI
+- [ ] **Goal 5**: Hugging Face Semantic Search & RAG (Transformers.js / Jina)
+- [ ] **Goal 6**: Triển khai dự án lên Vercel để chạy online trên Internet
+
