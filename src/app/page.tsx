@@ -11,7 +11,9 @@ import { MovieModal } from "@/components/MovieModal";
 import { BookingModal } from "@/components/BookingModal";
 import { MyTicketsModal } from "@/components/MyTicketsModal";
 import { AiChatWidget } from "@/components/AiChatWidget";
+import SemanticSearchModal from "@/components/SemanticSearchModal";
 import { Footer } from "@/components/Footer";
+
 import { Sparkles, Flame, Film, Clapperboard, Award, SearchX, Smile, Compass, Brain, Heart, Zap } from "lucide-react";
 
 const GENRE_FILTERS = ["Tất cả", "Hành động", "Khoa học viễn tưởng", "Kinh dị", "Hoạt hình", "Chính kịch"];
@@ -37,7 +39,9 @@ export default function HomePage() {
   const [bookingInitialSeats, setBookingInitialSeats] = useState<string[]>([]);
   const [isAiChatOpen, setIsAiChatOpen] = useState(false);
   const [isMyTicketsOpen, setIsMyTicketsOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [ticketCount, setTicketCount] = useState(0);
+
 
 
   // Đọc số lượng vé đã đặt
@@ -99,10 +103,12 @@ export default function HomePage() {
         onSearchChange={setSearchQuery}
         onOpenAiChat={() => setIsAiChatOpen(true)}
         onOpenMyTickets={() => setIsMyTicketsOpen(true)}
+        onOpenSearch={() => setIsSearchOpen(true)}
         ticketCount={ticketCount}
         selectedCity={selectedCity}
         onCityChange={setSelectedCity}
       />
+
 
       <main className="flex-1">
         {/* NẾU ĐANG TÌM KIẾM HOẶC LỌC TÂM TRẠNG RIÊNG */}
@@ -328,9 +334,21 @@ export default function HomePage() {
         }}
       />
 
+      {/* Modal Tìm Kiếm AI Spotlight (Goal 5 - Hugging Face RAG) */}
+      <SemanticSearchModal
+        open={isSearchOpen}
+        onOpenChange={setIsSearchOpen}
+        onBookMovie={(movie) => {
+          setActiveBookingMovie(movie);
+        }}
+        onSelectMovie={(movie) => {
+          setActiveDetailMovie(movie);
+        }}
+      />
 
       {/* Chân trang Footer */}
       <Footer />
+
     </div>
   );
 }

@@ -7,6 +7,7 @@ interface NavbarProps {
   onSearchChange: (query: string) => void;
   onOpenAiChat: () => void;
   onOpenMyTickets: () => void;
+  onOpenSearch?: () => void;
   ticketCount: number;
   selectedCity: string;
   onCityChange: (city: string) => void;
@@ -16,6 +17,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onSearchChange,
   onOpenAiChat,
   onOpenMyTickets,
+  onOpenSearch,
   ticketCount,
   selectedCity,
   onCityChange,
@@ -51,19 +53,22 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         </div>
 
-        {/* Thanh tìm kiếm nhanh */}
+        {/* Thanh tìm kiếm AI Spotlight */}
         <div className="flex-1 max-w-md hidden md:block">
-          <div className="relative">
-            <Search className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              value={searchValue}
-              onChange={handleSearch}
-              placeholder="Tìm theo tên phim, thể loại, đạo diễn..."
-              className="w-full bg-neutral-900/90 text-sm text-white placeholder-neutral-500 pl-9 pr-4 py-2 rounded-full border border-neutral-700/60 focus:outline-none focus:border-accent-cyan focus:ring-1 focus:ring-accent-cyan transition-all"
-            />
+          <div
+            onClick={onOpenSearch}
+            className="relative flex items-center justify-between bg-neutral-900/90 hover:bg-neutral-800/90 text-sm text-neutral-400 pl-9 pr-3 py-2 rounded-full border border-neutral-700/60 hover:border-accent-red/50 cursor-pointer transition-all group"
+          >
+            <Search className="w-4 h-4 text-neutral-400 group-hover:text-accent-red absolute left-3 top-1/2 -translate-y-1/2 transition-colors" />
+            <span className="truncate text-xs text-neutral-400 group-hover:text-neutral-200">
+              Tìm theo cốt truyện, cảm xúc, AI RAG...
+            </span>
+            <kbd className="inline-flex items-center gap-0.5 text-[10px] font-mono font-bold text-neutral-400 bg-neutral-800 border border-neutral-700/80 px-1.5 py-0.5 rounded shadow-sm">
+              Ctrl K
+            </kbd>
           </div>
         </div>
+
 
         {/* Khu vực chọn Tỉnh/Thành & Nút Ví Vé & Nút AI Chat */}
         <div className="flex items-center gap-2.5 sm:gap-3">
@@ -80,11 +85,21 @@ export const Navbar: React.FC<NavbarProps> = ({
             </select>
           </div>
 
+          {/* Nút Tìm kiếm AI trên Mobile */}
+          <button
+            onClick={onOpenSearch}
+            title="Tìm kiếm AI (Ctrl+K)"
+            className="md:hidden flex items-center justify-center w-8 h-8 rounded-full bg-neutral-800/80 hover:bg-neutral-700 border border-neutral-700 text-neutral-300 hover:text-white transition-all"
+          >
+            <Search className="w-3.5 h-3.5 text-accent-cyan" />
+          </button>
+
           {/* Nút Ví Vé Của Tôi */}
           <button
             onClick={onOpenMyTickets}
             className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-neutral-800/80 hover:bg-neutral-700 border border-neutral-700 text-neutral-200 text-xs font-medium transition-all"
           >
+
             <Ticket className="w-3.5 h-3.5 text-accent-red" />
             <span className="hidden sm:inline">Vé Của Tôi</span>
             {ticketCount > 0 && (

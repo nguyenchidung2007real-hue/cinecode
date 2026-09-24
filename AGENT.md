@@ -114,8 +114,9 @@ git push origin main
 - [x] **Goal 2**: Tích hợp mô phỏng thanh toán quét mã QR (VietQR / MoMo) trước khi xuất vé -> ĐÃ HOÀN THÀNH (Antigravity)
 - [x] **Goal 3**: Thêm tính năng "Ví Vé Của Tôi" (My Tickets) lưu trữ trên LocalStorage -> ĐÃ HOÀN THÀNH (Antigravity)
 - [x] **Goal 4**: Chatbot phát hiện tâm trạng & Đặt vé nhanh (Claude lo Backend pure services, Antigravity lo UI Quick-Book) -> ĐÃ HOÀN THÀNH (Build 0 lỗi)
-- [ ] **Goal 5**: Hugging Face Semantic Search & RAG (`src/lib/hfRagService.ts` hybrid embedding & BM25) -> ĐANG TRIỂN KHAI (Claude backend x Antigravity frontend)
-- [ ] **Goal 6**: Triển khai dự án lên Vercel để chạy online trên Internet
+- [x] **Goal 5**: Hugging Face Semantic Search & RAG (`src/lib/hfRagService.ts`, `/api/search`, `SemanticSearchModal.tsx`) -> ĐÃ HOÀN THÀNH (Build 0 lỗi)
+- [ ] **Goal 6**: Triển khai dự án lên Vercel để chạy online trên Internet & SEO Optimization -> TIẾP THEO
+
 
 
 

@@ -25,8 +25,9 @@ Whenever you start a session in this repository:
 - [x] **Goal 2**: VietQR / MoMo Payment Simulator (Mô phỏng thanh toán quét mã QR trước khi xuất vé) -> Done
 - [x] **Goal 3**: My Tickets Wallet (Ví lưu trữ vé điện tử đã đặt vào LocalStorage) -> Done
 - [x] **Goal 4**: Chatbot phát hiện tâm trạng & Đặt vé nhanh (Claude Backend x Antigravity Frontend) -> Done (Build verified 0 errors)
-- [ ] **Goal 5**: Hugging Face Semantic Search & RAG (Transformers.js / Jina) -> NEXT SPRINT
-- [ ] **Goal 6**: Vercel Deployment & SEO Optimization
+- [x] **Goal 5**: Hugging Face Semantic Search & RAG (`hfRagService.ts`, `/api/search`, `SemanticSearchModal.tsx`) -> Done (Build verified 0 errors)
+- [ ] **Goal 6**: Vercel Deployment & SEO Optimization -> CURRENT SPRINT
+
 
 
 When the user asks you to start, present these goals and ask which one they want you to execute first!
