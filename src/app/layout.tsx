@@ -1,11 +1,9 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { siteMetadata, siteViewport, websiteJsonLd } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "CineMax AI - Đặt Vé Xem Phim & Trợ Lý AI Siêu Tốc",
-  description:
-    "Hệ thống đặt vé xem phim điện ảnh hiện đại, tích hợp sơ đồ chọn ghế thông minh, kho phim TMDB và trợ lý AI Groq LPU phản hồi tức thì.",
-};
+export const metadata: Metadata = siteMetadata;
+export const viewport: Viewport = siteViewport;
 
 export default function RootLayout({
   children,
@@ -15,6 +13,12 @@ export default function RootLayout({
   return (
     <html lang="vi" className="dark">
       <body className="bg-background text-neutral-100 min-h-screen antialiased selection:bg-accent-red selection:text-white">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(websiteJsonLd).replace(/</g, "\\u003c"),
+          }}
+        />
         {children}
       </body>
     </html>
