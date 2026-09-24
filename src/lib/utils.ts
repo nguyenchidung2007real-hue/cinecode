@@ -25,3 +25,7 @@ export function formatDateVN(dateString: string): string {
     return dateString;
   }
 }
+
+export function formatNumber(num: number): string {
+  return new Intl.NumberFormat("en-US").format(num);
+}

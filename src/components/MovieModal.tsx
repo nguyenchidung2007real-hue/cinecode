@@ -3,6 +3,7 @@
 import React, { useEffect } from "react";
 import { Movie } from "@/types";
 import { X, Star, Clock, Calendar, Ticket, User, Film } from "lucide-react";
+import { formatNumber } from "@/lib/utils";
 
 interface MovieModalProps {
   movie: Movie | null;
@@ -87,7 +88,9 @@ export const MovieModal: React.FC<MovieModalProps> = ({
             <div className="flex items-center gap-1.5 text-accent-gold font-bold">
               <Star className="w-4 h-4 fill-current" />
               <span>{movie.voteAverage} / 10</span>
-              <span className="text-neutral-400 font-normal">({movie.voteCount.toLocaleString()} votes)</span>
+              <span suppressHydrationWarning className="text-neutral-400 font-normal">
+                ({formatNumber(movie.voteCount)} votes)
+              </span>
             </div>
             <div className="flex items-center gap-1.5">
               <Clock className="w-4 h-4 text-neutral-400" />

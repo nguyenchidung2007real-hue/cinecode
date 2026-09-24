@@ -3,6 +3,7 @@
 import React from "react";
 import { Movie } from "@/types";
 import { Play, Ticket, Star, Clock, Calendar } from "lucide-react";
+import { formatNumber } from "@/lib/utils";
 
 interface HeroBannerProps {
   movie: Movie;
@@ -40,7 +41,9 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
             <div className="flex items-center gap-1 text-accent-gold font-bold bg-black/40 px-2 py-0.5 rounded backdrop-blur-sm">
               <Star className="w-3.5 h-3.5 fill-current" />
               <span>{movie.voteAverage}</span>
-              <span className="text-neutral-400 font-normal">({movie.voteCount.toLocaleString()} bình chọn)</span>
+              <span suppressHydrationWarning className="text-neutral-400 font-normal">
+                ({formatNumber(movie.voteCount)} bình chọn)
+              </span>
             </div>
           </div>
 
