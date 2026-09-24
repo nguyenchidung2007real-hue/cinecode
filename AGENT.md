@@ -110,12 +110,44 @@ git push origin main
 - [x] Trợ lý ảo AI tư vấn phim tốc độ cao (Groq LPU Llama 3.3)
 - [x] Quy trình đặt vé: Chọn rạp -> Chọn ghế -> Chọn bắp nước -> Xuất vé QR Code
 - [x] Đồng bộ Git & đẩy lên kho lưu trữ GitHub
-- [x] **Goal 1**: Bổ sung bộ lọc phim theo tâm trạng (Mood-based Discovery) -> ĐÃ HOÀN THÀNH (Antigravity)
-- [x] **Goal 2**: Tích hợp mô phỏng thanh toán quét mã QR (VietQR / MoMo) trước khi xuất vé -> ĐÃ HOÀN THÀNH (Antigravity)
-- [x] **Goal 3**: Thêm tính năng "Ví Vé Của Tôi" (My Tickets) lưu trữ trên LocalStorage -> ĐÃ HOÀN THÀNH (Antigravity)
-- [x] **Goal 4**: Chatbot phát hiện tâm trạng & Đặt vé nhanh (Claude lo Backend pure services, Antigravity lo UI Quick-Book) -> ĐÃ HOÀN THÀNH (Build 0 lỗi)
-- [x] **Goal 5**: Hugging Face Semantic Search & RAG (`src/lib/hfRagService.ts`, `/api/search`, `SemanticSearchModal.tsx`) -> ĐÃ HOÀN THÀNH (Build 0 lỗi)
-- [ ] **Goal 6**: Triển khai dự án lên Vercel để chạy online trên Internet & SEO Optimization -> TIẾP THEO
+- [x] **Goal 1**: Bổ sung bộ lọc phim theo tâm trạng (Mood-based Discovery) -> ĐÃ HOÀN THÀNH
+- [x] **Goal 2**: Tích hợp mô phỏng thanh toán quét mã QR (VietQR / MoMo) trước khi xuất vé -> ĐÃ HOÀN THÀNH
+- [x] **Goal 3**: Thêm tính năng "Ví Vé Của Tôi" (My Tickets) lưu trữ trên LocalStorage -> ĐÃ HOÀN THÀNH
+- [x] **Goal 4**: Chatbot phát hiện tâm trạng & Đặt vé nhanh (Claude lo Backend, Antigravity lo UI Quick-Book) -> ĐÃ HOÀN THÀNH
+- [x] **Goal 5**: Hugging Face Semantic Search & RAG (`hfRagService.ts`, `/api/search`, `SemanticSearchModal.tsx`) -> ĐÃ HOÀN THÀNH
+- [x] **Goal 6**: Cấu hình SEO trung tâm, Dynamic Sitemap, Robots.txt, OpenGraph 1200x630 -> ĐÃ HOÀN THÀNH
+- [x] **Goal 7**: Live Crawler Beta Cinemas Xuân Thủy & 2 Dashboard chuyên biệt (`/admin` và `/dashboard`) -> ĐÃ HOÀN THÀNH
+
+---
+
+## 🔗 7. Danh Sách Link Raw Trực Tiếp Để Claude Đọc (Direct Raw GitHub Links)
+
+Vì GitHub thường chặn bot duyệt thư mục và Claude bị cache web page, Claude hãy truy cập trực tiếp bằng các link `raw.githubusercontent.com` dưới đây:
+
+* **Core Services & Thuật toán AI**:
+  - `src/lib/moodDetector.ts`: [https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/src/lib/moodDetector.ts](https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/src/lib/moodDetector.ts)
+  - `src/lib/seatRecommender.ts`: [https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/src/lib/seatRecommender.ts](https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/src/lib/seatRecommender.ts)
+  - `src/lib/hfRagService.ts`: [https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/src/lib/hfRagService.ts](https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/src/lib/hfRagService.ts)
+  - `src/lib/betaCrawler.ts`: [https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/src/lib/betaCrawler.ts](https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/src/lib/betaCrawler.ts)
+  - `src/lib/mockData.ts`: [https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/src/lib/mockData.ts](https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/src/lib/mockData.ts)
+  - `src/lib/seo.ts`: [https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/src/lib/seo.ts](https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/src/lib/seo.ts)
+  - `src/lib/utils.ts`: [https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/src/lib/utils.ts](https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/src/lib/utils.ts)
+
+* **API Routes (Backend)**:
+  - `src/app/api/chat/route.ts`: [https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/src/app/api/chat/route.ts](https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/src/app/api/chat/route.ts)
+  - `src/app/api/search/route.ts`: [https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/src/app/api/search/route.ts](https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/src/app/api/search/route.ts)
+  - `src/app/api/admin/sync-beta/route.ts`: [https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/src/app/api/admin/sync-beta/route.ts](https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/src/app/api/admin/sync-beta/route.ts)
+
+* **Giao Diện & Pages (Frontend)**:
+  - `src/app/page.tsx`: [https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/src/app/page.tsx](https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/src/app/page.tsx)
+  - `src/app/admin/page.tsx`: [https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/src/app/admin/page.tsx](https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/src/app/admin/page.tsx)
+  - `src/app/dashboard/page.tsx`: [https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/src/app/dashboard/page.tsx](https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/src/app/dashboard/page.tsx)
+  - `src/components/BookingModal.tsx`: [https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/src/components/BookingModal.tsx](https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/src/components/BookingModal.tsx)
+  - `src/components/AiChatWidget.tsx`: [https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/src/components/AiChatWidget.tsx](https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/src/components/AiChatWidget.tsx)
+  - `src/components/SemanticSearchModal.tsx`: [https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/src/components/SemanticSearchModal.tsx](https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/src/components/SemanticSearchModal.tsx)
+  - `src/components/Navbar.tsx`: [https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/src/components/Navbar.tsx](https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/src/components/Navbar.tsx)
+  - `src/components/Footer.tsx`: [https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/src/components/Footer.tsx](https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/src/components/Footer.tsx)
+
 
 
 

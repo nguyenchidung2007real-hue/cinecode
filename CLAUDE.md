@@ -26,8 +26,27 @@ Whenever you start a session in this repository:
 - [x] **Goal 3**: My Tickets Wallet (Ví lưu trữ vé điện tử đã đặt vào LocalStorage) -> Done
 - [x] **Goal 4**: Chatbot phát hiện tâm trạng & Đặt vé nhanh (Claude Backend x Antigravity Frontend) -> Done (Build verified 0 errors)
 - [x] **Goal 5**: Hugging Face Semantic Search & RAG (`hfRagService.ts`, `/api/search`, `SemanticSearchModal.tsx`) -> Done (Build verified 0 errors)
-- [ ] **Goal 6**: Vercel Deployment & SEO Optimization -> CURRENT SPRINT
+- [x] **Goal 6**: Vercel Deployment & SEO Optimization (`seo.ts`, `sitemap.ts`, `robots.ts`, `og.png`) -> Done (Build verified 0 errors)
+- [x] **Goal 7**: Beta Cinemas Live Crawler & 2 Specialized Dashboards (`/admin` and `/dashboard`) -> Done (Build verified 0 errors)
 
+---
 
+## 🔗 Direct Raw GitHub Links for Claude Code
+Since GitHub web scraping may be cached or blocked for directories, fetch files directly from:
+- `AGENT.md`: https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/AGENT.md
+- `src/lib/moodDetector.ts`: https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/src/lib/moodDetector.ts
+- `src/lib/seatRecommender.ts`: https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/src/lib/seatRecommender.ts
+- `src/lib/hfRagService.ts`: https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/src/lib/hfRagService.ts
+- `src/lib/betaCrawler.ts`: https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/src/lib/betaCrawler.ts
+- `src/lib/mockData.ts`: https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/src/lib/mockData.ts
+- `src/app/api/chat/route.ts`: https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/src/app/api/chat/route.ts
+- `src/app/api/search/route.ts`: https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/src/app/api/search/route.ts
+- `src/app/api/admin/sync-beta/route.ts`: https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/src/app/api/admin/sync-beta/route.ts
+- `src/app/page.tsx`: https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/src/app/page.tsx
+- `src/app/admin/page.tsx`: https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/src/app/admin/page.tsx
+- `src/app/dashboard/page.tsx`: https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/src/app/dashboard/page.tsx
+- `src/components/BookingModal.tsx`: https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/src/components/BookingModal.tsx
+- `src/components/AiChatWidget.tsx`: https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/src/components/AiChatWidget.tsx
+- `src/components/SemanticSearchModal.tsx`: https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/src/components/SemanticSearchModal.tsx
+- `src/components/Navbar.tsx`: https://raw.githubusercontent.com/nguyenchidung2007real-hue/cinecode/main/src/components/Navbar.tsx
 
-When the user asks you to start, present these goals and ask which one they want you to execute first!
