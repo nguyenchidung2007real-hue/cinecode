@@ -5,6 +5,22 @@ import { semanticSearchMovies } from "@/lib/hfRagService";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+// Giới hạn tần suất gọi API (Rate limiting)
+const rateLimitMap = new Map<string, { count: number; expiresAt: number }>();
+function isRateLimited(ip: string, maxRequests = 40): boolean {
+  const now = Date.now();
+  const record = rateLimitMap.get(ip);
+  if (!record || now > record.expiresAt) {
+    rateLimitMap.set(ip, { count: 1, expiresAt: now + 60_000 });
+    return false;
+  }
+  if (record.count >= maxRequests) {
+    return true;
+  }
+  record.count++;
+  return false;
+}
+
 /**
  * API Search Phim Ngữ Nghĩa (Semantic Search & RAG - Goal 5)
  * GET /api/search?q=...&limit=...
@@ -12,6 +28,14 @@ export const dynamic = "force-dynamic";
  */
 
 export async function GET(request: NextRequest): Promise<Response> {
+  const ip = request.ip || request.headers.get("x-forwarded-for") || "unknown";
+  if (isRateLimited(ip)) {
+    return NextResponse.json(
+      { error: "Bạn đã gửi quá nhiều yêu cầu tìm kiếm. Vui lòng chờ 1 phút." },
+      { status: 429 }
+    );
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const query = searchParams.get("q") || searchParams.get("query") || "";
@@ -54,21 +78,29 @@ export async function GET(request: NextRequest): Promise<Response> {
 }
 
 export async function POST(request: NextRequest): Promise<Response> {
+  const ip = request.ip || request.headers.get("x-forwarded-for") || "unknown";
+  if (isRateLimited(ip)) {
+    return NextResponse.json(
+      { error: "Bạn đã gửi quá nhiều yêu cầu tìm kiếm. Vui lòng chờ 1 phút." },
+      { status: 429 }
+    );
+  }
+
   try {
     const body = await request.json().catch(() => null);
     if (!body || typeof body !== "object") {
       return NextResponse.json({ error: "Body JSON không hợp lệ" }, { status: 400 });
     }
 
-    const query = (body.query || body.q || "") as string;
-    const limit = typeof body.limit === "number" ? Math.min(20, Math.max(1, body.limit)) : 5;
-
-    if (!query.trim()) {
+    const rawQuery = body.query ?? body.q;
+    if (typeof rawQuery !== "string" || !rawQuery.trim()) {
       return NextResponse.json(
-        { error: "Thiếu trường 'query' trong body" },
+        { error: "Trường 'query' bắt buộc phải là chuỗi ký tự không rỗng." },
         { status: 400 }
       );
     }
+    const query = rawQuery.trim();
+    const limit = typeof body.limit === "number" ? Math.min(20, Math.max(1, body.limit)) : 5;
 
     const movies = await getMovies("all");
     const searchResult = await semanticSearchMovies(query, movies, { limit });

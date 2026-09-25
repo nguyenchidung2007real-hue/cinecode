@@ -179,7 +179,7 @@ function readMood(text: string, movies: Movie[]): MoodInfo {
 }
 
 const RECOMMEND_INTENT =
-  /(phim|xem|goi y|de xuat|tim|dat ve|ve xem|nen xem|hay khong|nao hay|film|movie|recommend)/;
+  /\b(dat ve|mua ve|chon ghe|lay ve|book ve|goi y|de xuat|tu van|nen xem|phim gi hay|phim nao hay|tim giup|co phim gi|co phim nao)\b/i;
 
 function wantsRecommendation(text: string): boolean {
   return RECOMMEND_INTENT.test(stripDiacritics(text));
@@ -209,23 +209,18 @@ function choosePick(
 ): MoviePick | null {
   const intent = wantsRecommendation(userText);
 
-  // 1) Câu hỏi mô tả nội dung -> ưu tiên top hit của RAG
-  if (rag && rag.hits.length > 0 && (intent || !mood.label)) {
-    const ragMovie = hitToMovie(rag.hits[0], movies);
-    if (ragMovie) return { movie: ragMovie, source: "rag" };
-  }
-
-  // 2) Có tâm trạng rõ ràng -> chọn phim gợi ý từ moodDetector
+  // 1) Có tâm trạng rõ ràng -> chọn phim gợi ý từ moodDetector
   if (mood.label && mood.suggestedMovieId) {
     const moodMovie = movies.find((m) => String(m.id) === String(mood.suggestedMovieId));
     if (moodMovie) return { movie: moodMovie, source: "mood" };
   }
 
-  // 3) Còn lại nếu RAG có kết quả và người dùng đang hỏi phim
+  // 2) Người dùng hỏi phim cụ thể hoặc tìm kiếm nội dung (chỉ khi có ý định rõ ràng)
   if (rag && rag.hits.length > 0 && intent) {
     const ragMovie = hitToMovie(rag.hits[0], movies);
     if (ragMovie) return { movie: ragMovie, source: "rag" };
   }
+
   return null;
 }
 
@@ -233,12 +228,16 @@ function choosePick(
 // Gợi ý ghế (Goal 4)
 // ---------------------------------------------------------------------------
 
-function detectPartySize(text: string): number {
-  return extractPartySize(text) ?? 2;
+function detectPartySize(text: string, mood?: MoodInfo): number {
+  const extracted = extractPartySize(text);
+  if (extracted !== null && extracted !== undefined) return extracted;
+  // Mặc định 1 người, chỉ thành 2 nếu tâm trạng lãng mạn
+  if (mood?.label === "romantic") return 2;
+  return 1;
 }
 
-function suggestSeats(userText: string, format = "2D Phụ Đề"): string[] {
-  const partySize = detectPartySize(userText);
+function suggestSeats(userText: string, mood?: MoodInfo, format = "2D Phụ Đề"): string[] {
+  const partySize = detectPartySize(userText, mood);
   try {
     const rec = recommendSeats(format, partySize);
     if (rec.recommendedSeats && rec.recommendedSeats.length > 0) {
@@ -303,7 +302,7 @@ function buildSystemPrompt(params: {
       "Đây là DỮ LIỆU THAM KHẢO về cốt truyện, đạo diễn, diễn viên và điểm đánh giá thực tế. " +
         "Hãy dựa vào đó để trả lời chính xác:",
       "<rag_context>",
-      truncate(ragContextText, MAX_RAG_CONTEXT_CHARS),
+      truncate(ragContextText.replace(/<\/rag_context>/gi, ""), MAX_RAG_CONTEXT_CHARS),
       "</rag_context>"
     );
   }
@@ -416,7 +415,7 @@ export async function POST(request: NextRequest): Promise<Response> {
   // 2) Chọn phim gợi ý + ghế
   const pick = choosePick(userText, movies, ragContext, mood);
   const recommendation = pick
-    ? buildRecommendation(pick, mood, suggestSeats(userText))
+    ? buildRecommendation(pick, mood, suggestSeats(userText, mood))
     : null;
 
   // 3) Chuẩn bị prompt
@@ -441,9 +440,10 @@ export async function POST(request: NextRequest): Promise<Response> {
           const groq = new Groq({ apiKey });
           const modelsToTry = [
             process.env.GROQ_MODEL,
+            "llama-3.3-70b-versatile",
+            "llama-3.1-70b-versatile",
             "openai/gpt-oss-120b",
             "qwen/qwen3.8-27b",
-            "llama-3.3-70b-versatile",
           ].filter(Boolean) as string[];
 
           for (const modelName of modelsToTry) {
@@ -468,6 +468,7 @@ export async function POST(request: NextRequest): Promise<Response> {
               if (produced) break;
             } catch (error) {
               console.warn(`[/api/chat] Groq lỗi với model ${modelName}, thử model tiếp theo:`, error);
+              if (produced) break; // Đã gửi một phần phản hồi thì dừng lại, tránh lặp lại câu trả lời
             }
           }
         }

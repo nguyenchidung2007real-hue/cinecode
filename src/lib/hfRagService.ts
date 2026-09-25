@@ -659,7 +659,11 @@ export async function semanticSearchMovies(
 
 /** Dữ liệu phim có thể đến từ TMDB → làm sạch trước khi đưa vào prompt. */
 function sanitizeForPrompt(text: string, maxLength: number): string {
-  const clean = text.replace(/[\u0000-\u001f\u007f`]+/g, " ").replace(/\s+/g, " ").trim();
+  const clean = text
+    .replace(/<\/?[a-zA-Z0-9_\-]+>/g, "") // Loại bỏ các thẻ đóng/mở XML/HTML để tránh prompt injection
+    .replace(/[\u0000-\u001f\u007f`]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
   return clean.length > maxLength ? `${clean.slice(0, maxLength - 1)}…` : clean;
 }
 
