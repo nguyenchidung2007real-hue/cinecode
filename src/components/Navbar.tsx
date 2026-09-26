@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Film, Sparkles, Search, MapPin, Ticket, User, ShieldCheck } from "lucide-react";
+import { Film, Sparkles, Search, MapPin, Ticket, User, ShieldCheck, QrCode } from "lucide-react";
 
 interface NavbarProps {
   onSearchChange: (query: string) => void;
@@ -127,6 +127,16 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             <User className="w-3.5 h-3.5 text-amber-400" />
             <span className="hidden md:inline">Tài Khoản</span>
+          </Link>
+
+          {/* Nút Soát Vé Cửa Rạp */}
+          <Link
+            href="/scanner"
+            title="Nhân viên soát vé"
+            className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-xs font-bold transition-all"
+          >
+            <QrCode className="w-3.5 h-3.5" />
+            <span>Soát Vé</span>
           </Link>
 
           {/* Nút Admin Portal */}

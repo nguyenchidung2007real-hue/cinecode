@@ -62,6 +62,10 @@ export interface BookingInfo {
   customerEmail: string;
   customerPhone: string;
   qrCodeUrl?: string;
+  qrToken?: string;
+  status?: "valid" | "used";
+  usedAt?: string;
+  scannedBy?: string;
   createdAt: string;
 }
 

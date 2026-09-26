@@ -25,6 +25,20 @@ const config: Config = {
         "gradient-conic":
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
       },
+      keyframes: {
+        shimmer: {
+          "0%": { transform: "translateX(-100%)" },
+          "100%": { transform: "translateX(200%)" },
+        },
+        hologram: {
+          "0%, 100%": { filter: "hue-rotate(0deg) brightness(1)" },
+          "50%": { filter: "hue-rotate(90deg) brightness(1.2)" },
+        },
+      },
+      animation: {
+        shimmer: "shimmer 2.5s infinite linear",
+        hologram: "hologram 4s infinite ease-in-out",
+      },
     },
   },
   plugins: [],

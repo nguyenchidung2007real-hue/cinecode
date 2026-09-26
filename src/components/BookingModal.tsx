@@ -238,7 +238,18 @@ export const BookingModal: React.FC<BookingModalProps> = ({
         const newTicket: BookingInfo = data.data;
         setCompletedBooking(newTicket);
 
-        // Lưu vé vào LocalStorage
+        // Đồng bộ lên shared backend /api/tickets để máy quét ở rạp nhận diện tức thì
+        try {
+          await fetch("/api/tickets", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(newTicket),
+          });
+        } catch (syncErr) {
+          console.warn("[BookingModal] Đồng bộ /api/tickets:", syncErr);
+        }
+
+        // Lưu vé vào LocalStorage máy khách (phục vụ Ví Vé)
         try {
           const existing = JSON.parse(localStorage.getItem("cinemax_tickets") || "[]");
           localStorage.setItem("cinemax_tickets", JSON.stringify([newTicket, ...existing]));
