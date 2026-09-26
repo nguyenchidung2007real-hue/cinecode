@@ -4,7 +4,9 @@ import React, { useState, useMemo, useEffect } from "react";
 import { Movie, Seat, BookingInfo } from "@/types";
 import { MOCK_CINEMAS, MOCK_SHOWTIMES, CONCESSION_COMBOS } from "@/lib/mockData";
 import { formatVND } from "@/lib/utils";
-import { X, Check, Ticket, MapPin, Calendar, Clock, Armchair, QrCode, Download, ArrowRight, ArrowLeft, ShieldCheck, Timer, Copy, CreditCard } from "lucide-react";
+import { checkOrphanSeats } from "@/lib/orphanSeatRule";
+import { ViewFromSeatModal } from "./ViewFromSeatModal";
+import { X, Check, Ticket, MapPin, Calendar, Clock, Armchair, QrCode, Download, ArrowRight, ArrowLeft, ShieldCheck, Timer, Copy, CreditCard, Eye, Sparkles, AlertTriangle, Info } from "lucide-react";
 
 interface BookingModalProps {
   movie: Movie | null;
@@ -25,6 +27,14 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   // Trạng thái các bước (1: Suất chiếu, 2: Chọn ghế, 3: Bắp nước & Thông tin, 4: Quét mã QR thanh toán, 5: Vé điện tử QR)
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
 
+  // Ghế được chọn để xem mô phỏng góc nhìn 3D (View from seat)
+  const [previewSeat, setPreviewSeat] = useState<Seat | null>(null);
+  // Bật/tắt chế độ click để xem góc nhìn rạp
+  const [viewSeatMode, setViewSeatMode] = useState<boolean>(false);
+  // Cảnh báo ghế mồ côi (Orphan Seat Prevention)
+  const [orphanWarning, setOrphanWarning] = useState<string | null>(null);
+  // Đếm ngược giữ ghế Bước 2 (10 phút = 600s)
+  const [seatHoldTime, setSeatHoldTime] = useState<number>(600);
 
   // Chọn rạp và suất chiếu
   const [selectedCinema, setSelectedCinema] = useState(MOCK_CINEMAS[0].name);
@@ -101,6 +111,15 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     });
   }, [movie]);
 
+  // Đếm ngược 10 phút giữ ghế khi đã chọn ghế (Bước 2)
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (step === 2 && selectedSeats.length > 0 && seatHoldTime > 0) {
+      timer = setInterval(() => setSeatHoldTime((t) => Math.max(0, t - 1)), 1000);
+    }
+    return () => clearInterval(timer);
+  }, [step, selectedSeats.length, seatHoldTime]);
+
   // Tự động ghim ghế khi được CineBot AI đề xuất qua Đặt vé nhanh
   useEffect(() => {
     if (movie && initialSeats && initialSeats.length > 0 && seatsMatrix.length > 0) {
@@ -126,12 +145,34 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
   if (!movie) return null;
 
-
   const handleToggleSeat = (seat: Seat) => {
     if (seat.status === "booked") return;
 
-    const exists = selectedSeats.find((s) => s.id === seat.id);
-    if (exists) {
+    // Nếu đang bật chế độ xem góc nhìn 3D thì mở modal thay vì chọn ghế
+    if (viewSeatMode) {
+      setPreviewSeat(seat);
+      return;
+    }
+
+    const isCurrentlySelected = selectedSeats.some((s) => s.id === seat.id);
+
+    // Tìm hàng ghế tương ứng trong sơ đồ
+    const rowSeats = seatsMatrix.find((r) => r.length > 0 && r[0].row === seat.row) || [];
+    const currentSelectedIds = new Set(selectedSeats.map((s) => s.id));
+
+    // Kiểm tra quy tắc chống ghế mồ côi (Orphan Seat Prevention)
+    const orphanCheck = checkOrphanSeats(rowSeats, currentSelectedIds, seat);
+    if (!orphanCheck.isValid) {
+      setOrphanWarning(orphanCheck.message);
+      // Tự tắt cảnh báo sau 4.5 giây
+      setTimeout(() => setOrphanWarning(null), 4500);
+      return;
+    }
+
+    // Nếu hợp lệ, xóa cảnh báo và áp dụng chọn/bỏ chọn
+    setOrphanWarning(null);
+
+    if (isCurrentlySelected) {
       setSelectedSeats(selectedSeats.filter((s) => s.id !== seat.id));
     } else {
       if (selectedSeats.length >= 8) {
@@ -337,53 +378,149 @@ export const BookingModal: React.FC<BookingModalProps> = ({
           </div>
         )}
 
-        {/* BƯỚC 2: CHỌN GHẾ NGỒI */}
+        {/* BƯỚC 2: CHỌN GHẾ NGỒI (CHUẨN FANDANGO & CGV) */}
         {step === 2 && (
-          <div className="p-6 space-y-6">
+          <div className="p-6 space-y-5">
+            {/* Thanh đếm ngược giữ ghế 10 phút */}
+            {selectedSeats.length > 0 && (
+              <div
+                className={`flex items-center justify-between px-4 py-2.5 rounded-xl border text-xs transition-all ${
+                  seatHoldTime <= 60
+                    ? "bg-red-500/15 border-red-500/50 text-red-400 animate-pulse shadow-[0_0_15px_rgba(239,68,68,0.3)]"
+                    : seatHoldTime <= 180
+                    ? "bg-amber-500/15 border-amber-500/40 text-amber-300"
+                    : "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Timer className={`w-4 h-4 ${seatHoldTime <= 60 ? "animate-spin text-red-400" : "text-emerald-400"}`} />
+                  <span>
+                    Thời gian giữ ghế tạm thời: <strong>{formatTimer(seatHoldTime)}</strong>
+                  </span>
+                </div>
+                <span className="text-[11px] opacity-80 hidden sm:inline">
+                  Hệ thống tự động khóa ghế (Zero Zombie Seats)
+                </span>
+              </div>
+            )}
+
+            {/* Thanh công cụ: Chế độ xem góc nhìn 3D (View from seat) & Sweet Spot */}
+            <div className="flex flex-wrap items-center justify-between gap-2.5 p-3 rounded-xl bg-white/[0.03] border border-white/10">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setViewSeatMode(!viewSeatMode)}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 border transition-all ${
+                    viewSeatMode
+                      ? "bg-cyan-500/20 border-cyan-400 text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.4)]"
+                      : "bg-neutral-800 border-neutral-700 text-neutral-300 hover:text-white hover:bg-neutral-700"
+                  }`}
+                >
+                  <Eye className="w-3.5 h-3.5" />
+                  <span>{viewSeatMode ? "Đang bật chế độ 3D (Bấm ghế để xem)" : "Xem góc nhìn từ ghế (3D View)"}</span>
+                </button>
+
+                {selectedSeats.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setPreviewSeat(selectedSeats[0])}
+                    className="px-3 py-1.5 rounded-xl text-xs font-semibold text-yellow-400 bg-yellow-500/10 border border-yellow-500/30 hover:bg-yellow-500/20 flex items-center gap-1.5 transition-colors"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>Góc nhìn ghế {selectedSeats[0].id}</span>
+                  </button>
+                )}
+              </div>
+
+              <div className="flex items-center gap-1.5 text-[11px] text-yellow-400/90 font-medium">
+                <Sparkles className="w-3.5 h-3.5 text-yellow-400" />
+                <span>Hàng F - G: Vị trí vàng Sweet Spot (Dolby Atmos & THX)</span>
+              </div>
+            </div>
+
+            {/* Cảnh báo Chống Ghế Mồ Côi (Orphan Seat Warning Banner) */}
+            {orphanWarning && (
+              <div className="flex items-start gap-3 p-3.5 rounded-xl bg-red-600/20 border border-red-500/60 text-red-200 text-xs shadow-lg shadow-red-900/30 animate-pulse">
+                <AlertTriangle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-bold block text-red-300 uppercase tracking-wider text-[11px]">
+                    Quy tắc Chống Ghế Mồ Côi (Orphan Seat Rule)
+                  </span>
+                  <span className="mt-0.5 block">{orphanWarning}</span>
+                </div>
+              </div>
+            )}
+
             {/* Màn hình cong phát sáng */}
-            <div className="flex flex-col items-center">
-              <div className="w-3/4 h-2 bg-gradient-to-r from-transparent via-accent-cyan to-transparent rounded-full shadow-[0_0_20px_rgba(0,240,255,0.6)]" />
-              <span className="text-[11px] uppercase tracking-widest text-neutral-500 font-bold mt-2">
-                MÀN HÌNH CHIẾU
+            <div className="flex flex-col items-center pt-2">
+              <div className="w-3/4 h-2.5 bg-gradient-to-r from-transparent via-accent-cyan to-transparent rounded-full shadow-[0_0_25px_rgba(0,240,255,0.7)]" />
+              <span className="text-[10px] uppercase tracking-widest text-cyan-400 font-extrabold mt-1.5 opacity-90">
+                MÀN HÌNH CHIẾU CONG (CINEMA SCREEN)
               </span>
             </div>
 
             {/* Sơ đồ ghế */}
             <div className="space-y-2 overflow-x-auto py-2">
-              {seatsMatrix.map((row, rIdx) => (
-                <div key={rIdx} className="flex items-center justify-center gap-1.5 min-w-[500px]">
-                  <span className="w-5 text-xs text-neutral-500 font-bold text-center">
-                    {ROWS[rIdx]}
-                  </span>
-                  <div className="flex gap-1.5">
-                    {row.map((seat) => {
-                      const isSelected = selectedSeats.some((s) => s.id === seat.id);
-                      const isBooked = seat.status === "booked";
+              {seatsMatrix.map((row, rIdx) => {
+                const isSweetSpotRow = ["F", "G"].includes(ROWS[rIdx]);
 
-                      return (
-                        <button
-                          key={seat.id}
-                          disabled={isBooked}
-                          onClick={() => handleToggleSeat(seat)}
-                          className={`w-7 h-7 sm:w-8 sm:h-8 rounded-md text-[10px] sm:text-xs font-bold flex items-center justify-center transition-all ${
-                            isBooked
-                              ? "bg-neutral-800/40 border border-neutral-800 text-neutral-600 cursor-not-allowed"
-                              : isSelected
-                              ? "bg-accent-red text-white shadow-lg shadow-accent-red/50 scale-105 ring-2 ring-white"
-                              : seat.type === "vip"
-                              ? "bg-amber-500/20 border border-amber-500/40 text-amber-300 hover:bg-amber-500/40"
-                              : seat.type === "couple"
-                              ? "bg-pink-500/20 border border-pink-500/40 text-pink-300 hover:bg-pink-500/40 w-16"
-                              : "bg-neutral-800 border border-neutral-700 text-neutral-300 hover:bg-neutral-700"
-                          }`}
-                        >
-                          {seat.id}
-                        </button>
-                      );
-                    })}
+                return (
+                  <div key={rIdx} className="flex items-center justify-center gap-1.5 min-w-[520px]">
+                    <span
+                      className={`w-6 text-xs font-bold text-center flex items-center justify-center gap-0.5 ${
+                        isSweetSpotRow ? "text-yellow-400 font-black drop-shadow" : "text-neutral-500"
+                      }`}
+                      title={isSweetSpotRow ? "Hàng ghế Sweet Spot - Vị trí vàng" : undefined}
+                    >
+                      {ROWS[rIdx]}
+                      {isSweetSpotRow && <span className="text-[9px]">★</span>}
+                    </span>
+                    <div className="flex gap-1.5">
+                      {row.map((seat) => {
+                        const isSelected = selectedSeats.some((s) => s.id === seat.id);
+                        const isBooked = seat.status === "booked";
+
+                        return (
+                          <div key={seat.id} className="relative group">
+                            <button
+                              disabled={isBooked}
+                              onClick={() => handleToggleSeat(seat)}
+                              className={`w-7 h-7 sm:w-8 sm:h-8 rounded-md text-[10px] sm:text-xs font-bold flex items-center justify-center transition-all ${
+                                isBooked
+                                  ? "bg-neutral-800/40 border border-neutral-800 text-neutral-600 cursor-not-allowed"
+                                  : isSelected
+                                  ? "bg-accent-red text-white shadow-lg shadow-accent-red/50 scale-105 ring-2 ring-white"
+                                  : seat.type === "vip"
+                                  ? "bg-amber-500/20 border border-amber-500/40 text-amber-300 hover:bg-amber-500/40 hover:scale-105"
+                                  : seat.type === "couple"
+                                  ? "bg-pink-500/20 border border-pink-500/40 text-pink-300 hover:bg-pink-500/40 w-16 hover:scale-105"
+                                  : "bg-neutral-800 border border-neutral-700 text-neutral-300 hover:bg-neutral-700 hover:scale-105"
+                              }`}
+                            >
+                              {seat.id}
+                            </button>
+
+                            {/* Nút xem góc nhìn nhanh khi hover */}
+                            {!isBooked && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setPreviewSeat(seat);
+                                }}
+                                title={`Xem góc nhìn từ ghế ${seat.id}`}
+                                className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-cyan-500 text-black hidden group-hover:flex items-center justify-center shadow-md scale-90 hover:scale-110 z-10"
+                              >
+                                <Eye className="w-2.5 h-2.5" />
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Chú thích loại ghế */}
@@ -407,6 +544,9 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               <div className="flex items-center gap-1.5">
                 <div className="w-4 h-4 rounded bg-neutral-800/40 border border-neutral-800" />
                 <span>Đã đặt</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-yellow-400 font-medium">
+                <span>★ Sweet Spot</span>
               </div>
             </div>
 
@@ -804,6 +944,40 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               </button>
             </div>
           </div>
+        )}
+
+        {/* Modal mô phỏng 3D góc nhìn ảo từ ghế (View-From-Seat chuẩn Fandango & AMC) */}
+        {previewSeat && (
+          <ViewFromSeatModal
+            seat={previewSeat}
+            movie={movie}
+            cinemaName={selectedCinema}
+            roomName={selectedFormat.includes("IMAX") ? "Phòng IMAX Laser 01" : "Phòng Cinema 03"}
+            isSelected={selectedSeats.some((s) => s.id === previewSeat.id)}
+            onConfirmSelect={(st) => {
+              const isCurrentlySelected = selectedSeats.some((s) => s.id === st.id);
+              const rowSeats = seatsMatrix.find((r) => r.length > 0 && r[0].row === st.row) || [];
+              const currentSelectedIds = new Set(selectedSeats.map((s) => s.id));
+
+              const orphanCheck = checkOrphanSeats(rowSeats, currentSelectedIds, st);
+              if (!orphanCheck.isValid) {
+                setOrphanWarning(orphanCheck.message);
+                setTimeout(() => setOrphanWarning(null), 4500);
+                return;
+              }
+
+              if (isCurrentlySelected) {
+                setSelectedSeats(selectedSeats.filter((s) => s.id !== st.id));
+              } else {
+                if (selectedSeats.length >= 8) {
+                  alert("Bạn chỉ có thể chọn tối đa 8 ghế trong một lần đặt!");
+                  return;
+                }
+                setSelectedSeats([...selectedSeats, st]);
+              }
+            }}
+            onClose={() => setPreviewSeat(null)}
+          />
         )}
       </div>
     </div>
