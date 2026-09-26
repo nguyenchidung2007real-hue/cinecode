@@ -11,10 +11,12 @@ import { MovieModal } from "@/components/MovieModal";
 import { BookingModal } from "@/components/BookingModal";
 import { MyTicketsModal } from "@/components/MyTicketsModal";
 import { AiChatWidget } from "@/components/AiChatWidget";
+import { QuickBookingBar } from "@/components/QuickBookingBar";
+import { CinemaShowtimeMatrix } from "@/components/CinemaShowtimeMatrix";
 import SemanticSearchModal from "@/components/SemanticSearchModal";
 import { Footer } from "@/components/Footer";
 
-import { Sparkles, Flame, Film, Clapperboard, Award, SearchX, Smile, Compass, Brain, Heart, Zap } from "lucide-react";
+import { Sparkles, Flame, Film, Clapperboard, Award, SearchX, Smile, Compass, Brain, Heart, Zap, Tag, Gift, Percent } from "lucide-react";
 
 const GENRE_FILTERS = ["Tất cả", "Hành động", "Khoa học viễn tưởng", "Kinh dị", "Hoạt hình", "Chính kịch"];
 
@@ -32,6 +34,9 @@ export default function HomePage() {
   const [selectedCity, setSelectedCity] = useState("Tất cả");
   const [selectedGenre, setSelectedGenre] = useState("Tất cả");
   const [selectedMood, setSelectedMood] = useState("all");
+
+  // Tab chuyển đổi phim chuẩn rạp (Đang chiếu / Sắp chiếu / Suất chiếu đặc biệt)
+  const [activeCommercialTab, setActiveCommercialTab] = useState<"now_playing" | "upcoming" | "trending">("now_playing");
 
   // State các Modal
   const [activeDetailMovie, setActiveDetailMovie] = useState<Movie | null>(null);
@@ -169,7 +174,7 @@ export default function HomePage() {
             )}
           </div>
         ) : (
-          /* GIAO DIỆN TRANG CHỦ TIÊU CHUẨN PHONG CÁCH NETFLIX / CGV */
+          /* GIAO DIỆN TRANG CHỦ TIÊU CHUẨN PHONG CÁCH CGV / GALAXY / FANDANGO */
           <>
             {/* Hero Banner với phim tâm điểm */}
             {heroMovie && (
@@ -180,8 +185,95 @@ export default function HomePage() {
               />
             )}
 
-            {/* Khám Phá Phim Theo Tâm Trạng (Mood-Based Discovery) */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+            {/* 1. Thanh Mua Vé Nhanh 1-Click (Đặc trưng số 1 của CGV & Galaxy Cinema) */}
+            <QuickBookingBar
+              movies={movies}
+              onQuickBook={(movie, cinemaName, date, time, format) => {
+                setActiveBookingMovie(movie);
+              }}
+            />
+
+            {/* 2. Thanh Chuyển Tab Phim Chuẩn Rạp Chiếu Thương Mại */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 sm:mt-16">
+              <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-4">
+                <div className="flex items-center gap-4 sm:gap-8">
+                  <button
+                    onClick={() => setActiveCommercialTab("now_playing")}
+                    className={`text-base sm:text-2xl font-black transition-all flex items-center gap-2 pb-3 -mb-4.5 border-b-2 ${
+                      activeCommercialTab === "now_playing"
+                        ? "text-red-500 border-red-500 shadow-[0_2px_15px_rgba(239,68,68,0.5)]"
+                        : "text-gray-400 border-transparent hover:text-white"
+                    }`}
+                  >
+                    <span>🎬 PHIM ĐANG CHIẾU</span>
+                    <span className="text-xs px-2.5 py-0.5 rounded-full bg-red-600/20 text-red-400 font-bold border border-red-500/30">
+                      {nowPlayingMovies.length}
+                    </span>
+                  </button>
+
+                  <button
+                    onClick={() => setActiveCommercialTab("upcoming")}
+                    className={`text-base sm:text-2xl font-black transition-all flex items-center gap-2 pb-3 -mb-4.5 border-b-2 ${
+                      activeCommercialTab === "upcoming"
+                        ? "text-red-500 border-red-500 shadow-[0_2px_15px_rgba(239,68,68,0.5)]"
+                        : "text-gray-400 border-transparent hover:text-white"
+                    }`}
+                  >
+                    <span>⏳ PHIM SẮP CHIẾU</span>
+                    <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-600/20 text-blue-400 font-bold border border-blue-500/30">
+                      {upcomingMovies.length}
+                    </span>
+                  </button>
+
+                  <button
+                    onClick={() => setActiveCommercialTab("trending")}
+                    className={`text-base sm:text-2xl font-black transition-all hidden sm:flex items-center gap-2 pb-3 -mb-4.5 border-b-2 ${
+                      activeCommercialTab === "trending"
+                        ? "text-red-500 border-red-500 shadow-[0_2px_15px_rgba(239,68,68,0.5)]"
+                        : "text-gray-400 border-transparent hover:text-white"
+                    }`}
+                  >
+                    <span>⭐ SUẤT CHIẾU ĐẶC BIỆT</span>
+                    <span className="text-xs px-2.5 py-0.5 rounded-full bg-yellow-600/20 text-yellow-400 font-bold border border-yellow-500/30">
+                      HOT
+                    </span>
+                  </button>
+                </div>
+
+                <div className="flex items-center gap-2 text-xs text-gray-400">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                  <span>Cập nhật lịch chiếu Beta Cinemas Xuân Thủy</span>
+                </div>
+              </div>
+
+              {/* Lưới phim theo Tab đang chọn */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6 mt-8">
+                {(activeCommercialTab === "now_playing"
+                  ? nowPlayingMovies
+                  : activeCommercialTab === "upcoming"
+                  ? upcomingMovies
+                  : trendingMovies
+                ).map((movie) => (
+                  <MovieCard
+                    key={movie.id}
+                    movie={movie}
+                    onOpenDetail={setActiveDetailMovie}
+                    onBookTicket={setActiveBookingMovie}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* 3. Bảng Lịch Chiếu Trực Tiếp Theo Rạp (Live Showtime Matrix chuẩn CGV / Galaxy) */}
+            <CinemaShowtimeMatrix
+              movies={movies}
+              onSelectShowtime={(movie, cinemaName, date, time, format) => {
+                setActiveBookingMovie(movie);
+              }}
+            />
+
+            {/* 4. Khám Phá Phim Theo Tâm Trạng (Mood-Based Discovery) */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <Zap className="w-4 h-4 text-accent-cyan" />
@@ -237,7 +329,7 @@ export default function HomePage() {
             </div>
 
             {/* Banner quảng bá Trợ lý AI Groq */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
               <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-accent-red/15 via-purple-950/20 to-accent-cyan/15 border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-accent-red to-accent-cyan flex items-center justify-center text-white shadow-lg flex-shrink-0">
@@ -265,32 +357,74 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Hàng 1: Phim Đang Chiếu Rạp */}
-            <MovieRow
-              title="🔥 Phim Đang Chiếu Rạp"
-              subtitle="Những bộ phim bom tấn đang gây sốt tại các phòng vé toàn quốc"
-              movies={nowPlayingMovies}
-              onOpenDetail={setActiveDetailMovie}
-              onBookTicket={setActiveBookingMovie}
-            />
+            {/* 5. Khuyến Mãi & Sự Kiện Rạp Chiếu (Promotions & Popcorn Combos) */}
+            <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <span className="text-xs text-red-500 font-bold uppercase tracking-wider block">Ưu Đãi Rạp Chiếu</span>
+                  <h3 className="text-2xl font-black text-white tracking-tight flex items-center gap-2 mt-0.5">
+                    <span>KHUYẾN MÃI & SỰ KIỆN HOT</span>
+                    <Tag className="w-5 h-5 text-yellow-400" />
+                  </h3>
+                </div>
+              </div>
 
-            {/* Hàng 2: Phim Được Đánh Giá Cao Nhất */}
-            <MovieRow
-              title="🌟 Phim Thịnh Hành & Đánh Giá Cao"
-              subtitle="Tuyệt tác điện ảnh nhận điểm số xuất sắc từ giới phê bình và khán giả"
-              movies={trendingMovies}
-              onOpenDetail={setActiveDetailMovie}
-              onBookTicket={setActiveBookingMovie}
-            />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-red-950/40 via-red-900/20 to-neutral-900 border border-red-500/30 p-5 flex flex-col justify-between group hover:border-red-500/60 transition-all hover:scale-[1.02]">
+                  <div className="space-y-2">
+                    <span className="px-2.5 py-1 rounded-full text-[10px] font-black bg-red-600 text-white uppercase tracking-wider inline-block">
+                      Thứ 3 Vui Vẻ
+                    </span>
+                    <h4 className="text-lg font-black text-white group-hover:text-red-400 transition-colors">
+                      Đồng Giá Vé 45.000đ Mọi Suất Chiếu
+                    </h4>
+                    <p className="text-xs text-gray-400 leading-relaxed">
+                      Áp dụng cho tất cả khách hàng vào thứ Ba hàng tuần tại mọi cụm rạp Beta Cinemas trên toàn quốc.
+                    </p>
+                  </div>
+                  <div className="pt-4 flex items-center justify-between text-xs text-gray-400 font-medium border-t border-white/10 mt-4">
+                    <span>Hạn dùng: Đến hết 2026</span>
+                    <span className="text-red-400 font-bold flex items-center gap-1">Chi tiết →</span>
+                  </div>
+                </div>
 
-            {/* Hàng 3: Phim Sắp Ra Mắt */}
-            <MovieRow
-              title="🎬 Sắp Khởi Chiếu"
-              subtitle="Đặt trước để không bỏ lỡ những tựa phim được mong chờ nhất năm"
-              movies={upcomingMovies}
-              onOpenDetail={setActiveDetailMovie}
-              onBookTicket={setActiveBookingMovie}
-            />
+                <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-cyan-950/40 via-blue-900/20 to-neutral-900 border border-cyan-500/30 p-5 flex flex-col justify-between group hover:border-cyan-500/60 transition-all hover:scale-[1.02]">
+                  <div className="space-y-2">
+                    <span className="px-2.5 py-1 rounded-full text-[10px] font-black bg-cyan-600 text-white uppercase tracking-wider inline-block">
+                      Beta Student Pass
+                    </span>
+                    <h4 className="text-lg font-black text-white group-hover:text-cyan-400 transition-colors">
+                      Ưu Đãi Học Sinh - Sinh Viên 45k - 50k
+                    </h4>
+                    <p className="text-xs text-gray-400 leading-relaxed">
+                      Chỉ cần xuất trình thẻ học sinh, sinh viên tại quầy vé để nhận giá vé ưu đãi và giảm 20% combo bắp nước.
+                    </p>
+                  </div>
+                  <div className="pt-4 flex items-center justify-between text-xs text-gray-400 font-medium border-t border-white/10 mt-4">
+                    <span>Áp dụng từ T2 đến T6</span>
+                    <span className="text-cyan-400 font-bold flex items-center gap-1">Chi tiết →</span>
+                  </div>
+                </div>
+
+                <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-amber-950/40 via-yellow-900/20 to-neutral-900 border border-yellow-500/30 p-5 flex flex-col justify-between group hover:border-yellow-500/60 transition-all hover:scale-[1.02]">
+                  <div className="space-y-2">
+                    <span className="px-2.5 py-1 rounded-full text-[10px] font-black bg-amber-500 text-black uppercase tracking-wider inline-block">
+                      Sweetbox Couple Night
+                    </span>
+                    <h4 className="text-lg font-black text-white group-hover:text-yellow-400 transition-colors">
+                      Tặng Kèm Bắp Rang Bơ Khi Đặt Ghế Đôi
+                    </h4>
+                    <p className="text-xs text-gray-400 leading-relaxed">
+                      Thưởng thức không gian ghế đôi nỉ nhung riêng tư và nhận ngay 1 bắp phô mai thơm giòn nóng hổi.
+                    </p>
+                  </div>
+                  <div className="pt-4 flex items-center justify-between text-xs text-gray-400 font-medium border-t border-white/10 mt-4">
+                    <span>Khung giờ sau 20:00</span>
+                    <span className="text-yellow-400 font-bold flex items-center gap-1">Chi tiết →</span>
+                  </div>
+                </div>
+              </div>
+            </section>
           </>
         )}
       </main>
