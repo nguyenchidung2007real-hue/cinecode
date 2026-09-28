@@ -163,7 +163,48 @@ async function runTests() {
   assert.equal(afterRelease["B2"], "free");
   console.log("   -> Nhả ghế: PASSED (B1, B2 chuyển lại thành free ngay sau khi nhả)\n");
 
-  console.log("=== TOÀN BỘ 7 BÀI TEST MODULE 3 ĐÃ VƯỢT QUA 100% ===");
+  // 8. Kiểm tra Idempotency khi giữ lại cùng holdId
+  console.log("8. Kiểm tra Client HoldId Idempotency:");
+  const clientHoldId = "c111222333444555666777888999000a";
+  const firstHold = await holdSeats({ showtimeId, seats: ["C1", "C2"], holdId: clientHoldId });
+  assert.equal(firstHold.hold.holdId, clientHoldId);
+
+  // Gọi lại cùng holdId -> thành công, giữ nguyên holdId & createdAt
+  const secondHold = await holdSeats({ showtimeId, seats: ["C1", "C2"], holdId: clientHoldId });
+  assert.equal(secondHold.hold.holdId, clientHoldId);
+  assert.equal(secondHold.hold.createdAt, firstHold.hold.createdAt);
+  console.log("   -> Client HoldId Idempotency: PASSED (Cùng holdId gọi lại được làm mới, không bị SEAT_TAKEN)\n");
+
+  // 9. Kiểm tra Trần 15 phút (Hard Cap MAX_HOLD_LIFETIME_MS)
+  console.log("9. Kiểm tra Trần 15 phút (Hard Cap MAX_HOLD_LIFETIME_MS):");
+  // Cố tình đẩy createdAt về quá khứ 15 phút
+  const pastCreatedAt = Date.now() - 15 * 60 * 1000 - 1000;
+  const store = getSeatStore();
+  const holdKeyToTamper = `cinemax:{${showtimeId}}:hold:${clientHoldId}`;
+  const existingHold = await store.getHold(showtimeId, clientHoldId);
+  if (existingHold) {
+    const tamperedHold = { ...existingHold, createdAt: pastCreatedAt };
+    // Ghi đè vào store (memory) để test boundary
+    (store as any).data?.set(holdKeyToTamper, { value: JSON.stringify(tamperedHold), expiresAt: Date.now() + 10000 });
+  }
+
+  let expiredThrown = false;
+  try {
+    await holdSeats({ showtimeId, seats: ["C1", "C2"], holdId: clientHoldId });
+  } catch (err) {
+    if (err instanceof BookingError && err.code === "HOLD_EXPIRED") {
+      expiredThrown = true;
+    }
+  }
+  assert.equal(expiredThrown, true, "Quá 15 phút phải ném mã HOLD_EXPIRED");
+
+  // Ghế phải được giải phóng ngay lập tức sau khi hết hạn
+  const afterExpiredStatuses = await store.statuses(showtimeId, ["C1", "C2"]);
+  assert.equal(afterExpiredStatuses["C1"], "free");
+  assert.equal(afterExpiredStatuses["C2"], "free");
+  console.log("   -> 15-minute Hard Cap: PASSED (Trả về HOLD_EXPIRED và giải phóng ghế lập tức)\n");
+
+  console.log("=== TOÀN BỘ 9 BÀI TEST MODULE 3 ĐÃ VƯỢT QUA 100% ===");
 }
 
 runTests().catch((err) => {

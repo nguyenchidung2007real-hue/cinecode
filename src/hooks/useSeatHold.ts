@@ -130,6 +130,12 @@ export function useSeatHold(showtimeId: string | null, options: UseSeatHoldOptio
     if (showtime && holdId) await seatApi.release(showtime, holdId).catch(() => undefined);
   }, []);
 
+function newHoldId(): string {
+  const b = new Uint8Array(16);
+  crypto.getRandomValues(b);
+  return Array.from(b, (x) => x.toString(16).padStart(2, "0")).join("");
+}
+
   const doHold = useCallback(
     async (seats: string[]) => {
       const showtime = showtimeRef.current;
@@ -139,9 +145,14 @@ export function useSeatHold(showtimeId: string | null, options: UseSeatHoldOptio
         return;
       }
 
+      // Client tự sinh holdId trước khi gửi request để retry / fireAndForgetRelease luôn trúng ID
+      holdIdRef.current ??= newHoldId();
+      const currentHoldId = holdIdRef.current;
+
       if (mountedRef.current) setState((s) => ({ ...s, status: "holding", conflictSeats: [], error: null }));
+      const t0 = performance.now();
       try {
-        const response = await seatApi.hold({ showtimeId: showtime, seats, holdId: holdIdRef.current ?? undefined });
+        const response = await seatApi.hold({ showtimeId: showtime, seats, holdId: currentHoldId });
 
         if (!mountedRef.current || showtimeRef.current !== showtime) {
           // Người dùng đã đổi suất/đóng modal trong lúc chờ: nhả ngay hold vừa tạo.
@@ -150,7 +161,7 @@ export function useSeatHold(showtimeId: string | null, options: UseSeatHoldOptio
         }
 
         holdIdRef.current = response.holdId;
-        deadlineRef.current = performance.now() + response.expiresInSeconds * 1000;
+        deadlineRef.current = t0 + response.expiresInSeconds * 1000;
         setState({
           status: "held",
           holdId: response.holdId,
@@ -163,6 +174,10 @@ export function useSeatHold(showtimeId: string | null, options: UseSeatHoldOptio
       } catch (caught) {
         if (!mountedRef.current) return;
         const error = caught instanceof ApiError ? caught : new ApiError(0, "UNKNOWN", "Không thể giữ ghế, vui lòng thử lại.");
+        if (error.code === "HOLD_EXPIRED") {
+          expire();
+          return;
+        }
         const conflictSeats =
           error.code === "SEAT_TAKEN" && Array.isArray(error.body.seats)
             ? error.body.seats.filter((s): s is string => typeof s === "string")
@@ -176,7 +191,7 @@ export function useSeatHold(showtimeId: string | null, options: UseSeatHoldOptio
         }));
       }
     },
-    [doRelease],
+    [doRelease, expire],
   );
 
   const drain = useCallback(async () => {

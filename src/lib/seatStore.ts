@@ -26,6 +26,7 @@ import { getKvConfig, kvCommand, type KvConfig } from "@/lib/kvRest";
 /* -------------------------------------------------------------------------- */
 
 export const HOLD_TTL_SECONDS = 300;
+export const MAX_HOLD_LIFETIME_MS = 15 * 60_000; // 15 phút trần tối đa cho 1 holdId
 export const MAX_SEATS_PER_HOLD = 8;
 export const HOLD_ID_PATTERN = /^[a-f0-9]{32}$/;
 export const SHOWTIME_ID_PATTERN = /^[A-Za-z0-9_-]{1,64}$/;
@@ -44,7 +45,8 @@ export interface HoldRecord {
 
 export type HoldOutcome =
   | { outcome: "held"; hold: HoldRecord }
-  | { outcome: "conflict"; seats: string[] };
+  | { outcome: "conflict"; seats: string[] }
+  | { outcome: "expired" };
 
 export type CommitOutcome =
   | { outcome: "committed" }
@@ -89,12 +91,15 @@ const heldMarker = (holdId: string): string => `H:${holdId}`;
 const soldMarker = (bookingId: string): string => `S:${bookingId}`;
 
 function buildRecord(input: HoldInput, previous: HoldRecord | null, now: number): HoldRecord {
+  const createdAt = previous?.createdAt ?? now;
+  const maxExpiresAt = createdAt + MAX_HOLD_LIFETIME_MS;
+  const standardExpiresAt = now + HOLD_TTL_SECONDS * 1000;
   return {
     holdId: input.holdId,
     showtimeId: input.showtimeId,
     seats: [...input.seats],
-    createdAt: previous?.createdAt ?? now,
-    expiresAt: now + HOLD_TTL_SECONDS * 1000,
+    createdAt,
+    expiresAt: Math.min(standardExpiresAt, maxExpiresAt),
   };
 }
 
@@ -190,8 +195,8 @@ class RedisSeatStore implements SeatStoreAdapter {
     this.config = config;
   }
 
-  private async evalScript(script: string, keys: string[], args: string[]): Promise<string> {
-    const result = await kvCommand(this.config, ["EVAL", script, String(keys.length), ...keys, ...args]);
+  private async evalScript(script: string, keys: string[], args: string[], options?: { idempotent?: boolean }): Promise<string> {
+    const result = await kvCommand(this.config, ["EVAL", script, String(keys.length), ...keys, ...args], options);
     if (typeof result !== "string") throw new Error("Script Lua trả về kết quả không hợp lệ");
     return result;
   }
@@ -199,14 +204,28 @@ class RedisSeatStore implements SeatStoreAdapter {
   async hold(input: HoldInput): Promise<HoldOutcome> {
     const now = Date.now();
     const previous = await this.getHold(input.showtimeId, input.holdId);
+    if (previous) {
+      const remainingTotal = previous.createdAt + MAX_HOLD_LIFETIME_MS - now;
+      if (remainingTotal < 1000) {
+        await this.release(input.showtimeId, input.holdId);
+        return { outcome: "expired" };
+      }
+    }
+
     const record = buildRecord(input, previous, now);
+    const ttlMs = record.expiresAt - now;
+    if (ttlMs < 1000) {
+      await this.release(input.showtimeId, input.holdId);
+      return { outcome: "expired" };
+    }
 
     const keys = [holdKey(input.showtimeId, input.holdId), ...input.seats.map((s) => seatKey(input.showtimeId, s))];
-    const result = await this.evalScript(HOLD_LUA, keys, [
-      heldMarker(input.holdId),
-      String(HOLD_TTL_SECONDS * 1000),
-      JSON.stringify(record),
-    ]);
+    const result = await this.evalScript(
+      HOLD_LUA,
+      keys,
+      [heldMarker(input.holdId), String(ttlMs), JSON.stringify(record)],
+      { idempotent: true },
+    );
 
     if (result.startsWith("CONFLICT:")) {
       return { outcome: "conflict", seats: seatsFromIndexList(result.slice("CONFLICT:".length), input.seats) };
@@ -220,6 +239,7 @@ class RedisSeatStore implements SeatStoreAdapter {
           RELEASE_LUA,
           dropped.map((s) => seatKey(input.showtimeId, s)),
           [heldMarker(input.holdId)],
+          { idempotent: true },
         );
       }
     }
@@ -322,9 +342,17 @@ class MemorySeatStore implements SeatStoreAdapter {
 
   async hold(input: HoldInput): Promise<HoldOutcome> {
     const now = Date.now();
-    const marker = heldMarker(input.holdId);
-    const previous = parseHold(this.read(holdKey(input.showtimeId, input.holdId)), now);
+    const hKey = holdKey(input.showtimeId, input.holdId);
+    const previous = parseHold(this.read(hKey), now);
+    if (previous) {
+      const remainingTotal = previous.createdAt + MAX_HOLD_LIFETIME_MS - now;
+      if (remainingTotal < 1000) {
+        await this.release(input.showtimeId, input.holdId);
+        return { outcome: "expired" };
+      }
+    }
 
+    const marker = heldMarker(input.holdId);
     const conflicts = input.seats.filter((seat) => {
       const value = this.read(seatKey(input.showtimeId, seat));
       return value !== null && value !== marker;
@@ -332,9 +360,14 @@ class MemorySeatStore implements SeatStoreAdapter {
     if (conflicts.length > 0) return { outcome: "conflict", seats: conflicts };
 
     const record = buildRecord(input, previous, now);
-    const ttlMs = HOLD_TTL_SECONDS * 1000;
+    const ttlMs = record.expiresAt - now;
+    if (ttlMs < 1000) {
+      await this.release(input.showtimeId, input.holdId);
+      return { outcome: "expired" };
+    }
+
     for (const seat of input.seats) this.write(seatKey(input.showtimeId, seat), marker, ttlMs);
-    this.write(holdKey(input.showtimeId, input.holdId), JSON.stringify(record), ttlMs);
+    this.write(hKey, JSON.stringify(record), ttlMs);
 
     if (previous) {
       this.releaseSeats(

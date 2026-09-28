@@ -42,7 +42,7 @@ async function readJson(request: NextRequest): Promise<Record<string, unknown>> 
 /** GET /api/seats?showtimeId=... — trạng thái từng ghế. Header X-Hold-Id (tuỳ chọn) để nhận biết ghế "của mình". */
 export async function GET(request: NextRequest) {
   try {
-    if (await isRateLimited("seats-read", getClientIp(request), 120, 60)) {
+    if (await isRateLimited("seats-read", getClientIp(request), 600, 60)) {
       throw new BookingError(429, "RATE_LIMITED", "Quá nhiều yêu cầu, vui lòng thử lại sau.");
     }
     const showtime = await loadSellableShowtime(request.nextUrl.searchParams.get("showtimeId"));

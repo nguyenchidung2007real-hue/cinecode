@@ -5,6 +5,7 @@ import {
   type ShowtimeLike,
 } from "@/lib/showtimeCollision";
 import { MOCK_SHOWTIMES, MOCK_MOVIES } from "@/lib/mockData";
+import { getKvConfig, kvCommand, type KvConfig } from "@/lib/kvRest";
 
 /**
  * CineMax AI - Showtime Store Adapter
@@ -165,36 +166,18 @@ const RELEASE_LOCK_LUA =
 class UpstashKV implements KV {
   readonly name = "redis" as const;
   readonly persistent = true;
-  private readonly url: string;
-  private readonly token: string;
+  private readonly config: KvConfig;
 
-  constructor(url: string, token: string) {
-    this.url = url;
-    this.token = token;
+  constructor(config: KvConfig) {
+    this.config = config;
   }
 
-  private async run(args: string[]): Promise<unknown> {
-    const response = await fetch(this.url, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${this.token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(args),
-      cache: "no-store",
-    });
-    const payload = (await response.json().catch(() => null)) as
-      | { result?: unknown; error?: string }
-      | null;
-
-    if (!response.ok || payload === null || payload.error) {
-      throw new Error(`Redis REST lỗi (HTTP ${response.status}): ${payload?.error ?? "không có phản hồi"}`);
-    }
-    return payload.result;
+  private async run(args: string[], options?: { idempotent?: boolean }): Promise<unknown> {
+    return kvCommand(this.config, args, options);
   }
 
   async get(key: string): Promise<string | null> {
-    const result = await this.run(["GET", key]);
+    const result = await this.run(["GET", key], { idempotent: true });
     return typeof result === "string" ? result : null;
   }
 
@@ -203,17 +186,17 @@ class UpstashKV implements KV {
   }
 
   async sadd(key: string, member: string): Promise<void> {
-    await this.run(["SADD", key, member]);
+    await this.run(["SADD", key, member], { idempotent: true });
   }
 
   async smembers(key: string): Promise<string[]> {
-    const result = await this.run(["SMEMBERS", key]);
+    const result = await this.run(["SMEMBERS", key], { idempotent: true });
     return Array.isArray(result) ? result.filter((item): item is string => typeof item === "string") : [];
   }
 
   async mget(keys: string[]): Promise<Array<string | null>> {
     if (keys.length === 0) return [];
-    const result = await this.run(["MGET", ...keys]);
+    const result = await this.run(["MGET", ...keys], { idempotent: true });
     if (!Array.isArray(result)) return keys.map(() => null);
     return keys.map((_, index) => (typeof result[index] === "string" ? (result[index] as string) : null));
   }
@@ -413,9 +396,8 @@ const globalRef = globalThis as unknown as {
 };
 
 function resolveKV(): KV {
-  const url = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
-  if (url && token) return new UpstashKV(url.replace(/\/+$/, ""), token);
+  const config = getKvConfig();
+  if (config) return new UpstashKV(config);
 
   if (!globalRef.__cinemaxMemoryKV) globalRef.__cinemaxMemoryKV = new MemoryKV();
   return globalRef.__cinemaxMemoryKV;

@@ -157,6 +157,9 @@ export async function holdSeats(input: {
   const holdId = input.holdId === undefined ? newHoldId() : parseHoldId(input.holdId);
 
   const outcome = await getSeatStore().hold({ showtimeId: showtime.id, seats, holdId });
+  if (outcome.outcome === "expired") {
+    throw new BookingError(410, "HOLD_EXPIRED", "Thời gian giữ ghế tối đa (15 phút) đã hết. Vui lòng chọn lại ghế.");
+  }
   if (outcome.outcome === "conflict") {
     throw new BookingError(409, "SEAT_TAKEN", "Một số ghế vừa được người khác chọn. Vui lòng chọn ghế khác.", {
       seats: outcome.seats,
