@@ -5,8 +5,8 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /**
- * Route đặc quyền dành cho nhân viên soát vé (/scanner). Dùng chung ADMIN_SYNC_SECRET
- * với /api/admin/sync-beta để không phải thêm biến môi trường mới cho bản demo này.
+ * Route đặc quyền dành cho nhân viên soát vé (/scanner). Xác thực qua STAFF_SCAN_SECRET
+ * trong header Authorization: Bearer <STAFF_SCAN_SECRET>.
  * Khi có hệ thống tài khoản nhân viên thật, nên đổi sang token riêng theo từng người.
  */
 function isAuthorized(request: NextRequest): boolean {

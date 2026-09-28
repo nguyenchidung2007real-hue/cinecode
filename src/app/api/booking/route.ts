@@ -67,9 +67,10 @@ export async function POST(request: NextRequest) {
         .slice(0, 20)
     : null;
 
+  const rawTotal = Number(record.totalAmount);
   const totalAmount =
-    typeof record.totalAmount === "number" && Number.isFinite(record.totalAmount) && record.totalAmount >= 0
-      ? record.totalAmount
+    Number.isFinite(rawTotal) && rawTotal >= 0 && rawTotal <= 100_000_000
+      ? rawTotal
       : null;
 
   if (
@@ -88,19 +89,47 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Thông tin đặt vé không hợp lệ hoặc thiếu trường bắt buộc." }, { status: 400 });
   }
 
+  // Danh mục F&B hợp lệ (chống inject chuỗi độc hại hoặc chuỗi quá dài vào Redis)
+  const VALID_POPCORN_FLAVORS = new Set<string>(["sweet", "caramel", "cheese", "salted"]);
+  const VALID_DRINK_TYPES = new Set<string>(["pepsi", "7up", "mirinda", "peach_tea"]);
+  const VALID_DRINK_SIZES = new Set<string>(["regular", "large"]);
+
   // Validate concessions nếu có
   let sanitizedConcessions: SelectedComboItem[] | undefined = undefined;
   if (Array.isArray(record.concessions) && record.concessions.length > 0) {
-    sanitizedConcessions = record.concessions.slice(0, 10).map((c: any) => ({
-      id: String(c.id || "").slice(0, 50),
-      name: String(c.name || "").slice(0, 100),
-      quantity: Math.max(1, Math.min(20, Number(c.quantity) || 1)),
-      basePrice: Number(c.basePrice) || 0,
-      popcornFlavors: Array.isArray(c.popcornFlavors) ? c.popcornFlavors.slice(0, 4) : [],
-      drinks: Array.isArray(c.drinks) ? c.drinks.slice(0, 4) : [],
-      extraPrice: Number(c.extraPrice) || 0,
-      totalPrice: Number(c.totalPrice) || 0,
-    }));
+    sanitizedConcessions = record.concessions.slice(0, 10).map((c: any) => {
+      const quantity = Math.max(1, Math.min(20, Math.floor(Number(c.quantity) || 1)));
+      const basePrice = Math.max(0, Math.min(10_000_000, Math.floor(Number(c.basePrice) || 0)));
+      const extraPrice = Math.max(0, Math.min(5_000_000, Math.floor(Number(c.extraPrice) || 0)));
+      const totalPrice = Math.max(0, Math.min(20_000_000, Math.floor(Number(c.totalPrice) || 0)));
+
+      const popcornFlavors = Array.isArray(c.popcornFlavors)
+        ? (c.popcornFlavors
+            .filter((f: any) => typeof f === "string" && VALID_POPCORN_FLAVORS.has(f))
+            .slice(0, 4) as any)
+        : [];
+
+      const drinks = Array.isArray(c.drinks)
+        ? (c.drinks
+            .filter((d: any) => typeof d === "object" && d !== null)
+            .slice(0, 4)
+            .map((d: any) => ({
+              type: VALID_DRINK_TYPES.has(d.type) ? d.type : "pepsi",
+              size: VALID_DRINK_SIZES.has(d.size) ? d.size : "regular",
+            })) as any)
+        : [];
+
+      return {
+        id: String(c.id || "").slice(0, 50),
+        name: String(c.name || "").slice(0, 100),
+        quantity,
+        basePrice,
+        popcornFlavors,
+        drinks,
+        extraPrice,
+        totalPrice,
+      };
+    });
   }
 
   try {
