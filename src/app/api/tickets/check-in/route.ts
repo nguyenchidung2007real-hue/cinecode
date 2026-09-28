@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getTicketStore, verifyTicketToken } from "@/lib/ticketStore";
+import { getTicketStore, verifyTicketToken, type TicketRecord } from "@/lib/ticketStore";
+import { safeEqual } from "@/lib/adminAuth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -7,13 +8,49 @@ export const dynamic = "force-dynamic";
 /**
  * Route đặc quyền dành cho nhân viên soát vé (/scanner). Xác thực qua STAFF_SCAN_SECRET
  * trong header Authorization: Bearer <STAFF_SCAN_SECRET>.
- * Khi có hệ thống tài khoản nhân viên thật, nên đổi sang token riêng theo từng người.
+ * Sử dụng safeEqual (timingSafeEqual) để chống tấn công timing attack.
  */
 function isAuthorized(request: NextRequest): boolean {
   if (process.env.NODE_ENV !== "production") return true;
   const secret = process.env.STAFF_SCAN_SECRET;
-  const header = request.headers.get("authorization");
-  return Boolean(secret) && header === `Bearer ${secret}`;
+  if (!secret) return false;
+
+  const header = request.headers.get("authorization") ?? "";
+  const prefix = "Bearer ";
+  if (!header.startsWith(prefix)) return false;
+
+  return safeEqual(header.slice(prefix.length), secret);
+}
+
+function maskPhone(phone: string): string {
+  const clean = phone.trim();
+  if (clean.length <= 6) return clean;
+  return clean.slice(0, 3) + "****" + clean.slice(-3);
+}
+
+/** Ngày hôm nay theo giờ Việt Nam (UTC+7) dạng YYYY-MM-DD */
+function todayInVietnam(): string {
+  return new Date(Date.now() + 7 * 3_600_000).toISOString().slice(0, 10);
+}
+
+function sanitizeTicketForStaff(ticket: TicketRecord) {
+  return {
+    bookingId: ticket.bookingId,
+    movieTitle: ticket.movieTitle,
+    cinemaName: ticket.cinemaName,
+    roomName: ticket.roomName,
+    format: ticket.format,
+    showDate: ticket.showDate,
+    showTime: ticket.showTime,
+    seats: ticket.seats,
+    status: ticket.status,
+    usedAt: ticket.usedAt,
+    scannedBy: ticket.scannedBy,
+    customerName: ticket.customerName,
+    customerPhone: maskPhone(ticket.customerPhone),
+    concessions: ticket.concessions,
+    totalAmount: ticket.totalAmount,
+  };
 }
 
 interface CheckInBody {
@@ -50,7 +87,8 @@ export async function POST(request: NextRequest): Promise<Response> {
   }
 
   try {
-    const result = await getTicketStore().markUsed(bookingId, scannedBy);
+    const store = getTicketStore();
+    const result = await store.markUsed(bookingId, scannedBy);
 
     if (result.outcome === "not_found") {
       return NextResponse.json(
@@ -58,10 +96,28 @@ export async function POST(request: NextRequest): Promise<Response> {
         { status: 404 },
       );
     }
+
+    const sanitizedTicket = sanitizeTicketForStaff(result.ticket);
+
+    // Cảnh báo nếu vé sai ngày chiếu (khác hôm nay theo giờ Việt Nam)
+    const today = todayInVietnam();
+    const dateWarning =
+      result.ticket.showDate !== today
+        ? `Vé này có ngày chiếu ${result.ticket.showDate} (hôm nay là ${today})`
+        : undefined;
+
     if (result.outcome === "already_used") {
-      return NextResponse.json({ outcome: "already_used", ticket: result.ticket }, { status: 409 });
+      return NextResponse.json(
+        { outcome: "already_used", ticket: sanitizedTicket, warning: dateWarning },
+        { status: 409 },
+      );
     }
-    return NextResponse.json({ outcome: "checked_in", ticket: result.ticket });
+
+    return NextResponse.json({
+      outcome: "checked_in",
+      ticket: sanitizedTicket,
+      warning: dateWarning,
+    });
   } catch (error) {
     console.error("[POST /api/tickets/check-in] Lỗi soát vé:", error);
     return NextResponse.json({ error: "Không soát vé được lúc này." }, { status: 500 });

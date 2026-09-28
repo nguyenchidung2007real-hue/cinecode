@@ -97,9 +97,51 @@ export default function AdminDashboardPage() {
     return checkShowtimeCollision(candidateShowtime, existingShowtimes);
   }, [candidateShowtime, existingShowtimes]);
 
-  const handleAddShowtime = (e: React.FormEvent) => {
+  // Tự động tải danh sách suất chiếu từ kho server (Showtime Store)
+  useEffect(() => {
+    fetch("/api/showtimes?cinemaId=beta-cinemas-xuan-thuy")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.showtimes && Array.isArray(data.showtimes) && data.showtimes.length > 0) {
+          setShowtimesList(data.showtimes);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleAddShowtime = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!collisionResult.ok) return;
+
+    try {
+      const res = await fetch("/api/admin/showtimes", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          movieId: newMovieId,
+          roomName: newRoomName,
+          date: newDate,
+          time: newTime,
+          format: newFormat,
+          cinemaId: "beta-cinemas-xuan-thuy",
+        }),
+      });
+
+      const data = await res.json();
+      if (res.status === 201 && data.showtime) {
+        setShowtimesList((prev) => [data.showtime, ...prev]);
+        setScheduleSuccessMsg(`Đã tạo suất chiếu ${newTime} (${newFormat}) tại ${newRoomName} thành công và lưu vào kho server!`);
+        setTimeout(() => setScheduleSuccessMsg(null), 5000);
+        return;
+      } else if (res.status === 409) {
+        alert(data.error || "Phát hiện xung đột phòng chiếu từ server!");
+        return;
+      }
+    } catch {
+      // Tiếp tục lưu vào bộ nhớ cục bộ nếu không kết nối được
+    }
 
     const newId = `st-beta-${Date.now()}`;
     const newSt: ShowTime = {

@@ -36,6 +36,13 @@ class SoundFeedback {
     }
   }
 
+  initAndResume() {
+    this.initCtx();
+    if (this.ctx && this.ctx.state === "suspended") {
+      this.ctx.resume().catch(() => {});
+    }
+  }
+
   playSuccess() {
     if (!this.enabled) return;
     try {
@@ -116,6 +123,8 @@ export default function StaffScannerPage() {
     status: "checked_in" | "already_used" | "invalid" | "not_found" | "error";
     message: string;
     ticket?: TicketRecord;
+    scannedAt?: string;
+    warning?: string;
   } | null>(null);
 
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
@@ -131,9 +140,12 @@ export default function StaffScannerPage() {
   const scannerRef = useRef<unknown>(null);
   const html5QrCodeId = "reader";
 
-  // Khởi tạo passcode từ localStorage
+  // Khởi tạo passcode từ sessionStorage (an toàn hơn cho phiên làm việc nhân viên)
   useEffect(() => {
-    const saved = localStorage.getItem("cinemax_staff_secret") || "";
+    const saved =
+      (typeof sessionStorage !== "undefined" && sessionStorage.getItem("cinemax_staff_secret")) ||
+      (typeof localStorage !== "undefined" && localStorage.getItem("cinemax_staff_secret")) ||
+      "";
     setStaffPasscode(saved);
   }, []);
 
@@ -147,7 +159,10 @@ export default function StaffScannerPage() {
   const handleSavePasscode = (code: string) => {
     setStaffPasscode(code);
     passcodeRef.current = code;
-    localStorage.setItem("cinemax_staff_secret", code);
+    try {
+      sessionStorage.setItem("cinemax_staff_secret", code);
+      localStorage.setItem("cinemax_staff_secret", code);
+    } catch {}
     setShowConfigModal(false);
   };
 
@@ -178,7 +193,8 @@ export default function StaffScannerPage() {
         }),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
+      const nowStr = new Date().toLocaleTimeString("vi-VN");
 
       if (res.status === 200 && data.outcome === "checked_in") {
         soundManager.playSuccess();
@@ -187,6 +203,8 @@ export default function StaffScannerPage() {
           status: "checked_in",
           message: "VÉ HỢP LỆ • CHECK-IN THÀNH CÔNG",
           ticket,
+          scannedAt: nowStr,
+          warning: data.warning,
         });
 
         setScanHistory((prev) => [
@@ -194,9 +212,9 @@ export default function StaffScannerPage() {
             id: Date.now().toString(),
             token,
             outcome: "checked_in",
-            movieTitle: ticket.movieTitle,
-            seats: ticket.seats,
-            timestamp: new Date().toLocaleTimeString("vi-VN"),
+            movieTitle: ticket?.movieTitle,
+            seats: ticket?.seats,
+            timestamp: nowStr,
           },
           ...prev.slice(0, 19),
         ]);
@@ -208,6 +226,7 @@ export default function StaffScannerPage() {
           status: "already_used",
           message: `CẢNH BÁO: VÉ ĐÃ DÙNG! (Đã check-in lúc ${usedTime})`,
           ticket,
+          scannedAt: nowStr,
         });
 
         setScanHistory((prev) => [
@@ -217,7 +236,7 @@ export default function StaffScannerPage() {
             outcome: "already_used",
             movieTitle: ticket?.movieTitle,
             seats: ticket?.seats,
-            timestamp: new Date().toLocaleTimeString("vi-VN"),
+            timestamp: nowStr,
           },
           ...prev.slice(0, 19),
         ]);
@@ -226,12 +245,14 @@ export default function StaffScannerPage() {
         setScanResult({
           status: "not_found",
           message: "KHÔNG TÌM THẤY VÉ TRONG HỆ THỐNG",
+          scannedAt: nowStr,
         });
       } else {
         soundManager.playWarning();
         setScanResult({
           status: "invalid",
           message: data.error || "MÃ VÉ KHÔNG HỢP LỆ / SAI CHỮ KÝ HMAC",
+          scannedAt: nowStr,
         });
       }
     } catch (err) {
@@ -240,14 +261,17 @@ export default function StaffScannerPage() {
       setScanResult({
         status: "error",
         message: "LỖI KẾT NỐI MÁY CHỦ KHI SOÁT VÉ",
+        scannedAt: new Date().toLocaleTimeString("vi-VN"),
       });
     } finally {
+      processingRef.current = false;
       setIsProcessing(false);
     }
   };
 
   // Khởi động Camera Scanner bằng thư viện html5-qrcode
   const startCamera = async () => {
+    soundManager.initAndResume();
     try {
       const { Html5Qrcode } = await import("html5-qrcode");
       const html5QrCode = new Html5Qrcode(html5QrCodeId);
@@ -425,13 +449,15 @@ export default function StaffScannerPage() {
               <span className="text-xs font-bold uppercase tracking-wider text-neutral-400">
                 Nhập Mã Token Thủ Công (Dự Phòng / Test)
               </span>
-              <button
-                onClick={handleTestWithLatestLocalTicket}
-                className="text-[11px] text-accent-cyan hover:underline flex items-center gap-1 font-semibold"
-              >
-                <Sparkles className="w-3 h-3" />
-                <span>Thử với vé vừa đặt trên máy</span>
-              </button>
+              {process.env.NODE_ENV !== "production" && (
+                <button
+                  onClick={handleTestWithLatestLocalTicket}
+                  className="text-[11px] text-accent-cyan hover:underline flex items-center gap-1 font-semibold"
+                >
+                  <Sparkles className="w-3 h-3" />
+                  <span>Thử với vé vừa đặt trên máy (Dev)</span>
+                </button>
+              )}
             </div>
 
             <div className="flex gap-2">
@@ -491,8 +517,13 @@ export default function StaffScannerPage() {
                       {scanResult.message}
                     </h3>
                     <p className="text-[10px] opacity-80 mt-0.5">
-                      Thời điểm quét: {new Date().toLocaleTimeString("vi-VN")}
+                      Thời điểm quét: {scanResult.scannedAt || new Date().toLocaleTimeString("vi-VN")}
                     </p>
+                    {scanResult.warning && (
+                      <p className="text-[11px] font-bold text-amber-300 bg-amber-950/60 border border-amber-500/40 rounded px-2 py-0.5 mt-1.5 inline-block">
+                        ⚠️ {scanResult.warning}
+                      </p>
+                    )}
                   </div>
                 </div>
 
