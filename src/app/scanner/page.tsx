@@ -22,7 +22,7 @@ import {
   QrCode,
   Sparkles,
 } from "lucide-react";
-import { TicketRecord } from "@/lib/ticketStore";
+import type { TicketRecord } from "@/lib/ticketStore";
 
 // Web Audio API Synth phát âm thanh phản hồi không cần file mp3 ngoài
 class SoundFeedback {
@@ -119,6 +119,14 @@ export default function StaffScannerPage() {
   } | null>(null);
 
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
+  const processingRef = useRef(false);
+  const lastScanRef = useRef<{ token: string; at: number } | null>(null);
+  const passcodeRef = useRef("");
+  const gateRef = useRef(selectedGate);
+
+  useEffect(() => { passcodeRef.current = staffPasscode; }, [staffPasscode]);
+  useEffect(() => { gateRef.current = selectedGate; }, [selectedGate]);
+
   const [scanHistory, setScanHistory] = useState<ScanHistoryItem[]>([]);
   const scannerRef = useRef<unknown>(null);
   const html5QrCodeId = "reader";
@@ -129,31 +137,44 @@ export default function StaffScannerPage() {
     setStaffPasscode(saved);
   }, []);
 
+  // Cleanup dừng camera khi rời trang
+  useEffect(() => {
+    return () => {
+      stopCamera();
+    };
+  }, []);
+
   const handleSavePasscode = (code: string) => {
     setStaffPasscode(code);
+    passcodeRef.current = code;
     localStorage.setItem("cinemax_staff_secret", code);
     setShowConfigModal(false);
   };
 
   // Xử lý gửi token vé lên API POST /api/tickets/check-in
   const handleCheckInToken = async (token: string) => {
-    if (!token.trim() || isProcessing) return;
+    const clean = token.trim();
+    if (!clean || processingRef.current) return;
+    const last = lastScanRef.current;
+    if (last && last.token === clean && Date.now() - last.at < 4000) return; // cùng mã: bỏ qua 4 giây
+    processingRef.current = true;
+    lastScanRef.current = { token: clean, at: Date.now() };
     setIsProcessing(true);
 
     try {
       const headers: Record<string, string> = {
         "Content-Type": "application/json",
       };
-      if (staffPasscode.trim()) {
-        headers["Authorization"] = `Bearer ${staffPasscode.trim()}`;
+      if (passcodeRef.current.trim()) {
+        headers["Authorization"] = `Bearer ${passcodeRef.current.trim()}`;
       }
 
       const res = await fetch("/api/tickets/check-in", {
         method: "POST",
         headers,
         body: JSON.stringify({
-          token: token.trim(),
-          scannedBy: selectedGate,
+          token: clean,
+          scannedBy: gateRef.current,
         }),
       });
 
@@ -506,6 +527,22 @@ export default function StaffScannerPage() {
                         <span className="text-neutral-500 block text-[10px]">Khách hàng:</span>
                         <span>{scanResult.ticket.customerName} - {scanResult.ticket.customerPhone}</span>
                       </div>
+
+                      {/* Bắp & Nước giao tại quầy */}
+                      {scanResult.ticket.concessions && scanResult.ticket.concessions.length > 0 && (
+                        <div className="col-span-2 pt-2 border-t border-white/10 space-y-1">
+                          <span className="text-[10px] font-bold text-amber-400 block uppercase tracking-wider">
+                            🍿 Bắp Nước Nhận Tại Quầy:
+                          </span>
+                          {scanResult.ticket.concessions.map((c, i) => (
+                            <div key={i} className="text-[10px] text-neutral-200 bg-neutral-950/80 p-1.5 rounded-lg flex justify-between items-center border border-neutral-800">
+                              <span>
+                                <strong className="text-white">{c.quantity}x {c.name}</strong> ({c.popcornFlavors.map(f => f === "cheese" ? "Phô mai" : f === "caramel" ? "Caramel" : f === "sweet" ? "Ngọt" : "Mặn").join("+")}, {c.drinks.map(d => `${d.type === "pepsi" ? "Pepsi" : d.type === "7up" ? "7Up" : d.type === "mirinda" ? "Mirinda" : "Trà đào"}${d.size === "large" ? " 32oz" : ""}`).join(", ")})
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
@@ -581,7 +618,7 @@ export default function StaffScannerPage() {
               <h3 className="font-bold text-base">Phân Quyền Nhân Viên Soát Vé</h3>
             </div>
             <p className="text-xs text-neutral-400">
-              Nhập mã bí mật <strong>ADMIN_SYNC_SECRET</strong> được quản lý rạp cấp. Mã này được lưu an toàn trong máy nhân viên để gửi kèm yêu cầu soát vé.
+              Nhập mã bí mật <strong>STAFF_SCAN_SECRET</strong> được quản lý rạp cấp. Mã này được lưu an toàn trong máy nhân viên để gửi kèm yêu cầu soát vé.
             </p>
 
             <input

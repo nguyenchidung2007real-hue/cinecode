@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
  */
 function isAuthorized(request: NextRequest): boolean {
   if (process.env.NODE_ENV !== "production") return true;
-  const secret = process.env.ADMIN_SYNC_SECRET;
+  const secret = process.env.STAFF_SCAN_SECRET;
   const header = request.headers.get("authorization");
   return Boolean(secret) && header === `Bearer ${secret}`;
 }

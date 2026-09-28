@@ -275,26 +275,54 @@ export const MOCK_SHOWTIMES: ShowTime[] = [
   },
 ];
 
+export const POPCORN_FLAVOR_OPTIONS = [
+  { id: "sweet", name: "Bắp Ngọt Truyền Thống", extra: 0, tag: "Miễn phí" },
+  { id: "salted", name: "Bắp Mặn Bơ Tỏi", extra: 0, tag: "Miễn phí" },
+  { id: "cheese", name: "Bắp Lắc Phô Mai", extra: 10000, tag: "+10.000đ" },
+  { id: "caramel", name: "Bắp Caramel Cháy", extra: 10000, tag: "+10.000đ" },
+] as const;
+
+export const DRINK_TYPE_OPTIONS = [
+  { id: "pepsi", name: "Pepsi Black", tag: "Gas mát lạnh" },
+  { id: "7up", name: "7Up Chanh Tươi", tag: "Sảng khoái" },
+  { id: "mirinda", name: "Mirinda Cam", tag: "Ngọt ngào" },
+  { id: "peach_tea", name: "Trà Đào Cam Sả", tag: "Thanh mát", extra: 5000 },
+] as const;
+
+export const DRINK_SIZE_OPTIONS = [
+  { id: "regular", name: "Ly Tiêu Chuẩn (22oz)", extra: 0 },
+  { id: "large", name: "Ly Khổng Lồ (32oz)", extra: 12000, tag: "+12.000đ" },
+] as const;
+
 export const CONCESSION_COMBOS = [
   {
     id: "combo-beta-solo",
-    name: "Combo Beta Solo (Bắp + Nước)",
-    description: "1 Bắp rang bơ thơm lừng 60oz (vị Phô mai/Caramel) + 1 Nước ngọt lớn 22oz (Coke/Sprite)",
+    name: "Combo Beta Solo (1 Bắp + 1 Nước)",
+    description: "1 Bắp rang bơ 60oz (tùy chọn vị) + 1 Nước ngọt lớn 22oz (tự chọn vị/cỡ)",
     price: 59000,
     icon: "🍿",
+    popcornSlots: 1,
+    drinkSlots: 1,
+    badge: "Bán chạy nhất",
   },
   {
     id: "combo-beta-couple",
-    name: "Combo Beta Couple Đôi Bạn",
-    description: "1 Bắp rang bơ khổng lồ 2 ngăn 85oz (tự chọn vị) + 2 Nước ngọt lớn 22oz",
+    name: "Combo Beta Couple Đôi Bạn (Bắp 2 Ngăn + 2 Nước)",
+    description: "1 Bắp khổng lồ 2 ngăn 85oz (mix 2 vị độc đáo) + 2 Nước ngọt lớn 22oz",
     price: 89000,
     icon: "🥤",
+    popcornSlots: 2,
+    drinkSlots: 2,
+    badge: "Tiết kiệm 30%",
   },
   {
     id: "combo-beta-party",
-    name: "Combo Beta Party Sinh Viên",
-    description: "2 Bắp phô mai đặc biệt + 3 Nước ngọt lớn + 1 Xúc xích nướng phô mai cay",
+    name: "Combo Beta Party Sinh Viên (2 Bắp + 3 Nước)",
+    description: "2 Bắp rang bơ thơm lừng + 3 Nước ngọt lớn + 1 Xúc xích nướng phô mai cay",
     price: 129000,
     icon: "🌭",
-  }
+    popcornSlots: 2,
+    drinkSlots: 3,
+    badge: "Nhóm 3-4 bạn",
+  },
 ];

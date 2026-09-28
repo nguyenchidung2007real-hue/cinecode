@@ -47,6 +47,24 @@ export interface ShowTime {
   time: string; // HH:mm
 }
 
+export type PopcornFlavor = "sweet" | "caramel" | "cheese" | "salted";
+export type DrinkType = "pepsi" | "7up" | "mirinda" | "peach_tea";
+export type DrinkSize = "regular" | "large"; // regular: 22oz (+0đ), large: 32oz (+12.000đ)
+
+export interface SelectedComboItem {
+  id: string; // combo-beta-solo, combo-beta-couple, etc.
+  name: string;
+  quantity: number;
+  basePrice: number;
+  popcornFlavors: PopcornFlavor[];
+  drinks: Array<{
+    type: DrinkType;
+    size: DrinkSize;
+  }>;
+  extraPrice: number;
+  totalPrice: number;
+}
+
 export interface BookingInfo {
   bookingId: string;
   movieTitle: string;
@@ -61,6 +79,7 @@ export interface BookingInfo {
   customerName: string;
   customerEmail: string;
   customerPhone: string;
+  concessions?: SelectedComboItem[];
   qrCodeUrl?: string;
   qrToken?: string;
   status?: "valid" | "used";

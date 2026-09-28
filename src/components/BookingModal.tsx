@@ -1,12 +1,19 @@
 "use client";
 
 import React, { useState, useMemo, useEffect } from "react";
-import { Movie, Seat, BookingInfo } from "@/types";
-import { MOCK_CINEMAS, MOCK_SHOWTIMES, CONCESSION_COMBOS } from "@/lib/mockData";
+import { Movie, Seat, BookingInfo, PopcornFlavor, DrinkType, DrinkSize, SelectedComboItem } from "@/types";
+import {
+  MOCK_CINEMAS,
+  MOCK_SHOWTIMES,
+  CONCESSION_COMBOS,
+  POPCORN_FLAVOR_OPTIONS,
+  DRINK_TYPE_OPTIONS,
+  DRINK_SIZE_OPTIONS,
+} from "@/lib/mockData";
 import { formatVND } from "@/lib/utils";
 import { checkOrphanSeats } from "@/lib/orphanSeatRule";
 import { ViewFromSeatModal } from "./ViewFromSeatModal";
-import { X, Check, Ticket, MapPin, Calendar, Clock, Armchair, QrCode, Download, ArrowRight, ArrowLeft, ShieldCheck, Timer, Copy, CreditCard, Eye, Sparkles, AlertTriangle, Info } from "lucide-react";
+import { X, Check, Ticket, MapPin, Calendar, Clock, Armchair, QrCode, Download, ArrowRight, ArrowLeft, ShieldCheck, Timer, Copy, CreditCard, Eye, Sparkles, AlertTriangle, Info, Utensils, Coffee } from "lucide-react";
 
 interface BookingModalProps {
   movie: Movie | null;
@@ -47,6 +54,81 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
   // Bắp nước (Map comboId -> quantity)
   const [combos, setCombos] = useState<Record<string, number>>({});
+
+  // Cấu hình vị bắp & nước ngọt cho từng combo đã chọn
+  const [comboConfigs, setComboConfigs] = useState<Record<string, {
+    popcornFlavors: PopcornFlavor[];
+    drinks: Array<{ type: DrinkType; size: DrinkSize }>;
+  }>>({
+    "combo-beta-solo": {
+      popcornFlavors: ["sweet"],
+      drinks: [{ type: "pepsi", size: "regular" }],
+    },
+    "combo-beta-couple": {
+      popcornFlavors: ["sweet", "cheese"],
+      drinks: [
+        { type: "pepsi", size: "regular" },
+        { type: "7up", size: "regular" },
+      ],
+    },
+    "combo-beta-party": {
+      popcornFlavors: ["cheese", "caramel"],
+      drinks: [
+        { type: "pepsi", size: "regular" },
+        { type: "7up", size: "regular" },
+        { type: "mirinda", size: "regular" },
+      ],
+    },
+  });
+
+  const handleSetPopcornFlavor = (comboId: string, slotIndex: number, flavor: PopcornFlavor) => {
+    setComboConfigs((prev) => {
+      const current = prev[comboId] || { popcornFlavors: ["sweet"], drinks: [{ type: "pepsi", size: "regular" }] };
+      const newFlavors = [...current.popcornFlavors];
+      newFlavors[slotIndex] = flavor;
+      return {
+        ...prev,
+        [comboId]: {
+          ...current,
+          popcornFlavors: newFlavors,
+        },
+      };
+    });
+  };
+
+  const handleSetDrinkType = (comboId: string, slotIndex: number, drinkType: DrinkType) => {
+    setComboConfigs((prev) => {
+      const current = prev[comboId] || { popcornFlavors: ["sweet"], drinks: [{ type: "pepsi", size: "regular" }] };
+      const newDrinks = [...current.drinks];
+      newDrinks[slotIndex] = { ...newDrinks[slotIndex], type: drinkType };
+      return {
+        ...prev,
+        [comboId]: {
+          ...current,
+          drinks: newDrinks,
+        },
+      };
+    });
+  };
+
+  const handleToggleDrinkSize = (comboId: string, slotIndex: number) => {
+    setComboConfigs((prev) => {
+      const current = prev[comboId] || { popcornFlavors: ["sweet"], drinks: [{ type: "pepsi", size: "regular" }] };
+      const newDrinks = [...current.drinks];
+      const currentSize = newDrinks[slotIndex]?.size || "regular";
+      newDrinks[slotIndex] = {
+        ...newDrinks[slotIndex],
+        size: currentSize === "regular" ? "large" : "regular",
+      };
+      return {
+        ...prev,
+        [comboId]: {
+          ...current,
+          drinks: newDrinks,
+        },
+      };
+    });
+  };
 
   // Thông tin người mua
   const [customerName, setCustomerName] = useState("");
@@ -191,12 +273,44 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     });
   };
 
+  // Tính chi tiết combo và phụ thu vị/cỡ ly
+  const selectedConcessions: SelectedComboItem[] = useMemo(() => {
+    return Object.entries(combos)
+      .filter(([_, qty]) => qty > 0)
+      .map(([comboId, qty]) => {
+        const def = CONCESSION_COMBOS.find((c) => c.id === comboId);
+        const config = comboConfigs[comboId];
+        if (!def || !config) return null;
+
+        let extraPerUnit = 0;
+        config.popcornFlavors.forEach((f) => {
+          const flavorDef = POPCORN_FLAVOR_OPTIONS.find((p) => p.id === f);
+          if (flavorDef) extraPerUnit += flavorDef.extra;
+        });
+        config.drinks.forEach((d) => {
+          const drinkDef = DRINK_TYPE_OPTIONS.find((dt) => dt.id === d.type);
+          if (drinkDef && "extra" in drinkDef) extraPerUnit += (drinkDef as { extra: number }).extra;
+          const sizeDef = DRINK_SIZE_OPTIONS.find((s) => s.id === d.size);
+          if (sizeDef) extraPerUnit += sizeDef.extra;
+        });
+
+        return {
+          id: comboId,
+          name: def.name,
+          quantity: qty,
+          basePrice: def.price,
+          popcornFlavors: config.popcornFlavors,
+          drinks: config.drinks,
+          extraPrice: extraPerUnit,
+          totalPrice: (def.price + extraPerUnit) * qty,
+        };
+      })
+      .filter((item): item is SelectedComboItem => item !== null);
+  }, [combos, comboConfigs]);
+
   // Tính tổng tiền
   const seatsTotal = selectedSeats.reduce((sum, s) => sum + s.price, 0);
-  const combosTotal = Object.entries(combos).reduce((sum, [id, qty]) => {
-    const item = CONCESSION_COMBOS.find((c) => c.id === id);
-    return sum + (item ? item.price * qty : 0);
-  }, 0);
+  const combosTotal = selectedConcessions.reduce((sum, c) => sum + c.totalPrice, 0);
   const grandTotal = seatsTotal + combosTotal;
 
   // Chuyển sang bước thanh toán QR
@@ -230,6 +344,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
           customerName,
           customerEmail,
           customerPhone,
+          concessions: selectedConcessions,
         }),
       });
 
@@ -237,17 +352,6 @@ export const BookingModal: React.FC<BookingModalProps> = ({
       if (data.success) {
         const newTicket: BookingInfo = data.data;
         setCompletedBooking(newTicket);
-
-        // Đồng bộ lên shared backend /api/tickets để máy quét ở rạp nhận diện tức thì
-        try {
-          await fetch("/api/tickets", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(newTicket),
-          });
-        } catch (syncErr) {
-          console.warn("[BookingModal] Đồng bộ /api/tickets:", syncErr);
-        }
 
         // Lưu vé vào LocalStorage máy khách (phục vụ Ví Vé)
         try {
@@ -595,40 +699,189 @@ export const BookingModal: React.FC<BookingModalProps> = ({
         {step === 3 && (
           <form onSubmit={handleProceedToPayment} className="p-6 space-y-6">
             <div>
-              <label className="block text-xs font-bold text-neutral-400 uppercase tracking-wider mb-3">
-                Combo bắp & Nước rạp chiếu
-              </label>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="flex items-center justify-between mb-3">
+                <label className="block text-xs font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <Utensils className="w-4 h-4 text-amber-400" />
+                  Combo Bắp & Nước Rạp Chiếu (Tùy Chọn Vị & Cỡ Ly)
+                </label>
+                <span className="text-[11px] text-accent-cyan font-medium">
+                  🍿 Tự do mix vị Phô mai / Caramel & Upsize ly 32oz
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 {CONCESSION_COMBOS.map((combo) => {
                   const qty = combos[combo.id] || 0;
+                  const config = comboConfigs[combo.id];
+
+                  // Tính đơn giá combo sau khi cộng phụ thu vị/ly lớn
+                  let extraPerUnit = 0;
+                  if (config) {
+                    config.popcornFlavors.forEach((f) => {
+                      const flavorDef = POPCORN_FLAVOR_OPTIONS.find((p) => p.id === f);
+                      if (flavorDef) extraPerUnit += flavorDef.extra;
+                    });
+                    config.drinks.forEach((d) => {
+                      const drinkDef = DRINK_TYPE_OPTIONS.find((dt) => dt.id === d.type);
+                      if (drinkDef && "extra" in drinkDef) extraPerUnit += (drinkDef as { extra: number }).extra;
+                      const sizeDef = DRINK_SIZE_OPTIONS.find((s) => s.id === d.size);
+                      if (sizeDef) extraPerUnit += sizeDef.extra;
+                    });
+                  }
+                  const comboUnitPrice = combo.price + extraPerUnit;
+
                   return (
                     <div
                       key={combo.id}
-                      className="p-3.5 rounded-xl border border-neutral-800 bg-neutral-900/40 flex flex-col justify-between"
+                      className={`p-4 rounded-2xl border transition-all flex flex-col justify-between ${
+                        qty > 0
+                          ? "bg-neutral-900 border-accent-cyan/60 shadow-lg shadow-cyan-950/20"
+                          : "bg-neutral-900/40 border-neutral-800 hover:border-neutral-700"
+                      }`}
                     >
                       <div>
-                        <h4 className="font-bold text-sm text-white">{combo.name}</h4>
-                        <p className="text-xs text-neutral-400 mt-1">{combo.description}</p>
-                        <span className="block text-xs font-black text-amber-400 mt-2">
-                          {formatVND(combo.price)}
-                        </span>
+                        {/* Header combo card */}
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-2xl">{combo.icon}</span>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <h4 className="font-bold text-sm text-white">{combo.name}</h4>
+                              </div>
+                              {combo.badge && (
+                                <span className="inline-block text-[9px] font-bold text-amber-400 bg-amber-400/10 px-1.5 py-0.2 rounded border border-amber-400/30 mt-0.5">
+                                  {combo.badge}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        <p className="text-xs text-neutral-400 mt-2 leading-relaxed">
+                          {combo.description}
+                        </p>
+
+                        <div className="mt-2.5 flex items-baseline gap-2">
+                          <span className="text-sm font-black text-amber-400">
+                            {formatVND(comboUnitPrice)}
+                          </span>
+                          {extraPerUnit > 0 && (
+                            <span className="text-[10px] text-neutral-400">
+                              (Gốc: {formatVND(combo.price)} + Phụ thu: {formatVND(extraPerUnit)})
+                            </span>
+                          )}
+                        </div>
+
+                        {/* BẢNG TÙY BIẾN VỊ & NƯỚC KHI ĐÃ CHỌN QUANTITY > 0 */}
+                        {qty > 0 && config && (
+                          <div className="mt-3.5 pt-3 border-t border-neutral-800 space-y-3 animate-in fade-in duration-200">
+                            {/* Chọn vị bắp */}
+                            <div>
+                              <span className="text-[10px] font-bold text-neutral-300 uppercase tracking-wide block mb-1.5">
+                                🍿 Vị bắp ({combo.popcornSlots} phần):
+                              </span>
+                              {Array.from({ length: combo.popcornSlots }).map((_, slotIdx) => (
+                                <div key={slotIdx} className="space-y-1 mb-2">
+                                  {combo.popcornSlots > 1 && (
+                                    <span className="text-[9px] text-neutral-400 block font-semibold">
+                                      Ngăn {slotIdx + 1}:
+                                    </span>
+                                  )}
+                                  <div className="grid grid-cols-2 gap-1.5">
+                                    {POPCORN_FLAVOR_OPTIONS.map((flavor) => {
+                                      const isSelected = config.popcornFlavors[slotIdx] === flavor.id;
+                                      return (
+                                        <button
+                                          type="button"
+                                          key={flavor.id}
+                                          onClick={() => handleSetPopcornFlavor(combo.id, slotIdx, flavor.id as PopcornFlavor)}
+                                          className={`px-2 py-1.5 rounded-lg text-[10px] font-semibold text-left transition-all border flex flex-col justify-between ${
+                                            isSelected
+                                              ? "bg-amber-500/20 border-amber-500 text-amber-200 ring-1 ring-amber-500/50"
+                                              : "bg-neutral-950 border-neutral-800 text-neutral-400 hover:text-white"
+                                          }`}
+                                        >
+                                          <span className="truncate">{flavor.name}</span>
+                                          <span className="text-[9px] opacity-75">{flavor.tag}</span>
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+
+                            {/* Chọn nước & cỡ ly */}
+                            <div>
+                              <span className="text-[10px] font-bold text-neutral-300 uppercase tracking-wide block mb-1.5">
+                                🥤 Nước ngọt & cỡ ly:
+                              </span>
+                              {Array.from({ length: combo.drinkSlots }).map((_, drinkIdx) => {
+                                const currentDrink = config.drinks[drinkIdx] || { type: "pepsi", size: "regular" };
+                                return (
+                                  <div key={drinkIdx} className="bg-neutral-950/80 p-2 rounded-xl border border-neutral-800 space-y-1.5 mb-2">
+                                    <div className="flex items-center justify-between text-[10px]">
+                                      <span className="font-semibold text-neutral-300">
+                                        Ly {drinkIdx + 1}:
+                                      </span>
+                                      {/* Nút toggle Upsize 32oz */}
+                                      <button
+                                        type="button"
+                                        onClick={() => handleToggleDrinkSize(combo.id, drinkIdx)}
+                                        className={`px-2 py-0.5 rounded-full text-[9px] font-bold transition-all border ${
+                                          currentDrink.size === "large"
+                                            ? "bg-accent-cyan/20 border-accent-cyan text-accent-cyan"
+                                            : "bg-neutral-900 border-neutral-700 text-neutral-400 hover:text-white"
+                                        }`}
+                                      >
+                                        {currentDrink.size === "large" ? "⚡ Ly Lớn 32oz (+12k)" : "22oz Tiêu Chuẩn"}
+                                      </button>
+                                    </div>
+
+                                    {/* Danh sách loại nước */}
+                                    <div className="grid grid-cols-2 gap-1">
+                                      {DRINK_TYPE_OPTIONS.map((drinkOpt) => {
+                                        const isSelected = currentDrink.type === drinkOpt.id;
+                                        return (
+                                          <button
+                                            type="button"
+                                            key={drinkOpt.id}
+                                            onClick={() => handleSetDrinkType(combo.id, drinkIdx, drinkOpt.id as DrinkType)}
+                                            className={`px-1.5 py-1 rounded text-[9px] font-medium text-left truncate transition-colors border ${
+                                              isSelected
+                                                ? "bg-blue-600/30 border-blue-500 text-blue-200"
+                                                : "bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-white"
+                                            }`}
+                                          >
+                                            {drinkOpt.name}
+                                          </button>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
                       </div>
 
-                      <div className="flex items-center justify-between mt-3 pt-2 border-t border-neutral-800">
-                        <span className="text-xs text-neutral-400">Số lượng:</span>
+                      {/* Bộ điều khiển số lượng combo */}
+                      <div className="flex items-center justify-between mt-4 pt-3 border-t border-neutral-800">
+                        <span className="text-xs text-neutral-400 font-medium">Số lượng:</span>
                         <div className="flex items-center gap-2">
                           <button
                             type="button"
                             onClick={() => handleUpdateCombo(combo.id, -1)}
-                            className="w-6 h-6 rounded bg-neutral-800 hover:bg-neutral-700 text-white flex items-center justify-center text-xs"
+                            className="w-7 h-7 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-white flex items-center justify-center text-sm font-bold transition-colors"
                           >
                             -
                           </button>
-                          <span className="text-xs font-bold w-4 text-center">{qty}</span>
+                          <span className="text-sm font-bold w-5 text-center text-white">{qty}</span>
                           <button
                             type="button"
                             onClick={() => handleUpdateCombo(combo.id, 1)}
-                            className="w-6 h-6 rounded bg-neutral-800 hover:bg-neutral-700 text-white flex items-center justify-center text-xs"
+                            className="w-7 h-7 rounded-lg bg-accent-red hover:bg-accent-redHover text-white flex items-center justify-center text-sm font-bold shadow-md transition-colors"
                           >
                             +
                           </button>
@@ -638,6 +891,30 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   );
                 })}
               </div>
+
+              {/* Tóm tắt chi tiết bắp nước đã chọn */}
+              {selectedConcessions.length > 0 && (
+                <div className="mt-4 p-3.5 bg-neutral-900/80 rounded-xl border border-neutral-800 space-y-2 text-xs">
+                  <span className="font-bold text-amber-400 uppercase tracking-wider block text-[10px]">
+                    🍿 Chi tiết combo bắp nước bạn đã chọn:
+                  </span>
+                  <div className="space-y-1.5">
+                    {selectedConcessions.map((sc, i) => (
+                      <div key={i} className="flex items-center justify-between text-neutral-300">
+                        <div>
+                          <span className="font-bold text-white">{sc.quantity}x {sc.name}</span>
+                          <span className="text-[10px] text-neutral-400 block">
+                            Vị bắp: {sc.popcornFlavors.map(f => f === "cheese" ? "Phô mai" : f === "caramel" ? "Caramel" : f === "sweet" ? "Ngọt" : "Mặn").join(", ")} • Nước: {sc.drinks.map(d => `${d.type === "pepsi" ? "Pepsi" : d.type === "7up" ? "7Up" : d.type === "mirinda" ? "Mirinda" : "Trà đào"} (${d.size === "large" ? "32oz" : "22oz"})`).join(", ")}
+                          </span>
+                        </div>
+                        <span className="font-bold font-mono text-amber-400">
+                          {formatVND(sc.totalPrice)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Thông tin người nhận vé */}
@@ -910,6 +1187,26 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   <span className="font-extrabold text-accent-cyan text-sm">{completedBooking.seats.join(", ")}</span>
                 </div>
               </div>
+
+              {/* Bắp & Nước đã đặt kèm */}
+              {completedBooking.concessions && completedBooking.concessions.length > 0 && (
+                <div className="bg-neutral-950/80 rounded-xl p-3 border border-neutral-800 text-xs space-y-1.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400 block">
+                    🍿 Bắp & Nước (Nhận tại quầy Concession):
+                  </span>
+                  {completedBooking.concessions.map((c, i) => (
+                    <div key={i} className="flex justify-between items-start text-neutral-300">
+                      <div>
+                        <span className="font-semibold text-white">{c.quantity}x {c.name}</span>
+                        <span className="text-[10px] text-neutral-400 block">
+                          Vị: {c.popcornFlavors.map(f => f === "cheese" ? "Phô mai" : f === "caramel" ? "Caramel" : f === "sweet" ? "Ngọt" : "Mặn").join(", ")} • Nước: {c.drinks.map(d => `${d.type === "pepsi" ? "Pepsi" : d.type === "7up" ? "7Up" : d.type === "mirinda" ? "Mirinda" : "Trà đào"} (${d.size === "large" ? "32oz" : "22oz"})`).join(", ")}
+                        </span>
+                      </div>
+                      <span className="font-mono text-amber-400 font-bold">{formatVND(c.totalPrice)}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
 
               {/* Mã QR Code */}
               {completedBooking.qrCodeUrl && (

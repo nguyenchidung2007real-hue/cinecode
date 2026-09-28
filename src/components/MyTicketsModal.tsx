@@ -269,6 +269,25 @@ export const MyTicketsModal: React.FC<MyTicketsModalProps> = ({ isOpen, onClose 
                         </div>
                       </div>
 
+                      {/* Bắp & Nước kèm theo vé */}
+                      {ticket.concessions && ticket.concessions.length > 0 && (
+                        <div className="bg-neutral-950/80 rounded-xl p-2.5 border border-neutral-800 text-[11px] space-y-1">
+                          <span className="font-bold text-amber-400 block text-[10px] uppercase tracking-wider">
+                            🍿 Bắp & Nước (Nhận tại quầy Concession):
+                          </span>
+                          {ticket.concessions.map((c, i) => (
+                            <div key={i} className="flex justify-between items-center text-neutral-300">
+                              <span className="truncate pr-2 font-medium">
+                                {c.quantity}x {c.name} ({c.popcornFlavors.map(f => f === "cheese" ? "Phô mai" : f === "caramel" ? "Caramel" : f === "sweet" ? "Ngọt" : "Mặn").join("+")}, {c.drinks.map(d => `${d.type === "pepsi" ? "Pepsi" : d.type === "7up" ? "7Up" : d.type === "mirinda" ? "Mirinda" : "Trà đào"}${d.size === "large" ? " 32oz" : ""}`).join(", ")})
+                              </span>
+                              <span className="font-mono text-amber-400 font-bold flex-shrink-0">
+                                {formatVND(c.totalPrice)}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
                       <div className="flex items-center justify-between text-xs pt-1">
                         <span className="text-neutral-400">
                           Khách hàng: <strong className="text-white">{ticket.customerName}</strong>

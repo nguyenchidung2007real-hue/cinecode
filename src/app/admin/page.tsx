@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import {
   Film,
@@ -20,10 +20,15 @@ import {
   TrendingUp,
   Sparkles,
   ArrowLeft,
-  Users
+  Users,
+  AlertTriangle,
+  PlusCircle,
+  Trash2,
 } from "lucide-react";
 import { MOCK_MOVIES, MOCK_SHOWTIMES, CONCESSION_COMBOS } from "@/lib/mockData";
 import { formatVND } from "@/lib/utils";
+import { checkShowtimeCollision, ShowtimeLike, CollisionResult, TRAILER_MINUTES, CLEANING_MINUTES } from "@/lib/showtimeCollision";
+import { ShowTime } from "@/types";
 
 interface SyncStatus {
   success: boolean;
@@ -55,6 +60,75 @@ export default function AdminDashboardPage() {
     occupancyRate: "78%",
     activeShowtimes: 8,
   });
+
+  // Showtime Scheduler & Collision Engine State
+  const [showtimesList, setShowtimesList] = useState<ShowTime[]>(MOCK_SHOWTIMES);
+  const [newMovieId, setNewMovieId] = useState<string>("dune-2");
+  const [newRoomName, setNewRoomName] = useState<string>("Phòng Beta 01 (Dolby 7.1)");
+  const [newDate, setNewDate] = useState<string>("2026-09-24");
+  const [newTime, setNewTime] = useState<string>("19:00");
+  const [newFormat, setNewFormat] = useState<"2D Phụ Đề" | "2D Lồng Tiếng" | "IMAX Laser" | "4DX">("2D Phụ Đề");
+  const [scheduleSuccessMsg, setScheduleSuccessMsg] = useState<string | null>(null);
+  const [selectedRoomFilter, setSelectedRoomFilter] = useState<string>("all");
+
+  const selectedMovie = useMemo(() => {
+    return MOCK_MOVIES.find((m) => String(m.id) === String(newMovieId));
+  }, [newMovieId]);
+
+  const existingShowtimes: ShowtimeLike[] = useMemo(() => {
+    return showtimesList.map((st) => {
+      const movie = MOCK_MOVIES.find((m) => String(m.id) === String(st.movieId));
+      return {
+        id: st.id,
+        cinemaId: st.cinemaId,
+        roomName: st.roomName,
+        date: st.date,
+        time: st.time,
+        durationMinutes: movie?.durationMinutes ?? 120,
+        movieTitle: movie?.title ?? `Phim #${st.movieId}`,
+      };
+    });
+  }, [showtimesList]);
+
+  const candidateShowtime: ShowtimeLike = useMemo(() => {
+    return {
+      cinemaId: "beta-cinemas-xuan-thuy",
+      roomName: newRoomName,
+      date: newDate,
+      time: newTime,
+      durationMinutes: selectedMovie?.durationMinutes ?? 120,
+      movieTitle: selectedMovie?.title ?? "Phim đã chọn",
+    };
+  }, [newRoomName, newDate, newTime, selectedMovie]);
+
+  const collisionResult: CollisionResult = useMemo(() => {
+    return checkShowtimeCollision(candidateShowtime, existingShowtimes);
+  }, [candidateShowtime, existingShowtimes]);
+
+  const handleAddShowtime = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!collisionResult.ok) return;
+
+    const newId = `st-beta-${Date.now()}`;
+    const newSt: ShowTime = {
+      id: newId,
+      movieId: newMovieId,
+      cinemaId: "beta-cinemas-xuan-thuy",
+      cinemaName: "Beta Cinemas Xuân Thủy",
+      roomName: newRoomName,
+      format: newFormat,
+      date: newDate,
+      time: newTime,
+    };
+
+    setShowtimesList((prev) => [newSt, ...prev]);
+    setScheduleSuccessMsg(`Đã xếp lịch thành công cho suất ${newTime} (${newFormat}) tại ${newRoomName}!`);
+    setTimeout(() => setScheduleSuccessMsg(null), 4000);
+  };
+
+  const handleDeleteShowtime = (id: string) => {
+    setShowtimesList((prev) => prev.filter((st) => st.id !== id));
+  };
 
   const handleSyncBeta = async () => {
     setIsSyncing(true);
@@ -343,49 +417,322 @@ export default function AdminDashboardPage() {
           </div>
         )}
 
-        {/* TAB 2: LỊCH CHIẾU BETA XUÂN THỦY */}
+        {/* TAB 2: LỊCH CHIẾU BETA XUÂN THỦY & ENGINE KIỂM TRA XUNG ĐỘT */}
         {activeTab === "showtimes" && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-white/10">
               <div>
-                <h3 className="font-bold text-base text-white">Lịch Chiếu Hôm Nay Tại Beta Xuân Thủy</h3>
-                <p className="text-xs text-neutral-400">Danh sách các suất chiếu đang mở bán trực tuyến</p>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-bold text-base text-white">Bộ Điều Phối & Lên Lịch Chiếu (Showtime Engine)</h3>
+                  <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
+                    Collision Engine Active
+                  </span>
+                </div>
+                <p className="text-xs text-neutral-400 mt-0.5">
+                  Beta Cinemas Xuân Thủy • Tự động tính toán thời lượng phim + 10p quảng cáo + 15p dọn buồng để ngăn chặn xung đột phòng chiếu
+                </p>
               </div>
               <button
                 onClick={handleSyncBeta}
-                className="text-xs px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 flex items-center gap-1.5"
+                className="text-xs px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center gap-1.5 shrink-0 text-neutral-300"
               >
-                <RefreshCw className="w-3.5 h-3.5" />
-                <span>Cập nhật lịch mới</span>
+                <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? "animate-spin" : ""}`} />
+                <span>Cập nhật lịch Live</span>
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {MOCK_SHOWTIMES.filter((st) => st.cinemaId === "beta-cinemas-xuan-thuy").map((st) => {
-                const movie = MOCK_MOVIES.find((m) => m.id === st.movieId);
-                return (
-                  <div key={st.id} className="p-4 rounded-xl bg-[#14151B] border border-white/10 flex flex-col justify-between">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              {/* CỘT TRÁI (5 Cột): Form Thêm Suất Chiếu & Kiểm Tra Xung Đột */}
+              <div className="lg:col-span-5 space-y-4">
+                <div className="p-5 rounded-2xl bg-[#14151B] border border-white/10 shadow-xl space-y-4">
+                  <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                    <h4 className="font-bold text-sm text-white flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-accent-red" />
+                      <span>Thêm Suất Chiếu Mới</span>
+                    </h4>
+                    <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                      Buffer 25p (10p trailer + 15p dọn)
+                    </span>
+                  </div>
+
+                  <form onSubmit={handleAddShowtime} className="space-y-3.5">
+                    {/* Chọn Phim */}
                     <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-accent-red/20 text-accent-red">
-                          {st.format}
-                        </span>
-                        <span className="text-xs font-bold text-amber-400">{st.time}</span>
-                      </div>
-                      <h4 className="font-bold text-sm text-white mb-1">{movie?.title || st.movieId}</h4>
-                      <p className="text-xs text-neutral-400 flex items-center gap-1">
-                        <Building2 className="w-3 h-3" />
-                        <span>{st.roomName}</span>
-                      </p>
+                      <label className="text-[11px] font-semibold text-neutral-400 block mb-1">Chọn Phim:</label>
+                      <select
+                        value={newMovieId}
+                        onChange={(e) => setNewMovieId(e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-accent-red"
+                      >
+                        {MOCK_MOVIES.map((m) => (
+                          <option key={m.id} value={m.id} className="bg-[#14151B] text-white">
+                            {m.title} ({m.durationMinutes} phút - {m.ageRating})
+                          </option>
+                        ))}
+                      </select>
                     </div>
 
-                    <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between text-xs">
-                      <span className="text-neutral-500">Giá vé: 55k - 75k</span>
-                      <span className="text-emerald-400 font-semibold">Đang mở bán</span>
+                    {/* Chọn Phòng */}
+                    <div>
+                      <label className="text-[11px] font-semibold text-neutral-400 block mb-1">Phòng Chiếu:</label>
+                      <select
+                        value={newRoomName}
+                        onChange={(e) => setNewRoomName(e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-accent-red"
+                      >
+                        <option value="Phòng Beta 01 (Dolby 7.1)" className="bg-[#14151B] text-white">
+                          Phòng Beta 01 (Dolby 7.1)
+                        </option>
+                        <option value="Phòng Beta 02 (Laser HD)" className="bg-[#14151B] text-white">
+                          Phòng Beta 02 (Laser HD)
+                        </option>
+                        <option value="Phòng Beta 03 (Standard)" className="bg-[#14151B] text-white">
+                          Phòng Beta 03 (Standard)
+                        </option>
+                      </select>
                     </div>
+
+                    {/* Ngày, Giờ, Định dạng */}
+                    <div className="grid grid-cols-3 gap-2.5">
+                      <div>
+                        <label className="text-[11px] font-semibold text-neutral-400 block mb-1">Ngày:</label>
+                        <input
+                          type="date"
+                          value={newDate}
+                          onChange={(e) => setNewDate(e.target.value)}
+                          className="w-full px-2.5 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-accent-red"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[11px] font-semibold text-neutral-400 block mb-1">Giờ Chiếu:</label>
+                        <input
+                          type="time"
+                          value={newTime}
+                          onChange={(e) => setNewTime(e.target.value)}
+                          className="w-full px-2.5 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-accent-red"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[11px] font-semibold text-neutral-400 block mb-1">Định Dạng:</label>
+                        <select
+                          value={newFormat}
+                          onChange={(e) => setNewFormat(e.target.value as any)}
+                          className="w-full px-2 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-accent-red"
+                        >
+                          <option value="2D Phụ Đề" className="bg-[#14151B] text-white">2D Phụ Đề</option>
+                          <option value="2D Lồng Tiếng" className="bg-[#14151B] text-white">2D Lồng Tiếng</option>
+                          <option value="IMAX Laser" className="bg-[#14151B] text-white">IMAX Laser</option>
+                          <option value="4DX" className="bg-[#14151B] text-white">4DX</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Live Collision Feedback Banner */}
+                    {!collisionResult.valid && (
+                      <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs">
+                        {collisionResult.errors.join(", ")}
+                      </div>
+                    )}
+
+                    {collisionResult.valid && collisionResult.ok && (
+                      <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs animate-in fade-in">
+                        <div className="font-bold flex items-center gap-2 mb-1">
+                          <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+                          <span>Khung Giờ Hợp Lệ & Khả Dụng!</span>
+                        </div>
+                        <p className="text-[11px] text-emerald-400/90 leading-relaxed">
+                          Phòng trống trong khoảng <strong>{collisionResult.occupied?.startTime}</strong> – <strong>{collisionResult.occupied?.endTime}</strong>. Tổng chiếm dụng phòng: <strong>{collisionResult.totalOccupiedMinutes} phút</strong> ({selectedMovie?.durationMinutes}p phim + {TRAILER_MINUTES}p trailer + {CLEANING_MINUTES}p dọn buồng).
+                        </p>
+                      </div>
+                    )}
+
+                    {collisionResult.valid && !collisionResult.ok && (
+                      <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-xs space-y-2.5 animate-in fade-in">
+                        <div className="font-bold flex items-center gap-2 text-red-400">
+                          <AlertTriangle className="w-4 h-4 text-red-400 shrink-0" />
+                          <span>PHÁT HIỆN {collisionResult.conflicts.length} XUNG ĐỘT PHÒNG CHIẾU!</span>
+                        </div>
+
+                        <div className="space-y-1.5">
+                          {collisionResult.conflicts.map((c, i) => (
+                            <div key={i} className="p-2 rounded-lg bg-red-950/40 border border-red-800/40 text-[11px]">
+                              <div className="flex items-center gap-1.5 mb-1 font-semibold">
+                                {c.kind === "overlap" ? (
+                                  <span className="px-1.5 py-0.5 rounded bg-red-500/30 text-red-200 text-[10px] font-bold">
+                                    Xung đột trùng giờ phim
+                                  </span>
+                                ) : (
+                                  <span className="px-1.5 py-0.5 rounded bg-amber-500/30 text-amber-200 text-[10px] font-bold">
+                                    Vi phạm đệm dọn phòng
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-neutral-300 leading-normal">{c.message}</p>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Gợi ý slot trống gần nhất */}
+                        {collisionResult.suggestions.length > 0 && (
+                          <div className="pt-2 border-t border-red-500/20">
+                            <div className="text-[11px] font-semibold text-neutral-300 mb-1.5 flex items-center gap-1">
+                              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                              <span>Gợi ý khung giờ trống gần nhất (Click để chọn):</span>
+                            </div>
+                            <div className="flex flex-wrap gap-1.5">
+                              {collisionResult.suggestions.map((s, idx) => (
+                                <button
+                                  key={idx}
+                                  type="button"
+                                  onClick={() => {
+                                    setNewTime(s.time);
+                                    setNewDate(s.date);
+                                  }}
+                                  className="px-2.5 py-1.5 rounded-lg bg-white/10 hover:bg-emerald-500/20 hover:border-emerald-500/40 border border-white/10 text-white text-[11px] transition-all flex items-center gap-1.5 font-medium group"
+                                >
+                                  <Clock className="w-3 h-3 text-cyan-400 group-hover:text-emerald-400" />
+                                  <span>{s.time}</span>
+                                  <span className="text-[10px] text-neutral-400 font-mono">
+                                    ({s.offsetMinutes > 0 ? `+${s.offsetMinutes}p` : `${s.offsetMinutes}p`})
+                                  </span>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Schedule Success Message */}
+                    {scheduleSuccessMsg && (
+                      <div className="p-3 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-semibold flex items-center gap-2">
+                        <CheckCircle className="w-4 h-4 shrink-0 text-emerald-400" />
+                        <span>{scheduleSuccessMsg}</span>
+                      </div>
+                    )}
+
+                    <button
+                      type="submit"
+                      disabled={!collisionResult.ok}
+                      className={`w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-md ${
+                        collisionResult.ok
+                          ? "bg-accent-red hover:bg-accent-red/90 text-white shadow-accent-red/20 cursor-pointer"
+                          : "bg-neutral-800 text-neutral-500 border border-white/5 cursor-not-allowed"
+                      }`}
+                    >
+                      <PlusCircle className="w-4 h-4" />
+                      <span>{collisionResult.ok ? "Xác Nhận Thêm Suất Chiếu" : "Không Thể Thêm (Đang Trùng Lịch)"}</span>
+                    </button>
+                  </form>
+                </div>
+              </div>
+
+              {/* CỘT PHẢI (7 Cột): Danh Sách Suất Chiếu Hiện Tại Tại Rạp */}
+              <div className="lg:col-span-7 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-sm text-white">Lịch Chiếu Đang Mở Bán</span>
+                    <span className="text-xs text-neutral-400 bg-white/5 px-2 py-0.5 rounded-full border border-white/10">
+                      {showtimesList.filter((st) => st.cinemaId === "beta-cinemas-xuan-thuy").length} suất
+                    </span>
                   </div>
-                );
-              })}
+
+                  {/* Filter phòng */}
+                  <div className="flex items-center gap-1.5 text-xs">
+                    {[
+                      { id: "all", label: "Tất cả" },
+                      { id: "Beta 01", label: "Phòng 01" },
+                      { id: "Beta 02", label: "Phòng 02" },
+                      { id: "Beta 03", label: "Phòng 03" },
+                    ].map((rf) => (
+                      <button
+                        key={rf.id}
+                        type="button"
+                        onClick={() => setSelectedRoomFilter(rf.id)}
+                        className={`px-2.5 py-1 rounded-lg font-medium transition-all ${
+                          selectedRoomFilter === rf.id
+                            ? "bg-accent-red text-white"
+                            : "bg-white/5 text-neutral-400 hover:text-white hover:bg-white/10"
+                        }`}
+                      >
+                        {rf.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 max-h-[640px] overflow-y-auto pr-1">
+                  {showtimesList
+                    .filter(
+                      (st) =>
+                        st.cinemaId === "beta-cinemas-xuan-thuy" &&
+                        (selectedRoomFilter === "all" || st.roomName.includes(selectedRoomFilter))
+                    )
+                    .map((st) => {
+                      const movie = MOCK_MOVIES.find((m) => String(m.id) === String(st.movieId));
+                      const duration = movie?.durationMinutes ?? 120;
+                      const timeParts = st.time.split(":").map(Number);
+                      let occupiedEndStr = "";
+                      if (timeParts.length === 2 && !isNaN(timeParts[0]) && !isNaN(timeParts[1])) {
+                        const totalMins = timeParts[0] * 60 + timeParts[1] + duration + TRAILER_MINUTES + CLEANING_MINUTES;
+                        const endH = Math.floor(totalMins / 60) % 24;
+                        const endM = totalMins % 60;
+                        occupiedEndStr = `${String(endH).padStart(2, "0")}:${String(endM).padStart(2, "0")}`;
+                      }
+
+                      return (
+                        <div
+                          key={st.id}
+                          className="p-4 rounded-xl bg-[#14151B] border border-white/10 hover:border-white/20 transition-all flex flex-col justify-between group"
+                        >
+                          <div>
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-accent-red/20 text-accent-red">
+                                {st.format}
+                              </span>
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-black text-amber-400">{st.time}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteShowtime(st.id)}
+                                  title="Xóa suất chiếu này"
+                                  className="text-neutral-500 hover:text-red-400 p-1 rounded hover:bg-red-500/10 transition-colors"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </div>
+
+                            <h4 className="font-bold text-sm text-white mb-1 line-clamp-1">
+                              {movie?.title || st.movieId}
+                            </h4>
+
+                            <p className="text-xs text-neutral-400 flex items-center gap-1 mb-2">
+                              <Building2 className="w-3 h-3 text-neutral-500" />
+                              <span>{st.roomName}</span>
+                            </p>
+
+                            <div className="p-2 rounded-lg bg-white/5 border border-white/5 text-[11px] text-neutral-400 space-y-0.5">
+                              <div>Thời lượng phim: <strong className="text-white">{duration} phút</strong></div>
+                              <div>
+                                Chiếm phòng (đệm 25p):{" "}
+                                <strong className="text-cyan-400 font-mono">
+                                  {st.time} – {occupiedEndStr}
+                                </strong>
+                              </div>
+                              <div className="text-[10px] text-neutral-500">Ngày chiếu: {st.date}</div>
+                            </div>
+                          </div>
+
+                          <div className="mt-3 pt-2.5 border-t border-white/5 flex items-center justify-between text-xs">
+                            <span className="text-neutral-500 text-[11px]">Beta Cinemas Xuân Thủy</span>
+                            <span className="text-emerald-400 font-semibold text-[11px]">Đang mở bán</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
             </div>
           </div>
         )}
