@@ -54,6 +54,7 @@ export interface ShowtimeStore {
   /** false = dữ liệu mất khi instance khởi động lại / không chia sẻ giữa các lambda. */
   readonly persistent: boolean;
   list(filter?: ShowtimeFilter): Promise<StoredShowtime[]>;
+  getById(id: string): Promise<StoredShowtime | null>;
   createChecked(input: NewShowtimeInput): Promise<CreateShowtimeResult>;
 }
 
@@ -355,6 +356,11 @@ class KvShowtimeStore implements ShowtimeStore {
       .filter((s) => (filter.cinemaId ? s.cinemaId === filter.cinemaId : true))
       .filter((s) => (filter.movieId ? s.movieId === filter.movieId : true))
       .sort((a, b) => compare(a.date, b.date) || compare(a.time, b.time) || compare(a.roomName, b.roomName));
+  }
+
+  async getById(id: string): Promise<StoredShowtime | null> {
+    const all = await this.list();
+    return all.find((s) => s.id === id) ?? null;
   }
 
   async createChecked(input: NewShowtimeInput): Promise<CreateShowtimeResult> {
