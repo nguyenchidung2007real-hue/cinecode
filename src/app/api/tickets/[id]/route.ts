@@ -25,12 +25,20 @@ export async function GET(request: NextRequest, { params }: RouteContext): Promi
   const { searchParams } = new URL(request.url);
   const sig = searchParams.get("sig");
 
-  // Nếu client gửi kèm sig, bắt buộc verify chữ ký HMAC
-  if (sig) {
-    const { valid } = verifyTicketToken(`${bookingId}.${sig}`);
-    if (!valid) {
-      return NextResponse.json({ error: "Chữ ký vé không hợp lệ hoặc đã bị thay đổi." }, { status: 403 });
-    }
+  // Bắt buộc phải có chữ ký HMAC hợp lệ để truy vấn thông tin vé (chống duyệt quét đoán ID vé)
+  if (!sig) {
+    return NextResponse.json(
+      { error: "Yêu cầu chữ ký xác thực vé (?sig=...)." },
+      { status: 401 }
+    );
+  }
+
+  const { valid } = verifyTicketToken(`${bookingId}.${sig}`);
+  if (!valid) {
+    return NextResponse.json(
+      { error: "Chữ ký vé không hợp lệ hoặc đã bị thay đổi." },
+      { status: 403 }
+    );
   }
 
   try {

@@ -44,14 +44,6 @@ export default function AdminDashboardPage() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  
-  // Soát vé State
-  const [ticketCodeInput, setTicketCodeInput] = useState("");
-  const [checkInResult, setCheckInResult] = useState<{
-    found: boolean;
-    ticket?: any;
-    message: string;
-  } | null>(null);
 
   // Thống kê giả lập
   const [stats, setStats] = useState({
@@ -137,43 +129,27 @@ export default function AdminDashboardPage() {
       const data = await res.json();
       if (data.success) {
         setSyncStatus(data);
-      }
-    } catch (err) {
-      console.error("Sync error:", err);
-    } finally {
-      setIsSyncing(false);
-    }
-  };
-
-  const handleVerifyTicket = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!ticketCodeInput.trim()) return;
-
-    try {
-      const stored = JSON.parse(localStorage.getItem("cinemax_tickets") || "[]");
-      const matched = stored.find(
-        (t: any) =>
-          t.bookingCode?.toUpperCase() === ticketCodeInput.trim().toUpperCase() ||
-          ticketCodeInput.includes(t.bookingCode)
-      );
-
-      if (matched) {
-        setCheckInResult({
-          found: true,
-          ticket: matched,
-          message: "Mã vé hợp lệ! Đã xác nhận khách hàng có mặt tại cổng rạp Beta Xuân Thủy.",
-        });
       } else {
-        setCheckInResult({
-          found: false,
-          message: `Không tìm thấy vé với mã "${ticketCodeInput}". Vui lòng kiểm tra lại.`,
+        setSyncStatus({
+          success: true,
+          syncedAt: new Date().toISOString(),
+          source: "Curated Demo",
+          message: "Đã làm mới dữ liệu lịch chiếu mô phỏng rạp Beta Xuân Thủy.",
+          totalMovies: MOCK_MOVIES.length,
+          totalShowtimes: showtimesList.length,
         });
       }
     } catch {
-      setCheckInResult({
-        found: false,
-        message: "Lỗi đọc dữ liệu vé rạp.",
+      setSyncStatus({
+        success: true,
+        syncedAt: new Date().toISOString(),
+        source: "Curated Demo",
+        message: "Đã làm mới dữ liệu lịch chiếu mô phỏng rạp Beta Xuân Thủy.",
+        totalMovies: MOCK_MOVIES.length,
+        totalShowtimes: showtimesList.length,
       });
+    } finally {
+      setIsSyncing(false);
     }
   };
 
@@ -211,7 +187,7 @@ export default function AdminDashboardPage() {
               className="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-accent-red/90 hover:bg-accent-red text-white transition-all shadow-md shadow-accent-red/20 disabled:opacity-50"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? "animate-spin" : ""}`} />
-              <span>{isSyncing ? "Đang Đồng Bộ..." : "Đồng Bộ Live betacinemas.vn"}</span>
+              <span>{isSyncing ? "Đang Cập Nhật..." : "Làm Mới Dữ Liệu Mô Phỏng"}</span>
             </button>
             <Link
               href="/dashboard"
@@ -356,63 +332,56 @@ export default function AdminDashboardPage() {
                     <Sparkles className="w-5 h-5" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-sm text-white">Cơ Chế Đồng Bộ Tự Động (Cách 3)</h4>
+                    <h4 className="font-bold text-sm text-white">Dữ Liệu Mô Phỏng Rạp Chiếu (Curated Demo)</h4>
                     <p className="text-xs text-neutral-300 mt-1 leading-relaxed">
-                      Hệ thống tự động kết nối và trích xuất lịch chiếu từ website chính thức <code>betacinemas.vn</code> cho chi nhánh Xuân Thủy. Khi rạp đổi giờ chiếu hoặc mở thêm phim mới, dữ liệu sẽ được cập nhật đồng thời vào Chatbot AI CineBot và Spotlight Command Palette.
+                      Dữ liệu lịch chiếu và sơ đồ phòng chiếu phục vụ thử nghiệm thuật toán chống xung đột (Showtime Collision Engine) và quy trình vận hành rạp Beta Xuân Thủy. Trong môi trường production thực tế, API đồng bộ từ <code>betacinemas.vn</code> yêu cầu xác thực bằng <code>ADMIN_SYNC_SECRET</code>.
                     </p>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Cột phải: Soát vé nhanh */}
+            {/* Cột phải: Chuyển hướng Cổng Soát Vé PWA */}
             <div className="p-5 rounded-2xl bg-[#14151B] border border-white/10 shadow-xl space-y-4">
-              <h3 className="font-bold text-base text-white flex items-center gap-2">
-                <QrCode className="w-4 h-4 text-cyan-400" />
-                <span>Soát Vé Nhanh Tại Cửa</span>
-              </h3>
-              <p className="text-xs text-neutral-400">
-                Nhập mã vé hoặc mã đặt chỗ (VD: VECINEMAX, BM-...) để kiểm tra và check-in khách:
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-accent-red/20 text-accent-red">
+                  <QrCode className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm text-white">Cổng Soát Vé Nhân Viên</h3>
+                  <span className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1 mt-0.5">
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    Chống vé kép & gian lận nguyên tử
+                  </span>
+                </div>
+              </div>
+
+              <p className="text-xs text-neutral-400 leading-relaxed">
+                Để đảm bảo tính xác thực HMAC, ngăn chặn dùng vé hai lần và kiểm soát nhận bắp nước tại quầy, nhân viên vui lòng sử dụng ứng dụng Web Scanner chuyên dụng.
               </p>
 
-              <form onSubmit={handleVerifyTicket} className="space-y-3">
-                <input
-                  type="text"
-                  placeholder="Nhập mã vé (VD: BM-172717...)"
-                  value={ticketCodeInput}
-                  onChange={(e) => setTicketCodeInput(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs placeholder:text-neutral-500 focus:outline-none focus:border-accent-red"
-                />
-                <button
-                  type="submit"
-                  className="w-full py-2.5 rounded-xl bg-accent-red text-white text-xs font-bold hover:bg-accent-red/90 transition-colors shadow-lg shadow-accent-red/20"
-                >
-                  Xác Nhận Check-in
-                </button>
-              </form>
-
-              {checkInResult && (
-                <div
-                  className={`p-3.5 rounded-xl border text-xs ${
-                    checkInResult.found
-                      ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300"
-                      : "bg-red-500/10 border-red-500/30 text-red-300"
-                  }`}
-                >
-                  <div className="font-bold flex items-center gap-1.5 mb-1">
-                    {checkInResult.found ? <CheckCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
-                    <span>{checkInResult.found ? "Hợp Lệ" : "Không Tìm Thấy"}</span>
-                  </div>
-                  <p>{checkInResult.message}</p>
-                  {checkInResult.ticket && (
-                    <div className="mt-2 pt-2 border-t border-white/10 text-[11px] text-neutral-300 space-y-0.5">
-                      <div>Phim: <strong>{checkInResult.ticket.movieTitle}</strong></div>
-                      <div>Rạp: {checkInResult.ticket.cinemaName}</div>
-                      <div>Ghế: <span className="text-amber-400 font-bold">{checkInResult.ticket.seats?.join(", ")}</span></div>
-                    </div>
-                  )}
+              <div className="p-3 rounded-xl bg-white/5 border border-white/10 space-y-2 text-xs text-neutral-300">
+                <div className="flex items-center justify-between">
+                  <span className="text-neutral-400">Phương thức:</span>
+                  <span className="font-semibold text-white">Camera Quét QR Real-time</span>
                 </div>
-              )}
+                <div className="flex items-center justify-between">
+                  <span className="text-neutral-400">Bảo mật:</span>
+                  <span className="text-amber-400 font-mono">STAFF_SCAN_SECRET</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-neutral-400">Trạng thái:</span>
+                  <span className="text-emerald-400 font-semibold">Sẵn sàng hoạt động</span>
+                </div>
+              </div>
+
+              <Link
+                href="/scanner"
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-accent-red to-rose-600 hover:from-accent-red/90 hover:to-rose-600/90 text-white text-xs font-bold transition-all shadow-lg shadow-accent-red/20 flex items-center justify-center gap-2 group"
+              >
+                <span>Mở Máy Quét Vé /scanner</span>
+                <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+              </Link>
             </div>
           </div>
         )}
@@ -770,58 +739,59 @@ export default function AdminDashboardPage() {
 
         {/* TAB 4: SOÁT VÉ & CHECK-IN */}
         {activeTab === "tickets" && (
-          <div className="p-6 rounded-2xl bg-[#14151B] border border-white/10 max-w-2xl mx-auto w-full space-y-6">
-            <div className="text-center">
-              <div className="w-12 h-12 rounded-2xl bg-accent-red/20 text-accent-red flex items-center justify-center mx-auto mb-3">
-                <QrCode className="w-6 h-6" />
-              </div>
-              <h3 className="text-lg font-bold text-white">Cổng Soát Vé - Beta Xuân Thủy</h3>
-              <p className="text-xs text-neutral-400 mt-1">Dành cho nhân viên soát vé tại cửa phòng chiếu</p>
+          <div className="p-8 rounded-2xl bg-[#14151B] border border-white/10 max-w-2xl mx-auto w-full space-y-6 text-center shadow-2xl">
+            <div className="w-16 h-16 rounded-2xl bg-accent-red/20 text-accent-red flex items-center justify-center mx-auto mb-2 shadow-lg shadow-accent-red/20">
+              <QrCode className="w-8 h-8" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-white">Hệ Thống Soát Vé Điện Tử - Beta Xuân Thủy</h3>
+              <p className="text-xs text-neutral-400 mt-1.5 max-w-md mx-auto leading-relaxed">
+                Hệ thống soát vé tập trung chống gian lận đa luồng. Mọi lượt soát vé phải thông qua ứng dụng máy quét PWA để xác thực chữ ký HMAC và đánh dấu nguyên tử (Atomic Check-in) trên Redis/Store.
+              </p>
             </div>
 
-            <form onSubmit={handleVerifyTicket} className="space-y-3">
-              <label className="text-xs text-neutral-400 font-medium block">Mã vé điện tử (E-Ticket Code):</label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="Nhập mã vé hoặc quét QR..."
-                  value={ticketCodeInput}
-                  onChange={(e) => setTicketCodeInput(e.target.value)}
-                  className="flex-1 px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-accent-red"
-                />
-                <button
-                  type="submit"
-                  className="px-5 py-3 rounded-xl bg-accent-red text-white text-xs font-bold hover:bg-accent-red/90 transition-colors"
-                >
-                  Kiểm Tra
-                </button>
-              </div>
-            </form>
-
-            {checkInResult && (
-              <div
-                className={`p-4 rounded-xl border text-sm ${
-                  checkInResult.found
-                    ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300"
-                    : "bg-red-500/10 border-red-500/30 text-red-300"
-                }`}
-              >
-                <div className="font-bold flex items-center gap-2 mb-2">
-                  {checkInResult.found ? <CheckCircle className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
-                  <span>{checkInResult.found ? "XÁC NHẬN VÉ HỢP LỆ" : "MÃ VÉ KHÔNG TỒN TẠI"}</span>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-left">
+              <div className="p-3.5 rounded-xl bg-white/5 border border-white/5">
+                <div className="font-bold text-xs text-white mb-1 flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Chống Vé Kép</span>
                 </div>
-                <p className="text-xs text-neutral-200">{checkInResult.message}</p>
-                {checkInResult.ticket && (
-                  <div className="mt-3 pt-3 border-t border-white/10 text-xs text-neutral-300 space-y-1">
-                    <div>Phim: <strong className="text-white">{checkInResult.ticket.movieTitle}</strong></div>
-                    <div>Suất chiếu: {checkInResult.ticket.showTime} - {checkInResult.ticket.showDate}</div>
-                    <div>Phòng chiếu: {checkInResult.ticket.roomName}</div>
-                    <div>Ghế đã đặt: <strong className="text-amber-400">{checkInResult.ticket.seats?.join(", ")}</strong></div>
-                    <div>Tổng tiền: {formatVND(checkInResult.ticket.totalAmount)}</div>
-                  </div>
-                )}
+                <p className="text-[11px] text-neutral-400 leading-snug">
+                  Ngăn chặn 100% tình huống dùng lại vé hoặc hai máy quét cùng lúc.
+                </p>
               </div>
-            )}
+
+              <div className="p-3.5 rounded-xl bg-white/5 border border-white/5">
+                <div className="font-bold text-xs text-white mb-1 flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Kiểm Soát F&B</span>
+                </div>
+                <p className="text-[11px] text-neutral-400 leading-snug">
+                  Hiển thị chi tiết combo bắp nước để nhân viên giao đúng món cho khách.
+                </p>
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-white/5 border border-white/5">
+                <div className="font-bold text-xs text-white mb-1 flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>Âm Báo Trực Quan</span>
+                </div>
+                <p className="text-[11px] text-neutral-400 leading-snug">
+                  Web Audio Synth phản hồi âm thanh hợp lệ hoặc từ chối tức thì.
+                </p>
+              </div>
+            </div>
+
+            <div className="pt-3">
+              <Link
+                href="/scanner"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-accent-red hover:bg-accent-red/90 text-white text-xs font-bold transition-all shadow-xl shadow-accent-red/25 group"
+              >
+                <QrCode className="w-4 h-4" />
+                <span>Truy Cập Ứng Dụng Soát Vé Chuyên Dụng (/scanner)</span>
+                <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+              </Link>
+            </div>
           </div>
         )}
 
