@@ -45,6 +45,8 @@ export interface UseSeatHoldOptions {
 
 export function useSeatHold(showtimeId: string | null, options: UseSeatHoldOptions = {}) {
   const [state, setState] = useState<SeatHoldState>(INITIAL_STATE);
+  /** true khi còn request giữ/nhả ghế đang chạy hoặc đang chờ trong hàng đợi. */
+  const [busy, setBusy] = useState(false);
 
   const showtimeRef = useRef<string | null>(showtimeId);
   const holdIdRef = useRef<string | null>(null);
@@ -179,6 +181,7 @@ export function useSeatHold(showtimeId: string | null, options: UseSeatHoldOptio
 
   const drain = useCallback(async () => {
     runningRef.current = true;
+    setBusy(true);
     try {
       while (pendingRef.current !== null) {
         const next = pendingRef.current;
@@ -187,6 +190,7 @@ export function useSeatHold(showtimeId: string | null, options: UseSeatHoldOptio
       }
     } finally {
       runningRef.current = false;
+      if (mountedRef.current) setBusy(false);
     }
   }, [doHold]);
 
@@ -217,7 +221,7 @@ export function useSeatHold(showtimeId: string | null, options: UseSeatHoldOptio
     setState(INITIAL_STATE);
   }, []);
 
-  return { ...state, hold, release, markConfirmed, reset };
+  return { ...state, busy, hold, release, markConfirmed, reset };
 }
 
 /* -------------------------------------------------------------------------- */

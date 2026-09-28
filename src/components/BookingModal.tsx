@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
-import { Movie, Seat, BookingInfo, PopcornFlavor, DrinkType, DrinkSize, SelectedComboItem } from "@/types";
+import React, { useState, useMemo, useEffect, useRef } from "react";
+import { Movie, Seat, BookingInfo, PopcornFlavor, DrinkType, DrinkSize, SelectedComboItem, ShowTime } from "@/types";
 import {
   MOCK_CINEMAS,
   MOCK_SHOWTIMES,
@@ -13,7 +13,31 @@ import {
 import { formatVND } from "@/lib/utils";
 import { checkOrphanSeats } from "@/lib/orphanSeatRule";
 import { ViewFromSeatModal } from "./ViewFromSeatModal";
-import { X, Check, Ticket, MapPin, Calendar, Clock, Armchair, QrCode, Download, ArrowRight, ArrowLeft, ShieldCheck, Timer, Copy, CreditCard, Eye, Sparkles, AlertTriangle, Info, Utensils, Coffee } from "lucide-react";
+import {
+  X,
+  Check,
+  Ticket,
+  MapPin,
+  Calendar,
+  Clock,
+  Armchair,
+  QrCode,
+  Download,
+  ArrowRight,
+  ArrowLeft,
+  ShieldCheck,
+  Timer,
+  Copy,
+  CreditCard,
+  Eye,
+  Sparkles,
+  AlertTriangle,
+  Info,
+  Utensils,
+  Coffee,
+} from "lucide-react";
+import { useSeatHold, useSeatAvailability } from "@/hooks/useSeatHold";
+import { ApiError, describeError, submitBooking } from "@/lib/bookingClient";
 
 interface BookingModalProps {
   movie: Movie | null;
@@ -24,6 +48,29 @@ interface BookingModalProps {
 
 const ROWS = ["A", "B", "C", "D", "E", "F", "G", "H", "K"];
 const SEATS_PER_ROW = 12;
+const MAX_SEATS = 8;
+const MAX_COMBO_QTY = 10; // khớp maxQuantity phía server
+const PHONE_PATTERN = /^(?:\+84|84|0)\d{9,10}$/;
+const WEEKDAYS = ["Chủ Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy"];
+
+/** Ngày YYYY-MM-DD theo giờ Việt Nam, lệch offset ngày so với hôm nay. */
+function vnDate(offsetDays: number): string {
+  const d = new Date(Date.now() + 7 * 3_600_000);
+  d.setUTCDate(d.getUTCDate() + offsetDays);
+  return d.toISOString().slice(0, 10);
+}
+
+function dateLabel(date: string, index: number): string {
+  const [y, m, d] = date.split("-").map(Number);
+  const ddmm = `${String(d).padStart(2, "0")}/${String(m).padStart(2, "0")}`;
+  if (index === 0) return `Hôm nay (${ddmm})`;
+  if (index === 1) return `Ngày mai (${ddmm})`;
+  return `${WEEKDAYS[new Date(Date.UTC(y, m - 1, d)).getUTCDay()]} (${ddmm})`;
+}
+
+function showtimeStartMs(st: ShowTime): number {
+  return Date.parse(`${st.date}T${st.time}:00+07:00`);
+}
 
 export const BookingModal: React.FC<BookingModalProps> = ({
   movie,
@@ -40,17 +87,19 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   const [viewSeatMode, setViewSeatMode] = useState<boolean>(false);
   // Cảnh báo ghế mồ côi (Orphan Seat Prevention)
   const [orphanWarning, setOrphanWarning] = useState<string | null>(null);
-  // Đếm ngược giữ ghế Bước 2 (10 phút = 600s)
-  const [seatHoldTime, setSeatHoldTime] = useState<number>(600);
 
-  // Chọn rạp và suất chiếu
-  const [selectedCinema, setSelectedCinema] = useState(MOCK_CINEMAS[0].name);
-  const [selectedDate, setSelectedDate] = useState("2026-09-24");
-  const [selectedTime, setSelectedTime] = useState("19:00");
-  const [selectedFormat, setSelectedFormat] = useState("2D Phụ Đề");
+  // Chọn rạp / ngày / suất chiếu (theo id)
+  const [selectedCinemaId, setSelectedCinemaId] = useState<string>(MOCK_CINEMAS[0].id);
+  const [selectedDate, setSelectedDate] = useState<string>(() => vnDate(0));
+  const [selectedShowtimeId, setSelectedShowtimeId] = useState<string | null>(null);
 
-  // Ghế đã chọn
+  // Ghế đang chọn (ý định của người dùng); nguồn sự thật về ghế được giữ là server (h.seats)
   const [selectedSeats, setSelectedSeats] = useState<Seat[]>([]);
+
+  // Thông báo lỗi/nhắc nhở hiển thị trong modal (thay alert)
+  const [notice, setNotice] = useState<string | null>(null);
+  // Tổng tiền do server tính khi báo PRICE_CHANGED, chỉ hiệu lực với đúng giỏ hàng lúc đó
+  const [serverTotalRec, setServerTotalRec] = useState<{ total: number; basis: string } | null>(null);
 
   // Bắp nước (Map comboId -> quantity)
   const [combos, setCombos] = useState<Record<string, number>>({});
@@ -150,82 +199,127 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     }
   };
 
-  // Đếm ngược giữ ghế (300 giây = 5 phút)
-  const [timeLeft, setTimeLeft] = useState(300);
-
   // Kết quả vé sau khi tạo
   const [completedBooking, setCompletedBooking] = useState<BookingInfo | null>(null);
 
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (step === 4 && timeLeft > 0) {
-      timer = setInterval(() => setTimeLeft((t) => t - 1), 1000);
-    }
-    return () => clearInterval(timer);
-  }, [step, timeLeft]);
+  const dateOptions = useMemo(() => [0, 1, 2].map(vnDate), []);
 
-  // Khởi tạo trạng thái ghế ngẫu nhiên
+  const movieShowtimes = useMemo<ShowTime[]>(
+    () => (movie ? MOCK_SHOWTIMES.filter((s) => s.movieId === movie.id) : []),
+    [movie],
+  );
+
+  const visibleShowtimes = useMemo(
+    () =>
+      movieShowtimes
+        .filter((s) => s.cinemaId === selectedCinemaId && s.date === selectedDate)
+        .sort((a, b) => a.time.localeCompare(b.time)),
+    [movieShowtimes, selectedCinemaId, selectedDate],
+  );
+
+  const selectedShowtime = movieShowtimes.find((s) => s.id === selectedShowtimeId) ?? null;
+  // Giữ đúng tên biến cũ để JSX bước 3–5 không phải sửa
+  const selectedCinema = MOCK_CINEMAS.find((c) => c.id === selectedCinemaId)?.name ?? "";
+  const selectedTime = selectedShowtime?.time ?? "";
+  const selectedFormat = selectedShowtime?.format ?? "";
+  const roomName = selectedShowtime?.roomName ?? "";
+
+  // Giữ ghế phía server (300s). Truyền null khi modal đóng => hook tự nhả ghế.
+  const h = useSeatHold(movie ? selectedShowtimeId : null, {
+    onExpire: () => {
+      setSelectedSeats([]);
+      setStep((s) => (s >= 2 && s <= 4 ? 2 : s));
+      setNotice("Đã hết thời gian giữ ghế. Vui lòng chọn lại ghế.");
+    },
+  });
+
+  // Trạng thái ghế thời gian thực (chỉ poll khi đang ở bước 2–4)
+  const availabilityActive = Boolean(movie && selectedShowtimeId && step >= 2 && step <= 4);
+  const avail = useSeatAvailability(availabilityActive ? selectedShowtimeId : null, h.holdId, {
+    refreshKey: h.seats.join(","),
+  });
+
   const seatsMatrix: Seat[][] = useMemo(() => {
-    const bookedSeed = ["B4", "B5", "E6", "E7", "F6", "F7", "F8", "G5", "G6", "G7"];
-
     return ROWS.map((row) => {
-      const seatsInRow: Seat[] = [];
       const isCouple = row === "K";
       const isVip = ["E", "F", "G", "H"].includes(row);
       const count = isCouple ? 6 : SEATS_PER_ROW;
-
+      const seatsInRow: Seat[] = [];
       for (let i = 1; i <= count; i++) {
         const id = `${row}${i}`;
-        const isBooked = bookedSeed.includes(id);
-        const type = isCouple ? "couple" : isVip ? "vip" : "standard";
-        const price = isCouple ? 130000 : isVip ? 75000 : 55000;
-
+        const remote = avail.seats[id];
         seatsInRow.push({
           id,
           row,
           number: i,
-          type,
-          price,
-          status: isBooked ? "booked" : "available",
+          type: isCouple ? "couple" : isVip ? "vip" : "standard",
+          price: isCouple ? 130000 : isVip ? 75000 : 55000, // chỉ để hiển thị; server tính lại
+          // "sold" và "held" (do người khác giữ) đều không chọn được; "mine"/"free" thì chọn được.
+          // Gán "booked" để checkOrphanSeats coi các ghế này là đã có người.
+          status: remote === "sold" || remote === "held" ? "booked" : "available",
         });
       }
       return seatsInRow;
     });
-  }, [movie]);
+  }, [avail.seats]);
 
-  // Đếm ngược 10 phút giữ ghế khi đã chọn ghế (Bước 2)
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (step === 2 && selectedSeats.length > 0 && seatHoldTime > 0) {
-      timer = setInterval(() => setSeatHoldTime((t) => Math.max(0, t - 1)), 1000);
-    }
-    return () => clearInterval(timer);
-  }, [step, selectedSeats.length, seatHoldTime]);
+  const preselectedRef = useRef(false);
 
-  // Tự động ghim ghế khi được CineBot AI đề xuất qua Đặt vé nhanh
+  // (a) Mở/đóng modal: reset, và chọn sẵn suất chiếu sắp tới gần nhất của phim
   useEffect(() => {
-    if (movie && initialSeats && initialSeats.length > 0 && seatsMatrix.length > 0) {
-      const preselected: Seat[] = [];
-      seatsMatrix.forEach((row) => {
-        row.forEach((seat) => {
-          if (initialSeats.includes(seat.id) && seat.status === "available") {
-            preselected.push(seat);
-          }
-        });
-      });
-      if (preselected.length > 0) {
-        setSelectedSeats(preselected);
-        setStep(2);
-      }
-    } else if (!movie) {
+    if (!movie) {
       setStep(1);
       setSelectedSeats([]);
       setCombos({});
       setCompletedBooking(null);
+      setSelectedShowtimeId(null);
+      setNotice(null);
+      setServerTotalRec(null);
+      preselectedRef.current = false;
+      return;
     }
-  }, [movie, initialSeats, seatsMatrix]);
+    const now = Date.now();
+    const next = movieShowtimes
+      .filter((s) => showtimeStartMs(s) > now)
+      .sort((a, b) => showtimeStartMs(a) - showtimeStartMs(b))[0];
+    if (next) {
+      setSelectedCinemaId(next.cinemaId);
+      setSelectedDate(next.date);
+      setSelectedShowtimeId(next.id);
+    } else {
+      setSelectedShowtimeId(null);
+    }
+  }, [movie, movieShowtimes]);
 
-  if (!movie) return null;
+  // (b) CineBot đề xuất ghế: chọn sẵn ĐÚNG MỘT LẦN rồi giữ ghế trên server
+  useEffect(() => {
+    if (!movie || !initialSeats || initialSeats.length === 0 || !selectedShowtimeId || preselectedRef.current) return;
+    const wanted = seatsMatrix
+      .flat()
+      .filter((s) => initialSeats.includes(s.id) && s.status === "available")
+      .slice(0, MAX_SEATS);
+    if (wanted.length === 0) return;
+    preselectedRef.current = true;
+    setSelectedSeats(wanted);
+    setStep(2);
+    h.hold(wanted.map((s) => s.id));
+  }, [movie, initialSeats, selectedShowtimeId, seatsMatrix, h.hold]);
+
+  // (c) Đồng bộ: khi hàng đợi giữ ghế đã xong, ghế đang chọn PHẢI bằng ghế server đã giữ.
+  //     Xử lý trường hợp bị người khác lấy mất ghế (SEAT_TAKEN), bấm nhanh nhiều ghế, đổi suất, lỗi mạng giữa chừng.
+  useEffect(() => {
+    if (h.busy || (h.status !== "held" && h.status !== "idle")) return;
+    const serverIds = new Set(h.seats);
+    const same = selectedSeats.length === serverIds.size && selectedSeats.every((s) => serverIds.has(s.id));
+    if (same) return;
+    setSelectedSeats(seatsMatrix.flat().filter((s) => serverIds.has(s.id)));
+  }, [h.busy, h.status, h.seats, seatsMatrix, selectedSeats]);
+
+  const applySelection = (next: Seat[]) => {
+    setSelectedSeats(next);
+    setNotice(null);
+    h.hold(next.map((s) => s.id)); // xếp hàng + gộp; rỗng = nhả hết
+  };
 
   const handleToggleSeat = (seat: Seat) => {
     if (seat.status === "booked") return;
@@ -255,20 +349,20 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     setOrphanWarning(null);
 
     if (isCurrentlySelected) {
-      setSelectedSeats(selectedSeats.filter((s) => s.id !== seat.id));
+      applySelection(selectedSeats.filter((s) => s.id !== seat.id));
     } else {
-      if (selectedSeats.length >= 8) {
-        alert("Bạn chỉ có thể chọn tối đa 8 ghế trong một lần đặt!");
+      if (selectedSeats.length >= MAX_SEATS) {
+        setNotice(`Bạn chỉ có thể chọn tối đa ${MAX_SEATS} ghế trong một lần đặt.`);
         return;
       }
-      setSelectedSeats([...selectedSeats, seat]);
+      applySelection([...selectedSeats, seat]);
     }
   };
 
   const handleUpdateCombo = (comboId: string, delta: number) => {
     setCombos((prev) => {
       const current = prev[comboId] || 0;
-      const next = Math.max(0, current + delta);
+      const next = Math.min(MAX_COMBO_QTY, Math.max(0, current + delta));
       return { ...prev, [comboId]: next };
     });
   };
@@ -308,71 +402,20 @@ export const BookingModal: React.FC<BookingModalProps> = ({
       .filter((item): item is SelectedComboItem => item !== null);
   }, [combos, comboConfigs]);
 
+  // Early return sau mọi hook
+  if (!movie) return null;
+
   // Tính tổng tiền
-  const seatsTotal = selectedSeats.reduce((sum, s) => sum + s.price, 0);
+  const basis = JSON.stringify([selectedSeats.map((s) => s.id), selectedConcessions]);
+  const clientSeatsTotal = selectedSeats.reduce((sum, s) => sum + s.price, 0);
+  // Khi server đã xác nhận giữ ghế, dùng báo giá của server cho phần vé
+  const seatsTotal = h.status === "held" && !h.busy && h.quote ? h.quote.ticketsSubtotal : clientSeatsTotal;
   const combosTotal = selectedConcessions.reduce((sum, c) => sum + c.totalPrice, 0);
-  const grandTotal = seatsTotal + combosTotal;
+  // Sau PRICE_CHANGED: dùng đúng số server báo cho giỏ hàng đó (tự vô hiệu khi giỏ hàng đổi)
+  const serverTotal = serverTotalRec && serverTotalRec.basis === basis ? serverTotalRec.total : null;
+  const grandTotal = serverTotal ?? seatsTotal + combosTotal;
 
-  // Chuyển sang bước thanh toán QR
-  const handleProceedToPayment = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!customerName.trim() || !customerPhone.trim()) {
-      alert("Vui lòng điền đầy đủ họ tên và số điện thoại nhận vé!");
-      return;
-    }
-    setTimeLeft(300); // Reset timer 5 phút
-    setStep(4);
-  };
-
-  // Xác nhận thanh toán & xuất vé chính thức
-  const handleConfirmPaid = async () => {
-    try {
-      setIsSubmitting(true);
-      const res = await fetch("/api/booking", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          movieTitle: movie.title,
-          posterPath: movie.posterPath,
-          cinemaName: selectedCinema,
-          roomName: selectedFormat.includes("IMAX") ? "Phòng IMAX Laser 01" : "Phòng Cinema 03",
-          format: selectedFormat,
-          showDate: selectedDate,
-          showTime: selectedTime,
-          seats: selectedSeats.map((s) => s.id),
-          totalAmount: grandTotal,
-          customerName,
-          customerEmail,
-          customerPhone,
-          concessions: selectedConcessions,
-        }),
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        const newTicket: BookingInfo = data.data;
-        setCompletedBooking(newTicket);
-
-        // Lưu vé vào LocalStorage máy khách (phục vụ Ví Vé)
-        try {
-          const existing = JSON.parse(localStorage.getItem("cinemax_tickets") || "[]");
-          localStorage.setItem("cinemax_tickets", JSON.stringify([newTicket, ...existing]));
-          if (onBookingSuccess) onBookingSuccess(newTicket);
-        } catch (err) {
-          console.error("Lỗi lưu vé vào LocalStorage:", err);
-        }
-
-        setStep(5);
-      } else {
-        alert(data.error || "Đặt vé không thành công, vui lòng thử lại!");
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Lỗi kết nối máy chủ");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  const seatsReady = selectedSeats.length > 0 && h.status === "held" && !h.busy;
 
   const formatTimer = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -380,8 +423,136 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
+  const alertText =
+    notice ??
+    (h.conflictSeats.length > 0
+      ? `Ghế ${h.conflictSeats.join(", ")} vừa được người khác chọn. Vui lòng chọn ghế khác.`
+      : h.error
+      ? describeError(h.error).message
+      : null);
+
+  const alertBanner = alertText ? (
+    <div className="flex items-start gap-3 p-3 rounded-xl bg-red-600/15 border border-red-500/50 text-red-200 text-xs">
+      <AlertTriangle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+      <span className="flex-1">{alertText}</span>
+      {h.status === "error" && (
+        <button
+          type="button"
+          onClick={() => h.hold(selectedSeats.map((s) => s.id))}
+          className="px-2 py-0.5 rounded bg-red-500/30 hover:bg-red-500/50 font-bold"
+        >
+          Thử lại
+        </button>
+      )}
+    </div>
+  ) : null;
+
+  const holdBanner =
+    h.status === "held" ? (
+      <div
+        className={`flex items-center justify-between px-4 py-2.5 rounded-xl border text-xs transition-all ${
+          h.secondsLeft <= 60
+            ? "bg-red-500/15 border-red-500/50 text-red-400 animate-pulse"
+            : h.secondsLeft <= 120
+            ? "bg-amber-500/15 border-amber-500/40 text-amber-300"
+            : "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+        }`}
+      >
+        <div className="flex items-center gap-2">
+          <Timer className="w-4 h-4" />
+          <span>
+            Ghế được giữ cho bạn: <strong>{formatTimer(h.secondsLeft)}</strong>
+          </span>
+        </div>
+        <span className="text-[11px] opacity-80 hidden sm:inline">Hết giờ, ghế tự động được nhả</span>
+      </div>
+    ) : null;
+
   // URL VietQR mẫu chuẩn Napas247
-  const vietQrUrl = `https://img.vietqr.io/image/MB-0388899999-compact2.png?amount=${grandTotal}&addInfo=${encodeURIComponent(`VECINEMAX ${selectedSeats.map(s => s.id).join("")}`)}&accountName=BETA%20CINEMAS%20XUAN%20THUY`;
+  const vietQrUrl = `https://img.vietqr.io/image/MB-0388899999-compact2.png?amount=${grandTotal}&addInfo=${encodeURIComponent(
+    `VECINEMAX ${selectedSeats.map((s) => s.id).join("")}`
+  )}&accountName=BETA%20CINEMAS%20XUAN%20THUY`;
+
+  // Chuyển sang bước thanh toán QR
+  const handleProceedToPayment = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!customerName.trim() || !customerPhone.trim()) {
+      setNotice("Vui lòng điền đầy đủ họ tên và số điện thoại nhận vé.");
+      return;
+    }
+    if (!PHONE_PATTERN.test(customerPhone.replace(/[\s.\-()]/g, ""))) {
+      setNotice("Số điện thoại không hợp lệ.");
+      return;
+    }
+    if (!seatsReady) {
+      setNotice("Ghế của bạn chưa được giữ. Vui lòng chọn lại ghế.");
+      setStep(2);
+      return;
+    }
+    setNotice(null);
+    h.hold(selectedSeats.map((s) => s.id)); // làm mới 5 phút cho bước thanh toán
+    setStep(4);
+  };
+
+  // Xác nhận thanh toán & xuất vé chính thức
+  const handleConfirmPaid = async () => {
+    if (!selectedShowtimeId || !h.holdId || h.status !== "held") {
+      setNotice("Ghế chưa được giữ. Vui lòng chọn lại ghế.");
+      setStep(2);
+      return;
+    }
+    setIsSubmitting(true);
+    setNotice(null);
+    try {
+      const res = await submitBooking({
+        showtimeId: selectedShowtimeId,
+        holdId: h.holdId,
+        seats: selectedSeats.map((s) => s.id),
+        customer: { name: customerName.trim(), phone: customerPhone.trim(), email: customerEmail.trim() || undefined },
+        concessions: selectedConcessions.map((c) => ({
+          id: c.id,
+          quantity: c.quantity,
+          popcornFlavors: c.popcornFlavors,
+          drinks: c.drinks,
+        })),
+        expectedTotal: grandTotal, // chỉ để server phát hiện lệch giá
+        posterPath: movie.posterPath,
+      });
+
+      const newTicket: BookingInfo = res.data;
+      h.markConfirmed();
+      setCompletedBooking(newTicket);
+      try {
+        const existing = JSON.parse(localStorage.getItem("cinemax_tickets") || "[]");
+        localStorage.setItem("cinemax_tickets", JSON.stringify([newTicket, ...existing]));
+      } catch (err) {
+        console.error("Lỗi lưu vé vào LocalStorage:", err);
+      }
+      if (onBookingSuccess) onBookingSuccess(newTicket);
+      setStep(5);
+    } catch (err) {
+      const { message, action } = describeError(err);
+      setNotice(message);
+      if (action === "reselect") {
+        h.release(); // hold đã chết hoặc không khớp: dọn cho sạch (idempotent)
+        setSelectedSeats([]);
+        setStep(2);
+      } else if (action === "review_price") {
+        const price = err instanceof ApiError ? (err.body.price as { total?: unknown } | undefined) : undefined;
+        if (price && typeof price.total === "number") setServerTotalRec({ total: price.total, basis });
+        setStep(3);
+      } else if (action === "fix_input") {
+        setStep(3);
+      } else if (action === "fatal") {
+        h.release();
+        setSelectedSeats([]);
+        setStep(1);
+      }
+      // "retry": ở lại bước 4, khách bấm lại được
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md overflow-y-auto animate-in fade-in duration-200">
@@ -425,9 +596,13 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 {MOCK_CINEMAS.map((cinema) => (
                   <div
                     key={cinema.id}
-                    onClick={() => setSelectedCinema(cinema.name)}
+                    onClick={() => {
+                      setSelectedCinemaId(cinema.id);
+                      setSelectedShowtimeId(null);
+                      setSelectedSeats([]);
+                    }}
                     className={`p-3.5 rounded-xl border cursor-pointer transition-all ${
-                      selectedCinema === cinema.name
+                      selectedCinemaId === cinema.id
                         ? "border-accent-red bg-accent-red/10 ring-1 ring-accent-red"
                         : "border-neutral-800 bg-neutral-900/40 hover:border-neutral-700"
                     }`}
@@ -444,47 +619,69 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 2. Chọn ngày & Suất chiếu
               </label>
               <div className="flex gap-2 overflow-x-auto pb-2">
-                {["2026-09-24", "2026-09-25", "2026-09-26"].map((date) => (
+                {dateOptions.map((date, i) => (
                   <button
                     key={date}
-                    onClick={() => setSelectedDate(date)}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                    onClick={() => {
+                      setSelectedDate(date);
+                      setSelectedShowtimeId(null);
+                      setSelectedSeats([]);
+                    }}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
                       selectedDate === date
                         ? "bg-white text-black shadow-md"
                         : "bg-neutral-900 border border-neutral-800 text-neutral-300 hover:bg-neutral-800"
                     }`}
                   >
-                    {date === "2026-09-24" ? "Hôm nay (24/09)" : date === "2026-09-25" ? "Ngày mai (25/09)" : "Thứ Bảy (26/09)"}
+                    {dateLabel(date, i)}
                   </button>
                 ))}
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
-                {MOCK_SHOWTIMES.map((st) => (
-                  <div
-                    key={st.id}
-                    onClick={() => {
-                      setSelectedTime(st.time);
-                      setSelectedFormat(st.format);
-                    }}
-                    className={`p-3 rounded-xl border text-center cursor-pointer transition-all ${
-                      selectedTime === st.time
-                        ? "border-accent-red bg-accent-red/10 ring-1 ring-accent-red"
-                        : "border-neutral-800 bg-neutral-900/40 hover:border-neutral-700"
-                    }`}
-                  >
-                    <span className="block font-black text-base text-white">{st.time}</span>
-                    <span className="text-[11px] text-accent-cyan font-semibold">{st.format}</span>
-                    <span className="block text-[10px] text-neutral-400 mt-1">{st.roomName}</span>
-                  </div>
-                ))}
-              </div>
+              {visibleShowtimes.length === 0 ? (
+                <p className="mt-4 text-xs text-neutral-400">
+                  Chưa có suất chiếu phim này tại rạp/ngày đã chọn. Hãy thử rạp hoặc ngày khác.
+                </p>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
+                  {visibleShowtimes.map((st) => {
+                    const started = showtimeStartMs(st) <= Date.now();
+                    return (
+                      <button
+                        key={st.id}
+                        type="button"
+                        disabled={started}
+                        onClick={() => {
+                          if (st.id !== selectedShowtimeId) {
+                            setSelectedSeats([]); // đổi suất: hook tự nhả ghế của suất cũ
+                            setSelectedShowtimeId(st.id);
+                          }
+                        }}
+                        className={`p-3 rounded-xl border text-center transition-all ${
+                          started
+                            ? "border-neutral-800 bg-neutral-900/20 opacity-40 cursor-not-allowed"
+                            : selectedShowtimeId === st.id
+                            ? "border-accent-red bg-accent-red/10 ring-1 ring-accent-red"
+                            : "border-neutral-800 bg-neutral-900/40 hover:border-neutral-700"
+                        }`}
+                      >
+                        <span className="block font-black text-base text-white">{st.time}</span>
+                        <span className="text-[11px] text-accent-cyan font-semibold">{st.format}</span>
+                        <span className="block text-[10px] text-neutral-400 mt-1">
+                          {started ? "Đã chiếu" : st.roomName}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             <div className="pt-4 border-t border-neutral-800 flex justify-end">
               <button
+                disabled={!selectedShowtimeId}
                 onClick={() => setStep(2)}
-                className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-accent-red hover:bg-accent-redHover text-white font-bold text-sm transition-all"
+                className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-accent-red hover:bg-accent-redHover disabled:opacity-50 text-white font-bold text-sm transition-all"
               >
                 <span>Tiếp tục: Chọn ghế</span>
                 <ArrowRight className="w-4 h-4" />
@@ -496,28 +693,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
         {/* BƯỚC 2: CHỌN GHẾ NGỒI (CHUẨN FANDANGO & CGV) */}
         {step === 2 && (
           <div className="p-6 space-y-5">
-            {/* Thanh đếm ngược giữ ghế 10 phút */}
-            {selectedSeats.length > 0 && (
-              <div
-                className={`flex items-center justify-between px-4 py-2.5 rounded-xl border text-xs transition-all ${
-                  seatHoldTime <= 60
-                    ? "bg-red-500/15 border-red-500/50 text-red-400 animate-pulse shadow-[0_0_15px_rgba(239,68,68,0.3)]"
-                    : seatHoldTime <= 180
-                    ? "bg-amber-500/15 border-amber-500/40 text-amber-300"
-                    : "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Timer className={`w-4 h-4 ${seatHoldTime <= 60 ? "animate-spin text-red-400" : "text-emerald-400"}`} />
-                  <span>
-                    Thời gian giữ ghế tạm thời: <strong>{formatTimer(seatHoldTime)}</strong>
-                  </span>
-                </div>
-                <span className="text-[11px] opacity-80 hidden sm:inline">
-                  Hệ thống tự động khóa ghế (Zero Zombie Seats)
-                </span>
-              </div>
-            )}
+            {holdBanner}
+            {alertBanner}
 
             {/* Thanh công cụ: Chế độ xem góc nhìn 3D (View from seat) & Sweet Spot */}
             <div className="flex flex-wrap items-center justify-between gap-2.5 p-3 rounded-xl bg-white/[0.03] border border-white/10">
@@ -594,15 +771,19 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                       {row.map((seat) => {
                         const isSelected = selectedSeats.some((s) => s.id === seat.id);
                         const isBooked = seat.status === "booked";
+                        const heldByOther = avail.seats[seat.id] === "held";
 
                         return (
                           <div key={seat.id} className="relative group">
                             <button
                               disabled={isBooked}
+                              title={heldByOther ? "Đang được người khác giữ" : undefined}
                               onClick={() => handleToggleSeat(seat)}
                               className={`w-7 h-7 sm:w-8 sm:h-8 rounded-md text-[10px] sm:text-xs font-bold flex items-center justify-center transition-all ${
                                 isBooked
-                                  ? "bg-neutral-800/40 border border-neutral-800 text-neutral-600 cursor-not-allowed"
+                                  ? heldByOther
+                                    ? "bg-amber-900/20 border border-dashed border-amber-700/50 text-amber-700/70 cursor-not-allowed"
+                                    : "bg-neutral-800/40 border border-neutral-800 text-neutral-600 cursor-not-allowed"
                                   : isSelected
                                   ? "bg-accent-red text-white shadow-lg shadow-accent-red/50 scale-105 ring-2 ring-white"
                                   : seat.type === "vip"
@@ -642,19 +823,23 @@ export const BookingModal: React.FC<BookingModalProps> = ({
             <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-neutral-400 pt-2 border-t border-neutral-800">
               <div className="flex items-center gap-1.5">
                 <div className="w-4 h-4 rounded bg-neutral-800 border border-neutral-700" />
-                <span>Thường (90k)</span>
+                <span>Thường (55k)</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <div className="w-4 h-4 rounded bg-amber-500/20 border border-amber-500/40" />
-                <span>VIP (115k)</span>
+                <span>VIP (75k)</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <div className="w-4 h-4 rounded bg-pink-500/20 border border-pink-500/40" />
-                <span>Sweetbox Đôi (220k)</span>
+                <span>Sweetbox Đôi (130k)</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <div className="w-4 h-4 rounded bg-accent-red" />
                 <span className="text-white font-bold">Đang chọn</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-4 h-4 rounded bg-amber-900/20 border border-dashed border-amber-700/50" />
+                <span>Đang được giữ</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <div className="w-4 h-4 rounded bg-neutral-800/40 border border-neutral-800" />
@@ -683,8 +868,11 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 </div>
 
                 <button
-                  disabled={selectedSeats.length === 0}
-                  onClick={() => setStep(3)}
+                  disabled={!seatsReady}
+                  onClick={() => {
+                    h.hold(selectedSeats.map((s) => s.id));
+                    setStep(3);
+                  }}
                   className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-accent-red hover:bg-accent-redHover disabled:opacity-50 text-white font-bold text-sm transition-all"
                 >
                   <span>Tiếp tục: Bắp nước</span>
@@ -698,6 +886,9 @@ export const BookingModal: React.FC<BookingModalProps> = ({
         {/* BƯỚC 3: COMBO BẮP NƯỚC & THÔNG TIN KHÁCH HÀNG */}
         {step === 3 && (
           <form onSubmit={handleProceedToPayment} className="p-6 space-y-6">
+            {holdBanner}
+            {alertBanner}
+
             <div>
               <div className="flex items-center justify-between mb-3">
                 <label className="block text-xs font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-1.5">
@@ -907,7 +1098,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                             Vị bắp: {sc.popcornFlavors.map(f => f === "cheese" ? "Phô mai" : f === "caramel" ? "Caramel" : f === "sweet" ? "Ngọt" : "Mặn").join(", ")} • Nước: {sc.drinks.map(d => `${d.type === "pepsi" ? "Pepsi" : d.type === "7up" ? "7Up" : d.type === "mirinda" ? "Mirinda" : "Trà đào"} (${d.size === "large" ? "32oz" : "22oz"})`).join(", ")}
                           </span>
                         </div>
-                        <span className="font-bold font-mono text-amber-400">
+                        <span className="font-mono text-amber-400 font-bold">
                           {formatVND(sc.totalPrice)}
                         </span>
                       </div>
@@ -939,6 +1130,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   <input
                     type="tel"
                     required
+                    pattern="[0-9+\s.\-()]{9,16}"
                     value={customerPhone}
                     onChange={(e) => setCustomerPhone(e.target.value)}
                     placeholder="0912 345 678"
@@ -989,13 +1181,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
         {/* BƯỚC 4: QUÉT MÃ QR THANH TOÁN (VIETQR / MOMO SIMULATOR) */}
         {step === 4 && (
           <div className="p-6 sm:p-8 space-y-6">
-            <div className="flex items-center justify-between bg-amber-500/10 border border-amber-500/30 px-4 py-3 rounded-xl text-amber-300 text-xs">
-              <div className="flex items-center gap-2">
-                <Timer className="w-4 h-4 animate-spin text-amber-400" />
-                <span>Thời gian giữ ghế còn lại: <strong>{formatTimer(timeLeft)}</strong></span>
-              </div>
-              <span className="text-neutral-400">Ghế sẽ tự giải phóng nếu hết hạn</span>
-            </div>
+            {holdBanner}
+            {alertBanner}
 
             {/* Tùy chọn phương thức */}
             <div className="flex items-center gap-3">
@@ -1124,8 +1311,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 <div className="space-y-2 pt-2">
                   <button
                     onClick={handleConfirmPaid}
-                    disabled={isSubmitting}
-                    className="w-full py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-extrabold text-sm shadow-lg shadow-emerald-500/30 transition-all flex items-center justify-center gap-2"
+                    disabled={isSubmitting || h.status !== "held"}
+                    className="w-full py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 disabled:opacity-50 text-white font-extrabold text-sm shadow-lg shadow-emerald-500/30 transition-all flex items-center justify-center gap-2"
                   >
                     <Check className="w-4 h-4" />
                     <span>{isSubmitting ? "Đang xác thực thanh toán..." : "Tôi Đã Chuyển Khoản Thành Công"}</span>
@@ -1260,7 +1447,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
             seat={previewSeat}
             movie={movie}
             cinemaName={selectedCinema}
-            roomName={selectedFormat.includes("IMAX") ? "Phòng IMAX Laser 01" : "Phòng Cinema 03"}
+            roomName={roomName}
             isSelected={selectedSeats.some((s) => s.id === previewSeat.id)}
             onConfirmSelect={(st) => {
               const isCurrentlySelected = selectedSeats.some((s) => s.id === st.id);
@@ -1275,13 +1462,13 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               }
 
               if (isCurrentlySelected) {
-                setSelectedSeats(selectedSeats.filter((s) => s.id !== st.id));
+                applySelection(selectedSeats.filter((s) => s.id !== st.id));
               } else {
-                if (selectedSeats.length >= 8) {
-                  alert("Bạn chỉ có thể chọn tối đa 8 ghế trong một lần đặt!");
+                if (selectedSeats.length >= MAX_SEATS) {
+                  setNotice(`Bạn chỉ có thể chọn tối đa ${MAX_SEATS} ghế trong một lần đặt.`);
                   return;
                 }
-                setSelectedSeats([...selectedSeats, st]);
+                applySelection([...selectedSeats, st]);
               }
             }}
             onClose={() => setPreviewSeat(null)}
