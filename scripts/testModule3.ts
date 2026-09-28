@@ -4,6 +4,8 @@ import { calculatePrice } from "../src/lib/pricing";
 import { holdSeats, releaseHold, confirmBooking, BookingError } from "../src/lib/bookingService";
 import { getSeatStore } from "../src/lib/seatStore";
 
+process.env.ALLOW_PAST_SHOWTIMES = "true";
+
 async function runTests() {
   console.log("=== BẮT ĐẦU KIỂM THỬ MODULE 3 (SEAT HOLD & BOOKING ENGINE) ===\n");
 
@@ -57,15 +59,16 @@ async function runTests() {
   // 3. Kiểm tra Tranh chấp 50 request cùng giữ ghế (Concurrency Race)
   console.log("3. Kiểm tra Tranh chấp 50 request cùng giữ ghế A1, A2:");
   const showtimeId = "st-beta-1";
-  const requests = Array.from({ length: 50 }, (_, i) =>
+  type RequestResult = { success: true; holdId: string } | { success: false; code: string };
+  const requests: Promise<RequestResult>[] = Array.from({ length: 50 }, () =>
     holdSeats({ showtimeId, seats: ["A1", "A2"] })
-      .then((res) => ({ success: true, holdId: res.hold.holdId }))
-      .catch((err) => ({ success: false, code: (err as BookingError).code })),
+      .then((res): RequestResult => ({ success: true, holdId: res.hold.holdId }))
+      .catch((err): RequestResult => ({ success: false, code: (err as BookingError).code })),
   );
 
   const results = await Promise.all(requests);
-  const successes = results.filter((r) => r.success);
-  const conflicts = results.filter((r) => !r.success && r.code === "SEAT_TAKEN");
+  const successes = results.filter((r): r is { success: true; holdId: string } => r.success);
+  const conflicts = results.filter((r): r is { success: false; code: string } => !r.success && r.code === "SEAT_TAKEN");
 
   assert.equal(successes.length, 1, "Chỉ duy nhất 1 request được thắng ghế");
   assert.equal(conflicts.length, 49, "49 request còn lại phải bị từ chối với mã SEAT_TAKEN");
@@ -135,6 +138,8 @@ async function runTests() {
       seats: ["A1", "A2"],
       customer: { name: "Kẻ Lạ Mặt", phone: "0999999999" }, // SĐT khác
       concessions: [],
+      expectedTotal: undefined,
+      posterPath: "",
       charge: async () => ({ ok: true, reference: "HACK" }),
     });
   } catch (err) {

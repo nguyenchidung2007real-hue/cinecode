@@ -129,12 +129,11 @@ export async function loadSellableShowtime(rawId: unknown): Promise<StoredShowti
     throw new BookingError(500, "SHOWTIME_CORRUPT", "Dữ liệu suất chiếu không hợp lệ.");
   }
 
-  // Trên production thật: chặn đặt vé nếu suất chiếu đã bắt đầu.
-  // Trong môi trường dev/demo hoặc bật cờ giả lập: cho phép để test các suất chiếu mẫu.
-  if (process.env.NODE_ENV === "production" && process.env.ALLOW_MOCK_PAYMENT !== "true") {
-    if (Date.now() >= start + SALES_CUTOFF_MS_AFTER_START) {
-      throw new BookingError(409, "SHOWTIME_STARTED", "Suất chiếu này đã bắt đầu, không thể đặt thêm.");
-    }
+  // Suất chiếu đã bắt đầu -> chặn đặt vé ở mọi môi trường (kể cả demo có thanh toán giả lập).
+  // Chỉ cho phép bỏ qua khi cố ý bật ALLOW_PAST_SHOWTIMES=true trong môi trường test/dev.
+  const allowPast = process.env.NODE_ENV !== "production" && process.env.ALLOW_PAST_SHOWTIMES === "true";
+  if (!allowPast && Date.now() >= start + SALES_CUTOFF_MS_AFTER_START) {
+    throw new BookingError(409, "SHOWTIME_STARTED", "Suất chiếu này đã bắt đầu, không thể đặt thêm.");
   }
   return showtime;
 }

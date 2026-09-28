@@ -162,6 +162,19 @@ export const MOCK_CINEMAS: Cinema[] = [
   },
 ];
 
+function getTodayInVietnam(): string {
+  return new Date(Date.now() + 7 * 3_600_000).toISOString().slice(0, 10);
+}
+
+function shiftDays(baseDate: string, days: number): string {
+  const [year, month, day] = baseDate.split("-").map(Number);
+  return new Date(Date.UTC(year, month - 1, day + days)).toISOString().slice(0, 10);
+}
+
+const todayVN = getTodayInVietnam();
+const tomorrowVN = shiftDays(todayVN, 1);
+const dayAfterVN = shiftDays(todayVN, 2);
+
 export const MOCK_SHOWTIMES: ShowTime[] = [
   {
     id: "st-beta-1",
@@ -170,7 +183,7 @@ export const MOCK_SHOWTIMES: ShowTime[] = [
     cinemaName: "Beta Cinemas Xuân Thủy",
     roomName: "Phòng Beta 01 (Dolby 7.1)",
     format: "2D Phụ Đề",
-    date: "2026-09-24",
+    date: tomorrowVN,
     time: "18:45",
   },
   {
@@ -180,7 +193,7 @@ export const MOCK_SHOWTIMES: ShowTime[] = [
     cinemaName: "Beta Cinemas Xuân Thủy",
     roomName: "Phòng Beta 02 (Laser HD)",
     format: "2D Phụ Đề",
-    date: "2026-09-24",
+    date: tomorrowVN,
     time: "21:30",
   },
   {
@@ -190,7 +203,7 @@ export const MOCK_SHOWTIMES: ShowTime[] = [
     cinemaName: "Beta Cinemas Xuân Thủy",
     roomName: "Phòng Beta 03 (Standard)",
     format: "2D Phụ Đề",
-    date: "2026-09-24",
+    date: tomorrowVN,
     time: "19:15",
   },
   {
@@ -200,7 +213,7 @@ export const MOCK_SHOWTIMES: ShowTime[] = [
     cinemaName: "Beta Cinemas Xuân Thủy",
     roomName: "Phòng Beta 01 (Dolby 7.1)",
     format: "2D Phụ Đề",
-    date: "2026-09-24",
+    date: tomorrowVN,
     time: "21:45",
   },
   {
@@ -210,8 +223,8 @@ export const MOCK_SHOWTIMES: ShowTime[] = [
     cinemaName: "Beta Cinemas Xuân Thủy",
     roomName: "Phòng Beta 02 (Laser HD)",
     format: "2D Lồng Tiếng",
-    date: "2026-09-24",
-    time: "17:30",
+    date: todayVN,
+    time: "23:55",
   },
   {
     id: "st-beta-6",
@@ -220,7 +233,7 @@ export const MOCK_SHOWTIMES: ShowTime[] = [
     cinemaName: "Beta Cinemas Xuân Thủy",
     roomName: "Phòng Beta 03 (Standard)",
     format: "2D Phụ Đề",
-    date: "2026-09-24",
+    date: dayAfterVN,
     time: "19:40",
   },
   {
@@ -230,7 +243,7 @@ export const MOCK_SHOWTIMES: ShowTime[] = [
     cinemaName: "Beta Cinemas Xuân Thủy",
     roomName: "Phòng Beta 01 (Dolby 7.1)",
     format: "2D Phụ Đề",
-    date: "2026-09-24",
+    date: tomorrowVN,
     time: "20:00",
   },
   {
@@ -240,7 +253,7 @@ export const MOCK_SHOWTIMES: ShowTime[] = [
     cinemaName: "Beta Cinemas Xuân Thủy",
     roomName: "Phòng Beta 02 (Laser HD)",
     format: "2D Phụ Đề",
-    date: "2026-09-24",
+    date: tomorrowVN,
     time: "20:15",
   },
   {
@@ -250,7 +263,7 @@ export const MOCK_SHOWTIMES: ShowTime[] = [
     cinemaName: "CGV Vincom Landmark 81",
     roomName: "Phòng IMAX Laser 01",
     format: "IMAX Laser",
-    date: "2026-09-24",
+    date: tomorrowVN,
     time: "18:30",
   },
   {
@@ -260,7 +273,7 @@ export const MOCK_SHOWTIMES: ShowTime[] = [
     cinemaName: "CGV Vincom Center Bà Triệu",
     roomName: "Phòng Cinema 03",
     format: "2D Phụ Đề",
-    date: "2026-09-24",
+    date: tomorrowVN,
     time: "19:00",
   },
   {
@@ -270,7 +283,7 @@ export const MOCK_SHOWTIMES: ShowTime[] = [
     cinemaName: "Lotte Cinema Keangnam Landmark",
     roomName: "Phòng Family 01",
     format: "2D Lồng Tiếng",
-    date: "2026-09-24",
+    date: tomorrowVN,
     time: "17:15",
   },
 ];
