@@ -278,6 +278,10 @@ function getSigningSecret(): string {
   const adminSecret = process.env.ADMIN_SYNC_SECRET?.trim();
   if (adminSecret) return adminSecret;
 
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("TICKET_SIGNING_SECRET hoặc ADMIN_SYNC_SECRET bắt buộc phải được cấu hình trên production để ký vé an toàn.");
+  }
+
   // Chỉ dùng khi chạy local chưa cấu hình gì — KHÔNG an toàn nếu để nguyên trên production.
   return "cinemax-dev-insecure-ticket-secret";
 }
