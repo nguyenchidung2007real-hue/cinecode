@@ -59,6 +59,10 @@ export async function POST(request: NextRequest) {
       expectedTotal: body.expectedTotal,
       posterPath: body.posterPath,
       charge: () => chargeMock(payment.simulate),
+      refund: async ({ reference, amount, reason }) => {
+        console.log(`[booking/mock-refund] Đã hoàn ${amount} VND cho tham chiếu ${reference} (lý do: ${reason})`);
+        return { ok: true };
+      },
     });
 
     return NextResponse.json(

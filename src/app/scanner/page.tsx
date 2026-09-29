@@ -252,6 +252,7 @@ export default function StaffScannerPage() {
         setScanResult({
           status: "invalid",
           message: data.error || "MÃ VÉ KHÔNG HỢP LỆ / SAI CHỮ KÝ HMAC",
+          ticket: data.ticket,
           scannedAt: nowStr,
         });
       }

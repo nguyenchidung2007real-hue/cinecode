@@ -21,12 +21,13 @@ import { getKvConfig, kvCommand, type KvConfig } from "@/lib/kvRest";
 /*  Types                                                                     */
 /* -------------------------------------------------------------------------- */
 
-export type TicketStatus = "valid" | "used";
+export type TicketStatus = "valid" | "used" | "pending" | "void";
 
 export interface TicketRecord extends BookingInfo {
   status: TicketStatus;
   usedAt?: string;
   scannedBy?: string;
+  voidReason?: string;
 }
 
 export type CreateTicketInput = BookingInfo;
@@ -38,11 +39,15 @@ export type CreateOutcome =
 export type CheckInOutcome =
   | { outcome: "checked_in"; ticket: TicketRecord }
   | { outcome: "already_used"; ticket: TicketRecord }
+  | { outcome: "invalid_status"; status: TicketStatus; ticket: TicketRecord }
   | { outcome: "not_found" };
 
 export interface TicketStoreAdapter {
   readonly name: "memory" | "vercel-kv";
   create(input: CreateTicketInput): Promise<CreateOutcome>;
+  createPending(input: CreateTicketInput): Promise<CreateOutcome>;
+  promotePendingToValid(bookingId: string): Promise<TicketRecord | null>;
+  voidTicket(bookingId: string, reason?: string): Promise<TicketRecord | null>;
   get(bookingId: string): Promise<TicketRecord | null>;
   markUsed(bookingId: string, scannedBy?: string): Promise<CheckInOutcome>;
 }
@@ -78,6 +83,38 @@ class MemoryTicketStore implements TicketStoreAdapter {
     return { outcome: "created", ticket };
   }
 
+  async createPending(input: CreateTicketInput): Promise<CreateOutcome> {
+    const map = getMemoryMap();
+    const existing = map.get(input.bookingId);
+    if (existing) return { outcome: "already_exists", ticket: existing };
+
+    const ticket: TicketRecord = { ...input, status: "pending" };
+    map.set(input.bookingId, ticket);
+    return { outcome: "created", ticket };
+  }
+
+  async promotePendingToValid(bookingId: string): Promise<TicketRecord | null> {
+    const map = getMemoryMap();
+    const ticket = map.get(bookingId);
+    if (!ticket) return null;
+    if (ticket.status === "valid" || ticket.status === "used") return ticket;
+    if (ticket.status === "void") return null;
+
+    const updated: TicketRecord = { ...ticket, status: "valid" };
+    map.set(bookingId, updated);
+    return updated;
+  }
+
+  async voidTicket(bookingId: string, reason?: string): Promise<TicketRecord | null> {
+    const map = getMemoryMap();
+    const ticket = map.get(bookingId);
+    if (!ticket) return null;
+
+    const updated: TicketRecord = { ...ticket, status: "void", voidReason: reason };
+    map.set(bookingId, updated);
+    return updated;
+  }
+
   async get(bookingId: string): Promise<TicketRecord | null> {
     return getMemoryMap().get(bookingId) ?? null;
   }
@@ -87,6 +124,9 @@ class MemoryTicketStore implements TicketStoreAdapter {
     const ticket = map.get(bookingId);
     if (!ticket) return { outcome: "not_found" };
     if (ticket.status === "used") return { outcome: "already_used", ticket };
+    if (ticket.status !== "valid") {
+      return { outcome: "invalid_status", status: ticket.status, ticket };
+    }
 
     const updated: TicketRecord = {
       ...ticket,
@@ -142,6 +182,55 @@ class VercelKvTicketStore implements TicketStoreAdapter {
     return this.create(input);
   }
 
+  async createPending(input: CreateTicketInput): Promise<CreateOutcome> {
+    const key = TICKET_KEY_PREFIX + input.bookingId;
+    const ticket: TicketRecord = { ...input, status: "pending" };
+
+    const setResult = await kvCommand(this.config, ["SET", key, JSON.stringify(ticket), "NX"]);
+    if (setResult === "OK") return { outcome: "created", ticket };
+
+    const existing = await this.get(input.bookingId);
+    if (existing) return { outcome: "already_exists", ticket: existing };
+    return this.createPending(input);
+  }
+
+  async promotePendingToValid(bookingId: string): Promise<TicketRecord | null> {
+    const key = TICKET_KEY_PREFIX + bookingId;
+    const raw = await kvCommand(this.config, ["GET", key]);
+    if (typeof raw !== "string") return null;
+
+    let base: TicketRecord;
+    try {
+      base = JSON.parse(raw) as TicketRecord;
+    } catch {
+      return null;
+    }
+
+    if (base.status === "valid" || base.status === "used") return base;
+    if (base.status === "void") return null;
+
+    const updated: TicketRecord = { ...base, status: "valid" };
+    await kvCommand(this.config, ["SET", key, JSON.stringify(updated)]);
+    return updated;
+  }
+
+  async voidTicket(bookingId: string, reason?: string): Promise<TicketRecord | null> {
+    const key = TICKET_KEY_PREFIX + bookingId;
+    const raw = await kvCommand(this.config, ["GET", key]);
+    if (typeof raw !== "string") return null;
+
+    let base: TicketRecord;
+    try {
+      base = JSON.parse(raw) as TicketRecord;
+    } catch {
+      return null;
+    }
+
+    const updated: TicketRecord = { ...base, status: "void", voidReason: reason };
+    await kvCommand(this.config, ["SET", key, JSON.stringify(updated)]);
+    return updated;
+  }
+
   async get(bookingId: string): Promise<TicketRecord | null> {
     const raw = await kvCommand(this.config, ["GET", TICKET_KEY_PREFIX + bookingId]);
     if (typeof raw !== "string") return null;
@@ -169,6 +258,14 @@ class VercelKvTicketStore implements TicketStoreAdapter {
       base = JSON.parse(ticketRaw) as TicketRecord;
     } catch {
       return { outcome: "not_found" };
+    }
+
+    // Kiểm tra trạng thái vé: chỉ vé valid mới được check-in
+    if (base.status !== "valid") {
+      if (base.status === "used") {
+        return { outcome: "already_used", ticket: base };
+      }
+      return { outcome: "invalid_status", status: base.status, ticket: base };
     }
 
     const isoNow = new Date().toISOString();
@@ -282,84 +379,7 @@ export function verifyTicketToken(token: string): { valid: boolean; bookingId: s
   return valid ? { valid: true, bookingId } : { valid: false, bookingId: null };
 }
 
-/* -------------------------------------------------------------------------- */
-/*  Validate dữ liệu vé từ client (endpoint POST /api/tickets chưa có auth,   */
-/*  vì Goal 2 chỉ là giả lập thanh toán, chưa có cổng thanh toán thật)        */
-/* -------------------------------------------------------------------------- */
-
-const MAX_FIELD_LENGTH = 200;
-const MAX_ID_LENGTH = 100;
-const MAX_SEATS = 20;
-const MAX_SEAT_LENGTH = 10;
-
-function readTrimmedString(value: unknown, maxLength: number): string | null {
-  if (typeof value !== "string") return null;
-  const trimmed = value.trim();
-  return trimmed !== "" && trimmed.length <= maxLength ? trimmed : null;
+export function ensureSigningSecretConfigured(): void {
+  getSigningSecret();
 }
 
-export function validateBookingInput(raw: unknown): CreateTicketInput | null {
-  if (typeof raw !== "object" || raw === null) return null;
-  const record = raw as Record<string, unknown>;
-
-  const bookingId = readTrimmedString(record.bookingId, MAX_ID_LENGTH);
-  const movieTitle = readTrimmedString(record.movieTitle, MAX_FIELD_LENGTH);
-  const cinemaName = readTrimmedString(record.cinemaName, MAX_FIELD_LENGTH);
-  const roomName = readTrimmedString(record.roomName, 50);
-  const format = readTrimmedString(record.format, 50);
-  const showDate = readTrimmedString(record.showDate, 20);
-  const showTime = readTrimmedString(record.showTime, 20);
-  const customerName = readTrimmedString(record.customerName, MAX_FIELD_LENGTH);
-  const customerEmail = readTrimmedString(record.customerEmail, MAX_FIELD_LENGTH);
-  const customerPhone = readTrimmedString(record.customerPhone, 30);
-  const posterPath = typeof record.posterPath === "string" ? record.posterPath.slice(0, 500) : "";
-  const createdAt = readTrimmedString(record.createdAt, 40) ?? new Date().toISOString();
-
-  const seats = Array.isArray(record.seats)
-    ? record.seats.filter(
-        (seat): seat is string => typeof seat === "string" && seat.length > 0 && seat.length <= MAX_SEAT_LENGTH,
-      ).slice(0, MAX_SEATS)
-    : null;
-
-  const totalAmount =
-    typeof record.totalAmount === "number" && Number.isFinite(record.totalAmount) && record.totalAmount >= 0
-      ? record.totalAmount
-      : null;
-
-  const bookingIdPattern = /^[A-Za-z0-9_-]+$/;
-  if (
-    !bookingId ||
-    !bookingIdPattern.test(bookingId) ||
-    !movieTitle ||
-    !cinemaName ||
-    !roomName ||
-    !format ||
-    !showDate ||
-    !showTime ||
-    !customerName ||
-    !customerEmail ||
-    !customerPhone ||
-    !seats ||
-    seats.length === 0 ||
-    totalAmount === null
-  ) {
-    return null;
-  }
-
-  return {
-    bookingId,
-    movieTitle,
-    posterPath,
-    cinemaName,
-    roomName,
-    format,
-    showDate,
-    showTime,
-    seats,
-    totalAmount,
-    customerName,
-    customerEmail,
-    customerPhone,
-    createdAt,
-  };
-}

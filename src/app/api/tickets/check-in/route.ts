@@ -106,6 +106,19 @@ export async function POST(request: NextRequest): Promise<Response> {
         ? `Vé này có ngày chiếu ${result.ticket.showDate} (hôm nay là ${today})`
         : undefined;
 
+    if (result.outcome === "invalid_status") {
+      const msg =
+        result.status === "pending"
+          ? "Vé đang trong trạng thái chờ xử lý (chưa hoàn tất đặt vé hoặc chưa thanh toán)."
+          : result.status === "void"
+          ? "Vé đã bị hủy (void) và không còn hiệu lực."
+          : "Trạng thái vé không hợp lệ để vào rạp.";
+      return NextResponse.json(
+        { outcome: "invalid_status", error: msg, ticket: sanitizeTicketForStaff(result.ticket) },
+        { status: 400 },
+      );
+    }
+
     if (result.outcome === "already_used") {
       return NextResponse.json(
         { outcome: "already_used", ticket: sanitizedTicket, warning: dateWarning },

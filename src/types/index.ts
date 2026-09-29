@@ -82,9 +82,10 @@ export interface BookingInfo {
   concessions?: SelectedComboItem[];
   qrCodeUrl?: string;
   qrToken?: string;
-  status?: "valid" | "used";
+  status?: "valid" | "used" | "pending" | "void";
   usedAt?: string;
   scannedBy?: string;
+  voidReason?: string;
   createdAt: string;
 }
 

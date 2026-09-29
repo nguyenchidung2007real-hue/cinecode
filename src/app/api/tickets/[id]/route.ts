@@ -47,6 +47,20 @@ export async function GET(request: NextRequest, { params }: RouteContext): Promi
       return NextResponse.json({ error: "Không tìm thấy vé trong hệ thống." }, { status: 404 });
     }
 
+    if (ticket.status === "pending") {
+      return NextResponse.json(
+        { error: "Vé đang chờ xử lý.", status: "pending" },
+        { status: 409 }
+      );
+    }
+
+    if (ticket.status === "void") {
+      return NextResponse.json(
+        { error: "Vé đã bị hủy.", status: "void" },
+        { status: 410 }
+      );
+    }
+
     return NextResponse.json({
       success: true,
       ticket: {
@@ -60,7 +74,6 @@ export async function GET(request: NextRequest, { params }: RouteContext): Promi
         seats: ticket.seats,
         status: ticket.status,
         usedAt: ticket.usedAt,
-        scannedBy: ticket.scannedBy,
         concessions: ticket.concessions,
         totalAmount: ticket.totalAmount,
       },

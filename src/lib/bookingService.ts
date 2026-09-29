@@ -1,7 +1,7 @@
-import { randomBytes } from "node:crypto";
+import { createHash } from "node:crypto";
 import QRCode from "qrcode";
 import type { BookingInfo } from "@/types";
-import { buildTicketToken, getTicketStore } from "@/lib/ticketStore";
+import { buildTicketToken, ensureSigningSecretConfigured, getTicketStore } from "@/lib/ticketStore";
 import { DEFAULT_CINEMA_ID, getShowtimeStore, type StoredShowtime } from "@/lib/showtimeStore";
 import {
   HOLD_ID_PATTERN,
@@ -195,10 +195,12 @@ export interface ConfirmInput {
   seats: unknown; // client gửi để đối chiếu, KHÔNG dùng làm nguồn sự thật (nguồn là bản ghi hold)
   customer: unknown;
   concessions: unknown;
-  expectedTotal: unknown; // chỉ để phát hiện lệch giá và báo lại cho UI; không bao giờ được dùng để tính tiền
+  expectedTotal?: unknown; // chỉ để phát hiện lệch giá và báo lại cho UI; không bao giờ được dùng để tính tiền
   posterPath: unknown;
   /** Bước thanh toán (mô phỏng hoặc cổng thật). Được gọi SAU khi mọi kiểm tra hợp lệ và TRƯỚC khi chốt ghế. */
   charge: (context: ChargeContext) => Promise<ChargeResult>;
+  /** Hoàn tiền khi chốt ghế hoặc phát hành vé thất bại sau khi đã thanh toán */
+  refund?: (context: { reference: string; amount: number; reason: string }) => Promise<{ ok: boolean }>;
 }
 
 export interface ConfirmResult {
@@ -218,11 +220,24 @@ async function buildTicketPayload(ticket: BookingInfo): Promise<{ ticket: Bookin
   return { ticket: { ...ticket, qrToken, qrCodeUrl }, qrToken };
 }
 
-function newBookingId(): string {
-  return `TICKET-${Date.now().toString().slice(-6)}-${randomBytes(6).toString("hex").toUpperCase()}`;
+/**
+ * Sinh mã đặt vé tất định (deterministic) từ holdId bằng hàm băm SHA-256.
+ * Đảm bảo 100% tính lũy đẳng (idempotent): cùng một holdId luôn sinh ra duy nhất một bookingId,
+ * loại bỏ việc phải duy trì bảng phụ tra cứu holdId -> bookingId.
+ */
+export function deriveBookingId(holdId: string): string {
+  return "bk-" + createHash("sha256").update(holdId).digest("hex").slice(0, 12);
 }
 
 export async function confirmBooking(input: ConfirmInput): Promise<ConfirmResult> {
+  // 0) Kiểm tra khóa bảo mật ký vé ngay từ đầu: nếu server thiếu secret thì dừng ngay,
+  // tuyệt đối không thu tiền khách khi vé không thể ký hợp lệ.
+  try {
+    ensureSigningSecretConfigured();
+  } catch (err) {
+    throw new BookingError(500, "CONFIG_ERROR", "Chưa cấu hình khóa bảo mật ký vé an toàn.");
+  }
+
   const holdId = parseHoldId(input.holdId);
   const customer = parseCustomer(input.customer);
   const showtimeId = typeof input.showtimeId === "string" ? input.showtimeId : "";
@@ -232,6 +247,7 @@ export async function confirmBooking(input: ConfirmInput): Promise<ConfirmResult
 
   const seatStore = getSeatStore();
   const ticketStore = getTicketStore();
+  const bookingId = deriveBookingId(holdId);
 
   // 1) Idempotency: request lặp (bấm 2 lần, mạng chập chờn) trả lại đúng vé cũ, không tạo vé mới.
   const previousBookingId = await seatStore.getCommittedBookingId(showtimeId, holdId);
@@ -244,6 +260,17 @@ export async function confirmBooking(input: ConfirmInput): Promise<ConfirmResult
   if (!hold) {
     throw new BookingError(410, "HOLD_EXPIRED", "Thời gian giữ ghế đã hết. Vui lòng chọn lại ghế.");
   }
+
+  // Chặn thanh toán nếu thời gian giữ ghế còn lại dưới 30 giây (tránh race condition hết hạn đúng lúc giao dịch ngân hàng)
+  const MIN_HOLD_REMAINING_FOR_PAYMENT_MS = 30_000;
+  if (hold.expiresAt - Date.now() < MIN_HOLD_REMAINING_FOR_PAYMENT_MS) {
+    throw new BookingError(
+      410,
+      "HOLD_EXPIRED",
+      "Thời gian giữ ghế sắp hết (dưới 30 giây). Vui lòng chọn lại ghế để đảm bảo giao dịch không bị gián đoạn.",
+    );
+  }
+
   const claimedSeats = parseSeats(input.seats);
   if (claimedSeats.length !== hold.seats.length || !claimedSeats.every((s) => hold.seats.includes(s))) {
     throw new BookingError(409, "SEAT_MISMATCH", "Ghế thanh toán không khớp với ghế đã giữ.");
@@ -264,34 +291,7 @@ export async function confirmBooking(input: ConfirmInput): Promise<ConfirmResult
     throw new BookingError(409, "PRICE_CHANGED", "Giá đã thay đổi, vui lòng kiểm tra lại đơn hàng.", { price });
   }
 
-  // 4) Thanh toán. Thất bại: giữ nguyên hold để khách thử lại trong thời gian còn lại.
-  const charge = await input.charge({ amount: price.total, currency: price.currency, holdId });
-  if (!charge.ok) {
-    throw new BookingError(402, "PAYMENT_FAILED", "Thanh toán không thành công.", { reason: charge.reason });
-  }
-
-  // 5) Chốt ghế nguyên tử (held -> sold) rồi mới phát vé. Thứ tự này đảm bảo không bao giờ có vé hợp lệ mà ghế chưa chốt.
-  const bookingId = newBookingId();
-  const soldTtlSeconds =
-    Math.max(3600, Math.ceil((showtimeStartMs(showtime) - Date.now()) / 1000)) + SOLD_RETENTION_HOURS_AFTER_START * 3600;
-
-  const commit = await seatStore.commit(hold, bookingId, soldTtlSeconds);
-  if (commit.outcome === "already_committed") return replay(commit.bookingId, customer.customerPhone);
-  if (commit.outcome === "lost") {
-    // Đã thu tiền mà mất ghế (hết TTL đúng lúc thanh toán). Với cổng thật: PHẢI hoàn tiền/void tại đây.
-    console.error("[booking] SEAT_LOST_AFTER_PAYMENT cần hoàn tiền", {
-      holdId,
-      showtimeId,
-      amount: price.total,
-      paymentReference: charge.reference,
-      seats: commit.seats,
-    });
-    throw new BookingError(409, "SEAT_LOST", "Ghế không còn được giữ, giao dịch sẽ được hoàn tiền.", {
-      seats: commit.seats,
-      refundRequired: true,
-    });
-  }
-
+  // 4) Tạo vé ở trạng thái PENDING trước khi thu tiền.
   const record: BookingInfo = {
     bookingId,
     movieTitle: showtime.movieTitle,
@@ -305,21 +305,73 @@ export async function confirmBooking(input: ConfirmInput): Promise<ConfirmResult
     totalAmount: price.total,
     ...customer,
     concessions: price.concessions,
-    status: "valid",
+    status: "pending",
     createdAt: new Date().toISOString(),
   };
 
+  const pendingOutcome = await ticketStore.createPending(record);
+  if (pendingOutcome.outcome === "already_exists") {
+    const existing = pendingOutcome.ticket;
+    if (existing.status === "valid" || existing.status === "used") {
+      return replay(bookingId, customer.customerPhone);
+    }
+    if (existing.status === "void") {
+      throw new BookingError(410, "TICKET_VOID", "Đơn hàng này đã bị hủy trước đó.");
+    }
+  }
+
+  // 5) Thu tiền khách (mô phỏng hoặc cổng thật).
+  const charge = await input.charge({ amount: price.total, currency: price.currency, holdId });
+  if (!charge.ok) {
+    await ticketStore.voidTicket(bookingId, "PAYMENT_FAILED").catch(() => {});
+    throw new BookingError(402, "PAYMENT_FAILED", "Thanh toán không thành công.", { reason: charge.reason });
+  }
+
+  // 6) Chốt ghế nguyên tử (held -> sold).
+  const soldTtlSeconds =
+    Math.max(3600, Math.ceil((showtimeStartMs(showtime) - Date.now()) / 1000)) + SOLD_RETENTION_HOURS_AFTER_START * 3600;
+
+  const commit = await seatStore.commit(hold, bookingId, soldTtlSeconds);
+  if (commit.outcome === "already_committed") {
+    await ticketStore.promotePendingToValid(commit.bookingId);
+    return replay(commit.bookingId, customer.customerPhone);
+  }
+  if (commit.outcome === "lost") {
+    // Đã thu tiền mà mất ghế (hết TTL đúng lúc thanh toán). PHẢI hoàn tiền và hủy vé (void)
+    console.error("[booking] SEAT_LOST_AFTER_PAYMENT cần hoàn tiền", {
+      holdId,
+      showtimeId,
+      bookingId,
+      amount: price.total,
+      paymentReference: charge.reference,
+      seats: commit.seats,
+    });
+    if (input.refund) {
+      await input.refund({ reference: charge.reference, amount: price.total, reason: "SEAT_LOST" }).catch(() => {});
+    }
+    await ticketStore.voidTicket(bookingId, "SEAT_LOST").catch(() => {});
+    throw new BookingError(409, "SEAT_LOST", "Ghế không còn được giữ, giao dịch sẽ được hoàn tiền.", {
+      seats: commit.seats,
+      refundRequired: true,
+    });
+  }
+
+  // 7) Kích hoạt vé (pending -> valid) SAU KHI chốt ghế thành công.
   try {
-    const created = await ticketStore.create(record);
-    if (created.outcome !== "created") throw new Error("bookingId trùng lặp (xác suất cực thấp)");
-    const payload = await buildTicketPayload(created.ticket);
+    const validTicket = await ticketStore.promotePendingToValid(bookingId);
+    if (!validTicket) throw new Error("Không thể chuyển trạng thái vé sang valid");
+    const payload = await buildTicketPayload(validTicket);
     return { ...payload, replayed: false, storeMode: ticketStore.name };
   } catch (error) {
-    // Hoàn tác để ghế không bị kẹt ở "sold" mà không có vé. Log kèm paymentReference để đối soát/hoàn tiền.
+    // Hoàn tác để ghế không bị kẹt ở "sold" mà không có vé. Hoàn tiền và đánh dấu void vé.
     await seatStore.rollbackCommit(hold, bookingId).catch((rollbackError: unknown) => {
       console.error("[booking] Rollback ghế thất bại, cần đối soát thủ công:", { bookingId, rollbackError });
     });
-    console.error("[booking] Tạo vé thất bại sau khi thanh toán, cần hoàn tiền:", {
+    if (input.refund) {
+      await input.refund({ reference: charge.reference, amount: price.total, reason: "PROMOTION_FAILED" }).catch(() => {});
+    }
+    await ticketStore.voidTicket(bookingId, "PROMOTION_FAILED").catch(() => {});
+    console.error("[booking] Kích hoạt vé thất bại sau khi thanh toán, cần hoàn tiền:", {
       bookingId,
       paymentReference: charge.reference,
       error,
@@ -339,9 +391,23 @@ export async function confirmBooking(input: ConfirmInput): Promise<ConfirmResult
     if (!safeEqual(existing.customerPhone, phone)) {
       throw new BookingError(403, "REPLAY_FORBIDDEN", "Thông tin không khớp với đơn hàng.");
     }
-    const payload = await buildTicketPayload(existing);
+    if (existing.status === "void") {
+      throw new BookingError(410, "TICKET_VOID", "Vé này đã bị hủy hoặc giao dịch không thành công.");
+    }
+
+    // Nếu vé vẫn ở pending nhưng đã vào replay (ví dụ crash sau commit ghế), tự động promote lên valid
+    let activeTicket = existing;
+    if (existing.status === "pending") {
+      const promoted = await ticketStore.promotePendingToValid(bookingIdToReplay);
+      if (promoted) {
+        activeTicket = promoted;
+      }
+    }
+
+    const payload = await buildTicketPayload(activeTicket);
     return { ...payload, replayed: true, storeMode: ticketStore.name };
   }
 }
 
 export { HOLD_TTL_SECONDS };
+

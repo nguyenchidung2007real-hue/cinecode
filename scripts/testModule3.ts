@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
 import { normalizeSeatId, seatTier, allSeatIds } from "../src/lib/seatLayout";
 import { calculatePrice } from "../src/lib/pricing";
-import { holdSeats, releaseHold, confirmBooking, BookingError } from "../src/lib/bookingService";
+import { holdSeats, releaseHold, confirmBooking, BookingError, deriveBookingId } from "../src/lib/bookingService";
 import { getSeatStore } from "../src/lib/seatStore";
+import { getTicketStore } from "../src/lib/ticketStore";
 
 process.env.ALLOW_PAST_SHOWTIMES = "true";
 
@@ -204,7 +205,110 @@ async function runTests() {
   assert.equal(afterExpiredStatuses["C2"], "free");
   console.log("   -> 15-minute Hard Cap: PASSED (Trả về HOLD_EXPIRED và giải phóng ghế lập tức)\n");
 
-  console.log("=== TOÀN BỘ 9 BÀI TEST MODULE 3 ĐÃ VƯỢT QUA 100% ===");
+  // 10. Kiểm tra Mã đặt vé tất định (Deterministic bookingId)
+  console.log("10. Kiểm tra Mã đặt vé tất định (Deterministic bookingId):");
+  const testHoldId = "a0a1a2a3a4a5a6a7b0b1b2b3b4b5b6b7";
+  const expectedBk = deriveBookingId(testHoldId);
+  assert.ok(expectedBk.startsWith("bk-"));
+  assert.equal(expectedBk.length, 15);
+  assert.equal(deriveBookingId(testHoldId), expectedBk, "Cùng holdId phải luôn sinh ra cùng bookingId");
+  console.log("   -> Deterministic bookingId: PASSED\n");
+
+  // 11. Kiểm tra Chặn thanh toán khi thời gian giữ ghế còn dưới 30s
+  console.log("11. Kiểm tra Chặn thanh toán khi thời gian giữ ghế còn dưới 30s:");
+  const shortHold = await holdSeats({ showtimeId, seats: ["D1", "D2"] });
+  const shortHoldKey = `cinemax:{${showtimeId}}:hold:${shortHold.hold.holdId}`;
+  const rawShortHold = await store.getHold(showtimeId, shortHold.hold.holdId);
+  if (rawShortHold) {
+    const expiringSoonHold = { ...rawShortHold, expiresAt: Date.now() + 15_000 };
+    (store as any).data?.set(shortHoldKey, { value: JSON.stringify(expiringSoonHold), expiresAt: Date.now() + 15000 });
+  }
+  let expiringBufferBlocked = false;
+  try {
+    await confirmBooking({
+      showtimeId,
+      holdId: shortHold.hold.holdId,
+      seats: ["D1", "D2"],
+      customer: { name: "Test Buffer", phone: "0912345678" },
+      concessions: [],
+      charge: async () => ({ ok: true, reference: "PAY-BUFFER" }),
+      posterPath: "",
+    });
+  } catch (err) {
+    if (err instanceof BookingError && err.code === "HOLD_EXPIRED") {
+      expiringBufferBlocked = true;
+    }
+  }
+  assert.equal(expiringBufferBlocked, true, "Thời gian còn dưới 30s phải bị chặn HOLD_EXPIRED");
+  console.log("   -> 30s Buffer Before Payment: PASSED\n");
+
+  // 12. Kiểm tra Ticket State Machine (pending -> valid, void) & Check-in Enforcement
+  console.log("12. Kiểm tra Ticket State Machine (pending -> valid, void) & Check-in Enforcement:");
+  const ticketStore = getTicketStore();
+  const testBkId = "bk-statemachine1";
+  const pendingRes = await ticketStore.createPending({
+    bookingId: testBkId,
+    movieTitle: "Test Movie",
+    cinemaName: "Beta Xuân Thủy",
+    roomName: "Screen 1",
+    format: "2D Phụ Đề",
+    showDate: "2026-09-30",
+    showTime: "19:00",
+    seats: ["E1"],
+    totalAmount: 75000,
+    customerName: "Nguyễn Test",
+    customerEmail: "test@cinemax.vn",
+    customerPhone: "0912345678",
+    createdAt: new Date().toISOString(),
+    posterPath: "",
+  });
+  assert.equal(pendingRes.ticket.status, "pending");
+
+  // Check-in không được phép cho vé pending
+  const checkPending = await ticketStore.markUsed(testBkId, "Staff 01");
+  assert.equal(checkPending.outcome, "invalid_status");
+
+  // Promote sang valid
+  const promoted = await ticketStore.promotePendingToValid(testBkId);
+  assert.ok(promoted);
+  assert.equal(promoted?.status, "valid");
+
+  // Check-in thành công
+  const checkValid = await ticketStore.markUsed(testBkId, "Staff 01");
+  assert.equal(checkValid.outcome, "checked_in");
+  assert.equal(checkValid.ticket.status, "used");
+
+  // Check-in lần 2 báo already_used
+  const checkSecond = await ticketStore.markUsed(testBkId, "Staff 02");
+  assert.equal(checkSecond.outcome, "already_used");
+
+  // Kiểm tra vé void
+  const voidBkId = "bk-voidtest1";
+  await ticketStore.createPending({
+    bookingId: voidBkId,
+    movieTitle: "Test Movie Void",
+    cinemaName: "Beta Xuân Thủy",
+    roomName: "Screen 1",
+    format: "2D Phụ Đề",
+    showDate: "2026-09-30",
+    showTime: "19:00",
+    seats: ["E2"],
+    totalAmount: 75000,
+    customerName: "Nguyễn Void",
+    customerEmail: "void@cinemax.vn",
+    customerPhone: "0912345678",
+    createdAt: new Date().toISOString(),
+    posterPath: "",
+  });
+  const voided = await ticketStore.voidTicket(voidBkId, "PAYMENT_FAILED");
+  assert.equal(voided?.status, "void");
+  assert.equal(voided?.voidReason, "PAYMENT_FAILED");
+
+  const checkVoid = await ticketStore.markUsed(voidBkId, "Staff 01");
+  assert.equal(checkVoid.outcome, "invalid_status");
+  console.log("   -> Ticket State Machine & Scanner Enforcement: PASSED\n");
+
+  console.log("=== TOÀN BỘ 12 BÀI TEST MODULE 3 ĐÃ VƯỢT QUA 100% ===");
 }
 
 runTests().catch((err) => {
