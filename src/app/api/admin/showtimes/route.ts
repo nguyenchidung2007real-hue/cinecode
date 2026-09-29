@@ -154,3 +154,37 @@ export async function POST(request: NextRequest): Promise<Response> {
     );
   }
 }
+
+/**
+ * DELETE /api/admin/showtimes?id=<showtimeId>
+ * Header: Authorization: Bearer <ADMIN_API_SECRET>
+ */
+export async function DELETE(request: NextRequest): Promise<Response> {
+  if (!isAdminAuthorized(request)) {
+    return NextResponse.json({ error: "Không có quyền quản trị." }, { status: 403, headers: NO_STORE });
+  }
+
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get("id");
+  if (!id) {
+    return NextResponse.json({ error: "Thiếu id suất chiếu cần xóa." }, { status: 400, headers: NO_STORE });
+  }
+
+  try {
+    const store = getShowtimeStore();
+    const deleted = await store.delete(id);
+    if (!deleted) {
+      return NextResponse.json({ error: "Không tìm thấy suất chiếu để xóa." }, { status: 404, headers: NO_STORE });
+    }
+    return NextResponse.json({ success: true, message: `Đã xóa suất chiếu ${id}.` }, { status: 200, headers: NO_STORE });
+  } catch (error) {
+    if (error instanceof StoreBusyError) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 503, headers: { ...NO_STORE, "Retry-After": "2" } },
+      );
+    }
+    console.error("[DELETE /api/admin/showtimes] Lỗi xóa suất chiếu:", error);
+    return NextResponse.json({ error: "Không xóa được suất chiếu lúc này." }, { status: 500, headers: NO_STORE });
+  }
+}

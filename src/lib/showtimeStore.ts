@@ -37,7 +37,7 @@ export interface StoredShowtime extends ShowtimeLike {
   createdAt: string;
 }
 
-export type NewShowtimeInput = Omit<StoredShowtime, "id" | "createdAt">;
+export type NewShowtimeInput = Omit<StoredShowtime, "id" | "createdAt"> & { id?: string };
 
 export interface ShowtimeFilter {
   date?: string;
@@ -57,6 +57,7 @@ export interface ShowtimeStore {
   list(filter?: ShowtimeFilter): Promise<StoredShowtime[]>;
   getById(id: string): Promise<StoredShowtime | null>;
   createChecked(input: NewShowtimeInput): Promise<CreateShowtimeResult>;
+  delete(id: string): Promise<boolean>;
 }
 
 /** Không lấy được khóa phòng trong thời gian chờ: route nên trả 503 + Retry-After. */
@@ -89,6 +90,7 @@ interface KV {
   readonly persistent: boolean;
   get(key: string): Promise<string | null>;
   set(key: string, value: string): Promise<void>;
+  del(key: string): Promise<void>;
   sadd(key: string, member: string): Promise<void>;
   smembers(key: string): Promise<string[]>;
   mget(keys: string[]): Promise<Array<string | null>>;
@@ -114,6 +116,10 @@ class MemoryKV implements KV {
 
   async set(key: string, value: string): Promise<void> {
     this.strings.set(key, value);
+  }
+
+  async del(key: string): Promise<void> {
+    this.strings.delete(key);
   }
 
   async sadd(key: string, member: string): Promise<void> {
@@ -183,6 +189,10 @@ class UpstashKV implements KV {
 
   async set(key: string, value: string): Promise<void> {
     await this.run(["SET", key, value]);
+  }
+
+  async del(key: string): Promise<void> {
+    await this.run(["DEL", key], { idempotent: true });
   }
 
   async sadd(key: string, member: string): Promise<void> {
@@ -281,6 +291,31 @@ function parseRoomShowtimes(raw: string | null): StoredShowtime[] {
   return data.filter(isStoredShowtime);
 }
 
+export function directShowtimeKey(id: string): string {
+  return `cinemax:showtime:${id}`;
+}
+
+export async function seedDefaultShowtimes(store: ShowtimeStore): Promise<void> {
+  for (const st of MOCK_SHOWTIMES) {
+    const movie = MOCK_MOVIES.find((m) => String(m.id) === String(st.movieId));
+    await store
+      .createChecked({
+        id: st.id,
+        cinemaId: st.cinemaId,
+        movieId: String(st.movieId),
+        movieTitle: movie?.title ?? `Phim #${st.movieId}`,
+        format: st.format,
+        roomName: st.roomName,
+        date: st.date,
+        time: st.time,
+        durationMinutes: movie?.durationMinutes ?? 120,
+      })
+      .catch((err) => {
+        console.warn(`[showtimeStore] Không thể seed suất ${st.id}:`, err);
+      });
+  }
+}
+
 class KvShowtimeStore implements ShowtimeStore {
   readonly name: "redis" | "memory";
   readonly persistent: boolean;
@@ -294,31 +329,10 @@ class KvShowtimeStore implements ShowtimeStore {
 
   async list(filter: ShowtimeFilter = {}): Promise<StoredShowtime[]> {
     let buckets = await this.kv.smembers(ROOM_INDEX_KEY);
-    
-    // Tự động nạp dữ liệu từ MOCK_SHOWTIMES nếu kho hoàn toàn rỗng
+
+    // Tự động nạp dữ liệu từ MOCK_SHOWTIMES qua createChecked nếu kho hoàn toàn rỗng
     if (buckets.length === 0) {
-      for (const st of MOCK_SHOWTIMES) {
-        const movie = MOCK_MOVIES.find((m) => String(m.id) === String(st.movieId));
-        const dur = movie?.durationMinutes ?? 120;
-        const roomName = normalizeRoomName(st.roomName);
-        const bucket = roomBucketKey(st.cinemaId, roomName);
-        const stored: StoredShowtime = {
-          id: st.id,
-          cinemaId: st.cinemaId,
-          movieId: String(st.movieId),
-          movieTitle: movie?.title ?? `Phim #${st.movieId}`,
-          format: st.format,
-          roomName,
-          date: st.date,
-          time: st.time,
-          durationMinutes: dur,
-          createdAt: new Date().toISOString(),
-        };
-        await this.kv.sadd(ROOM_INDEX_KEY, bucket);
-        const existing = parseRoomShowtimes(await this.kv.get(bucket));
-        existing.push(stored);
-        await this.kv.set(bucket, JSON.stringify(existing));
-      }
+      await seedDefaultShowtimes(this);
       buckets = await this.kv.smembers(ROOM_INDEX_KEY);
       if (buckets.length === 0) return [];
     }
@@ -342,8 +356,20 @@ class KvShowtimeStore implements ShowtimeStore {
   }
 
   async getById(id: string): Promise<StoredShowtime | null> {
+    const direct = await this.kv.get(directShowtimeKey(id));
+    if (direct) {
+      try {
+        const parsed: unknown = JSON.parse(direct);
+        if (isStoredShowtime(parsed)) return parsed;
+      } catch {}
+    }
+
     const all = await this.list();
-    return all.find((s) => s.id === id) ?? null;
+    const found = all.find((s) => s.id === id) ?? null;
+    if (found) {
+      await this.kv.set(directShowtimeKey(id), JSON.stringify(found)).catch(() => {});
+    }
+    return found;
   }
 
   async createChecked(input: NewShowtimeInput): Promise<CreateShowtimeResult> {
@@ -369,19 +395,36 @@ class KvShowtimeStore implements ShowtimeStore {
       const showtime: StoredShowtime = {
         ...input,
         roomName,
-        id: `st-${randomBytes(6).toString("hex")}`,
+        id: input.id ?? `st-${randomBytes(6).toString("hex")}`,
         createdAt: new Date().toISOString(),
       };
 
       // Dọn suất quá cũ để mảng của phòng không phình mãi.
       const cutoff = shiftDate(todayInVietnam(), -RETENTION_DAYS);
-      const kept = existing.filter((s) => s.date >= cutoff);
+      const kept = existing.filter((s) => s.id !== showtime.id && s.date >= cutoff);
       kept.push(showtime);
 
       await this.kv.sadd(ROOM_INDEX_KEY, bucket);
       await this.kv.set(bucket, JSON.stringify(kept));
+      await this.kv.set(directShowtimeKey(showtime.id), JSON.stringify(showtime));
 
       return { outcome: "created", showtime };
+    });
+  }
+
+  async delete(id: string): Promise<boolean> {
+    const target = await this.getById(id);
+    if (!target) return false;
+
+    const bucket = roomBucketKey(target.cinemaId, target.roomName);
+    return this.kv.withLock<boolean>(bucket, async () => {
+      const existing = parseRoomShowtimes(await this.kv.get(bucket));
+      const kept = existing.filter((s) => s.id !== id);
+      if (kept.length === existing.length) return false;
+
+      await this.kv.set(bucket, JSON.stringify(kept));
+      await this.kv.del(directShowtimeKey(id));
+      return true;
     });
   }
 }

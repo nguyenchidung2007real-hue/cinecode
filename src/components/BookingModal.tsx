@@ -44,6 +44,7 @@ interface BookingModalProps {
   onClose: () => void;
   onBookingSuccess?: (booking: BookingInfo) => void;
   initialSeats?: string[];
+  initialShowtimeId?: string;
 }
 
 const ROWS = ["A", "B", "C", "D", "E", "F", "G", "H", "K"];
@@ -77,6 +78,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   onClose,
   onBookingSuccess,
   initialSeats,
+  initialShowtimeId,
 }) => {
   // Trạng thái các bước (1: Suất chiếu, 2: Chọn ghế, 3: Bắp nước & Thông tin, 4: Quét mã QR thanh toán, 5: Vé điện tử QR)
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
@@ -204,9 +206,50 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
   const dateOptions = useMemo(() => [0, 1, 2].map(vnDate), []);
 
+  const [serverShowtimes, setServerShowtimes] = useState<ShowTime[]>([]);
+  const [loadingShowtimes, setLoadingShowtimes] = useState(false);
+
+  useEffect(() => {
+    if (!movie) {
+      setServerShowtimes([]);
+      return;
+    }
+    let cancelled = false;
+    setLoadingShowtimes(true);
+    fetch(`/api/showtimes?movieId=${encodeURIComponent(String(movie.id))}`)
+      .then((res) => (res.ok ? res.json() : Promise.reject()))
+      .then((data) => {
+        if (!cancelled && data?.showtimes && Array.isArray(data.showtimes)) {
+          setServerShowtimes(data.showtimes);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setServerShowtimes(MOCK_SHOWTIMES.filter((s) => String(s.movieId) === String(movie.id)));
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingShowtimes(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [movie]);
+
+  useEffect(() => {
+    if (initialShowtimeId) {
+      setSelectedShowtimeId(initialShowtimeId);
+      const st = (serverShowtimes.length > 0 ? serverShowtimes : MOCK_SHOWTIMES).find((s) => s.id === initialShowtimeId);
+      if (st) {
+        setSelectedCinemaId(st.cinemaId);
+        setSelectedDate(st.date);
+      }
+    }
+  }, [initialShowtimeId, serverShowtimes]);
+
   const movieShowtimes = useMemo<ShowTime[]>(
-    () => (movie ? MOCK_SHOWTIMES.filter((s) => s.movieId === movie.id) : []),
-    [movie],
+    () => (serverShowtimes.length > 0 ? serverShowtimes : (movie ? MOCK_SHOWTIMES.filter((s) => String(s.movieId) === String(movie.id)) : [])),
+    [serverShowtimes, movie],
   );
 
   const visibleShowtimes = useMemo(

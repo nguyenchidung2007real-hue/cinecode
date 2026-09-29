@@ -1,4 +1,5 @@
 import type { SeatType } from "@/types";
+import { normalizeSeatId, seatTier } from "@/lib/seatLayout";
 
 /* -------------------------------------------------------------------------- */
 /*  Types                                                                     */
@@ -27,25 +28,25 @@ interface HallProfile {
 }
 
 /* -------------------------------------------------------------------------- */
-/*  Cấu hình sơ đồ ghế (chỉnh tại đây nếu sơ đồ thực tế khác)                 */
+/*  Cấu hình sơ đồ ghế chuẩn 102 ghế (A-H: 12 ghế, K: 6 ghế đôi)             */
 /* -------------------------------------------------------------------------- */
 
-/** Vùng "sweet spot": ghế 6 → 11 (âm thanh vòm chuẩn, góc nhìn 36–40°). */
-const SWEET_SPOT: SeatRange = { min: 6, max: 11 };
-/** Mở rộng khi nhóm đông hoặc vùng sweet spot đã có người đặt. */
-const WIDE_SPOT: SeatRange = { min: 4, max: 13 };
-const CENTER_SEAT = (SWEET_SPOT.min + SWEET_SPOT.max) / 2; // 8.5
+/** Vùng "sweet spot": ghế 4 → 9 (âm thanh vòm chuẩn, góc nhìn 36–40°). */
+const SWEET_SPOT: SeatRange = { min: 4, max: 9 };
+/** Mở rộng khi nhóm đông hoặc vùng sweet spot đã có người đặt (1..12). */
+const WIDE_SPOT: SeatRange = { min: 1, max: 12 };
+const CENTER_SEAT = 6.5;
 
 const HALL_PROFILES: Readonly<Record<HallKind, HallProfile>> = {
-  standard: { rows: ["F", "G"], fallbackRows: ["E", "H"], seatType: "standard" },
-  "4dx": { rows: ["F", "G"], fallbackRows: ["E", "H"], seatType: "standard" },
-  imax: { rows: ["H", "I"], fallbackRows: ["G", "J"], seatType: "vip" },
+  standard: { rows: ["E", "F"], fallbackRows: ["C", "D", "G", "H"], seatType: "vip" },
+  "4dx": { rows: ["E", "F"], fallbackRows: ["D", "G"], seatType: "vip" },
+  imax: { rows: ["F", "G", "H"], fallbackRows: ["D", "E"], seatType: "vip" },
 };
 
-/** Ghế đôi Sweetbox nằm ở hàng cuối. */
-const COUPLE_ROWS: readonly string[] = ["K", "L"];
-/** Số hiệu ghế đôi ưu tiên từ giữa ra hai bên (id dạng "K5"). */
-const COUPLE_SEAT_NUMBERS: readonly number[] = [5, 6, 4, 7, 3, 8];
+/** Ghế đôi Sweetbox nằm ở hàng cuối K (K1..K6). */
+const COUPLE_ROWS: readonly string[] = ["K"];
+/** Số hiệu ghế đôi ưu tiên từ giữa ra hai bên: K3, K4 rồi K2, K5 rồi K1, K6. */
+const COUPLE_SEAT_NUMBERS: readonly number[] = [3, 4, 2, 5, 1, 6];
 
 const MAX_PARTY_SIZE = 8;
 
