@@ -14,6 +14,7 @@ import { AiChatWidget } from "@/components/AiChatWidget";
 import { QuickBookingBar } from "@/components/QuickBookingBar";
 import { CinemaShowtimeMatrix } from "@/components/CinemaShowtimeMatrix";
 import SemanticSearchModal from "@/components/SemanticSearchModal";
+import { SideBanners } from "@/components/SideBanners";
 import { Footer } from "@/components/Footer";
 
 import { Sparkles, Flame, Film, Clapperboard, Award, SearchX, Smile, Compass, Brain, Heart, Zap, Tag, Gift, Percent } from "lucide-react";
@@ -114,6 +115,8 @@ export default function HomePage() {
         onCityChange={setSelectedCity}
       />
 
+      {/* Banner khuyến mãi 2 bên hông (Gutter Banners chuẩn Beta Cinemas) */}
+      <SideBanners />
 
       <main className="flex-1">
         {/* NẾU ĐANG TÌM KIẾM HOẶC LỌC TÂM TRẠNG RIÊNG */}
@@ -194,19 +197,19 @@ export default function HomePage() {
             />
 
             {/* 2. Thanh Chuyển Tab Phim Chuẩn Rạp Chiếu Thương Mại */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 sm:mt-16">
-              <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-4">
+            <div id="commercial-tabs" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 sm:mt-16 scroll-mt-24">
+              <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#034EA2]/30 pb-4">
                 <div className="flex items-center gap-4 sm:gap-8">
                   <button
                     onClick={() => setActiveCommercialTab("now_playing")}
                     className={`text-base sm:text-2xl font-black transition-all flex items-center gap-2 pb-3 -mb-4.5 border-b-2 ${
                       activeCommercialTab === "now_playing"
-                        ? "text-red-500 border-red-500 shadow-[0_2px_15px_rgba(239,68,68,0.5)]"
-                        : "text-gray-400 border-transparent hover:text-white"
+                        ? "text-[#00B2FF] border-[#00B2FF] shadow-[0_2px_15px_rgba(0,178,255,0.4)]"
+                        : "text-slate-400 border-transparent hover:text-white"
                     }`}
                   >
                     <span>🎬 PHIM ĐANG CHIẾU</span>
-                    <span className="text-xs px-2.5 py-0.5 rounded-full bg-red-600/20 text-red-400 font-bold border border-red-500/30">
+                    <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#034EA2]/40 text-[#00B2FF] font-black border border-[#00B2FF]/40">
                       {nowPlayingMovies.length}
                     </span>
                   </button>
@@ -215,12 +218,12 @@ export default function HomePage() {
                     onClick={() => setActiveCommercialTab("upcoming")}
                     className={`text-base sm:text-2xl font-black transition-all flex items-center gap-2 pb-3 -mb-4.5 border-b-2 ${
                       activeCommercialTab === "upcoming"
-                        ? "text-red-500 border-red-500 shadow-[0_2px_15px_rgba(239,68,68,0.5)]"
-                        : "text-gray-400 border-transparent hover:text-white"
+                        ? "text-[#00B2FF] border-[#00B2FF] shadow-[0_2px_15px_rgba(0,178,255,0.4)]"
+                        : "text-slate-400 border-transparent hover:text-white"
                     }`}
                   >
                     <span>⏳ PHIM SẮP CHIẾU</span>
-                    <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-600/20 text-blue-400 font-bold border border-blue-500/30">
+                    <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-600/20 text-blue-300 font-bold border border-blue-500/30">
                       {upcomingMovies.length}
                     </span>
                   </button>
@@ -229,19 +232,19 @@ export default function HomePage() {
                     onClick={() => setActiveCommercialTab("trending")}
                     className={`text-base sm:text-2xl font-black transition-all hidden sm:flex items-center gap-2 pb-3 -mb-4.5 border-b-2 ${
                       activeCommercialTab === "trending"
-                        ? "text-red-500 border-red-500 shadow-[0_2px_15px_rgba(239,68,68,0.5)]"
-                        : "text-gray-400 border-transparent hover:text-white"
+                        ? "text-[#00B2FF] border-[#00B2FF] shadow-[0_2px_15px_rgba(0,178,255,0.4)]"
+                        : "text-slate-400 border-transparent hover:text-white"
                     }`}
                   >
                     <span>⭐ SUẤT CHIẾU ĐẶC BIỆT</span>
-                    <span className="text-xs px-2.5 py-0.5 rounded-full bg-yellow-600/20 text-yellow-400 font-bold border border-yellow-500/30">
+                    <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#FF5722]/30 text-[#FF5722] font-black border border-[#FF5722]/40">
                       HOT
                     </span>
                   </button>
                 </div>
 
-                <div className="flex items-center gap-2 text-xs text-gray-400">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                <div className="flex items-center gap-2 text-xs text-blue-200">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
                   <span>Cập nhật lịch chiếu Beta Cinemas Xuân Thủy</span>
                 </div>
               </div>
@@ -264,13 +267,15 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* 3. Bảng Lịch Chiếu Trực Tiếp Theo Rạp (Live Showtime Matrix chuẩn CGV / Galaxy) */}
-            <CinemaShowtimeMatrix
-              movies={movies}
-              onSelectShowtime={(movie, cinemaName, date, time, format) => {
-                setActiveBookingMovie(movie);
-              }}
-            />
+            {/* 3. Bảng Lịch Chiếu Trực Tiếp Theo Rạp (Live Showtime Matrix chuẩn Beta Cinemas) */}
+            <div id="matrix-section" className="scroll-mt-24">
+              <CinemaShowtimeMatrix
+                movies={movies}
+                onSelectShowtime={(movie, cinemaName, date, time, format) => {
+                  setActiveBookingMovie(movie);
+                }}
+              />
+            </div>
 
             {/* 4. Khám Phá Phim Theo Tâm Trạng (Mood-Based Discovery) */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10">
@@ -358,7 +363,7 @@ export default function HomePage() {
             </div>
 
             {/* 5. Khuyến Mãi & Sự Kiện Rạp Chiếu (Promotions & Popcorn Combos) */}
-            <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <section id="promo-section" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 scroll-mt-24">
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <span className="text-xs text-red-500 font-bold uppercase tracking-wider block">Ưu Đãi Rạp Chiếu</span>
