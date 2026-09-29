@@ -1,0 +1,43 @@
+# Project Coding Rules & AI Agent Instructions
+
+This project adheres to the **Ponytail (Minimalist Senior Dev)** philosophy and **Addy Osmani's Agent Skills** workflow.
+
+## 1. Ponytail Philosophy (YAGNI & Decision Ladder)
+"The best code is the code you never wrote." Before writing code, climb this ladder and stop at the first rung that holds:
+
+1. **Does this need to exist at all?** (Speculative feature = skip it).
+2. **Already in this codebase?** (Reuse helpers in `src/lib`, existing UI components in `src/components`, types in `src/types`).
+3. **Stdlib/Built-in does it?** (Use native JS/TS and standard library).
+4. **Native platform feature covers it?** (Use HTML5 `<dialog>`, `<input type="date">`, modern CSS instead of external libraries).
+5. **Already-installed dependency solves it?** (Check `package.json` before proposing `npm install`).
+6. **Can it be one line?** (Keep it concise).
+7. **Only then:** Write the minimum code that works.
+
+*Exceptions:* Never be lazy on security (auth, input sanitization, payment), accessibility (ARIA, keyboard navigation), or data loss prevention.
+
+---
+
+## 2. Agent Skills Workflows (from addyosmani/agent-skills)
+Located in `.agents/skills/`:
+- **Planning & Requirements:** `/spec` (`spec-driven-development`), `/plan` (`planning-and-task-breakdown`)
+- **Coding:** `/build` (`frontend-ui-engineering`, `incremental-implementation`)
+- **Testing:** `/test` (`test-driven-development`, Playwright E2E in `tests/e2e`)
+- **Code Review:** `/review` (`code-review-and-quality`, `security-and-hardening`, `ponytail-review`)
+- **Shipping:** `/ship` (`shipping-and-launch`)
+
+---
+
+## 3. Technology Stack & Commands
+- **Framework:** Next.js 14 (App Router) + React 18 + TypeScript + Tailwind CSS
+- **Local Dev:** `npm run dev`
+- **E2E Testing:** `npm run test:e2e` (Playwright with Microsoft Edge / Chromium)
+- **Linting:** `npm run lint`
+- **Type Check:** `npx tsc --noEmit`
+
+---
+
+## 4. Internet Research & Multi-Platform Search: Agent Reach
+- **Executable:** `C:\Users\NGUYEN CHI DUNG\.agent-reach-venv\Scripts\agent-reach.exe`
+- **Skill definition:** `.agents/skills/agent-reach`
+- **Usage:** Whenever the user asks to research, explore discussions, or fetch data from YouTube, Reddit, Twitter/X, Bilibili, V2EX, or external web URLs, use Agent Reach.
+

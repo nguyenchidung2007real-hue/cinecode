@@ -125,34 +125,34 @@ export const MyTicketsModal: React.FC<MyTicketsModalProps> = ({ isOpen, onClose 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md overflow-y-auto animate-in fade-in duration-200">
-      <div className="relative w-full max-w-2xl bg-surface border border-neutral-700/80 rounded-2xl overflow-hidden shadow-2xl my-auto text-white">
-        {/* Header Modal */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-800 bg-neutral-900/60">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-[#07152E]/90 backdrop-blur-md overflow-y-auto animate-in fade-in duration-200">
+      <div className="relative w-full max-w-2xl bg-[#0B2046] border border-[#034EA2]/50 rounded-2xl overflow-hidden shadow-2xl my-auto text-white">
+        {/* Header Modal Beta Cinemas */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[#034EA2]/40 bg-[#07152E]/80">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-accent-red to-orange-500 text-white flex items-center justify-center shadow-lg shadow-accent-red/20">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#034EA2] to-[#00B2FF] text-white flex items-center justify-center shadow-lg shadow-[#034EA2]/30">
               <Ticket className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-extrabold text-base sm:text-lg text-white">
-                  Ví Vé Của Tôi ({tickets.length})
+                <h3 className="font-black text-base sm:text-lg text-white">
+                  <span className="text-[#00B2FF]">BETA</span> VÍ VÉ CỦA TÔI ({tickets.length})
                 </h3>
                 {isSyncing && (
-                  <span className="flex items-center gap-1 text-[10px] text-accent-cyan bg-accent-cyan/10 px-2 py-0.5 rounded-full border border-accent-cyan/30 animate-pulse">
+                  <span className="flex items-center gap-1 text-[10px] text-[#00B2FF] bg-[#034EA2]/30 px-2 py-0.5 rounded-full border border-[#00B2FF]/40 animate-pulse">
                     <RefreshCw className="w-2.5 h-2.5 animate-spin" /> Đang đồng bộ rạp
                   </span>
                 )}
               </div>
-              <p className="text-xs text-neutral-400">
-                Vé điện tử có bảo mật Hologram & mã QR check-in tại rạp
+              <p className="text-xs text-slate-300">
+                Vé điện tử Beta Cinemas có bảo mật Hologram & mã QR check-in
               </p>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-neutral-800 hover:bg-neutral-700 flex items-center justify-center text-neutral-400 hover:text-white transition-colors"
+            className="w-8 h-8 rounded-full bg-[#07152E] hover:bg-[#034EA2]/40 border border-[#034EA2]/40 flex items-center justify-center text-slate-300 hover:text-white transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -162,12 +162,12 @@ export const MyTicketsModal: React.FC<MyTicketsModalProps> = ({ isOpen, onClose 
         <div className="p-4 sm:p-6 max-h-[75vh] overflow-y-auto space-y-5">
           {tickets.length === 0 ? (
             <div className="py-16 text-center flex flex-col items-center justify-center space-y-3">
-              <div className="w-16 h-16 rounded-full bg-neutral-900 flex items-center justify-center text-neutral-600">
+              <div className="w-16 h-16 rounded-full bg-[#07152E] border border-[#034EA2]/40 flex items-center justify-center text-[#00B2FF]">
                 <Ticket className="w-8 h-8" />
               </div>
-              <h4 className="text-base font-bold text-neutral-300">Chưa có vé nào trong ví</h4>
-              <p className="text-xs text-neutral-500 max-w-xs">
-                Hãy chọn một bộ phim yêu thích và trải nghiệm đặt vé có mã QR xác thực HMAC cùng CineMax AI!
+              <h4 className="text-base font-bold text-slate-200">Chưa có vé nào trong ví</h4>
+              <p className="text-xs text-slate-400 max-w-xs leading-relaxed">
+                Hãy chọn một bộ phim yêu thích tại Beta Xuân Thủy và trải nghiệm đặt vé có mã QR xác thực HMAC!
               </p>
             </div>
           ) : (
@@ -179,19 +179,19 @@ export const MyTicketsModal: React.FC<MyTicketsModalProps> = ({ isOpen, onClose 
                   key={ticket.bookingId}
                   className={`relative rounded-2xl border transition-all shadow-xl overflow-hidden ${
                     isUsed
-                      ? "bg-neutral-900/60 border-neutral-800 opacity-75"
-                      : "bg-gradient-to-br from-neutral-900 via-neutral-900 to-neutral-950 border-neutral-700/80 hover:border-neutral-600"
+                      ? "bg-[#07152E]/60 border-slate-700/60 opacity-75"
+                      : "bg-gradient-to-br from-[#0B2046] via-[#0D2857] to-[#07152E] border-[#034EA2]/50 hover:border-[#00B2FF]/60"
                   }`}
                 >
                   {/* DẢI HOLOGRAM ĐỘNG BẢO MẬT (DYNAMIC HOLOGRAM WATERMARK) */}
-                  <div className="relative w-full overflow-hidden bg-gradient-to-r from-amber-500/20 via-cyan-500/20 to-purple-500/20 border-b border-white/10 px-4 py-1.5 flex items-center justify-between text-[11px]">
+                  <div className="relative w-full overflow-hidden bg-gradient-to-r from-[#034EA2]/40 via-[#00B2FF]/20 to-amber-500/20 border-b border-[#034EA2]/40 px-4 py-1.5 flex items-center justify-between text-[11px]">
                     {/* Hiệu ứng tia sáng di chuyển liên tục */}
                     <div className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/25 to-transparent pointer-events-none" />
 
                     <div className="flex items-center gap-1.5 font-bold tracking-wider uppercase text-[10px]">
                       <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-spin" style={{ animationDuration: '6s' }} />
-                      <span className="bg-gradient-to-r from-amber-300 via-cyan-300 to-purple-300 bg-clip-text text-transparent font-extrabold">
-                        CINEMAX VERIFIED E-TICKET
+                      <span className="bg-gradient-to-r from-amber-300 via-[#00B2FF] to-white bg-clip-text text-transparent font-extrabold">
+                        BETA CINEMAS VERIFIED E-TICKET
                       </span>
                     </div>
 
@@ -213,15 +213,15 @@ export const MyTicketsModal: React.FC<MyTicketsModalProps> = ({ isOpen, onClose 
                   {/* THÂN VÉ XÉ CUỐNG (PERFORATED CINEMA TICKET) */}
                   <div className="p-4 sm:p-5 flex flex-col sm:flex-row items-center gap-5 relative">
                     {/* Nốt bấm khuyết âm dương tạo hiệu ứng vé rạp */}
-                    <div className="hidden sm:block absolute -top-3 right-[152px] w-6 h-6 rounded-full bg-surface border border-neutral-700/80" />
-                    <div className="hidden sm:block absolute -bottom-3 right-[152px] w-6 h-6 rounded-full bg-surface border border-neutral-700/80" />
+                    <div className="hidden sm:block absolute -top-3 right-[152px] w-6 h-6 rounded-full bg-[#0B2046] border border-[#034EA2]/50" />
+                    <div className="hidden sm:block absolute -bottom-3 right-[152px] w-6 h-6 rounded-full bg-[#0B2046] border border-[#034EA2]/50" />
 
                     {/* Khối thông tin phim & suất chiếu */}
                     <div className="flex-1 w-full space-y-3">
                       <div className="flex items-start justify-between gap-2">
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-mono font-bold text-neutral-300 bg-neutral-800 px-2 py-0.5 rounded border border-neutral-700">
+                            <span className="text-[10px] font-mono font-bold text-slate-200 bg-[#07152E] px-2 py-0.5 rounded border border-[#034EA2]/40">
                               {ticket.bookingId}
                             </span>
                             {isUsed ? (
@@ -242,24 +242,24 @@ export const MyTicketsModal: React.FC<MyTicketsModalProps> = ({ isOpen, onClose 
                         <button
                           onClick={() => handleDeleteTicket(ticket.bookingId)}
                           title="Xóa vé này"
-                          className="text-neutral-500 hover:text-red-400 p-1.5 rounded-lg hover:bg-neutral-800 transition-colors"
+                          className="text-slate-400 hover:text-rose-400 p-1.5 rounded-lg hover:bg-[#07152E] transition-colors"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
 
                       {/* Thông tin suất chiếu rạp */}
-                      <div className="grid grid-cols-2 gap-2 text-xs text-neutral-300 bg-neutral-950/70 p-3 rounded-xl border border-neutral-800">
+                      <div className="grid grid-cols-2 gap-2 text-xs text-slate-200 bg-[#07152E]/80 p-3 rounded-xl border border-[#034EA2]/40">
                         <div className="flex items-center gap-1.5">
-                          <MapPin className="w-3.5 h-3.5 text-accent-cyan flex-shrink-0" />
-                          <span className="truncate font-medium">{ticket.cinemaName}</span>
+                          <MapPin className="w-3.5 h-3.5 text-[#FF5722] flex-shrink-0" />
+                          <span className="truncate font-medium">{ticket.cinemaName || "Beta Cinemas Xuân Thủy"}</span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <Clock className="w-3.5 h-3.5 text-accent-cyan flex-shrink-0" />
-                          <span>{ticket.showTime} ({ticket.format})</span>
+                          <Clock className="w-3.5 h-3.5 text-[#00B2FF] flex-shrink-0" />
+                          <span>{ticket.showTime} ({ticket.format || "2D"})</span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <Calendar className="w-3.5 h-3.5 text-accent-cyan flex-shrink-0" />
+                          <Calendar className="w-3.5 h-3.5 text-[#00B2FF] flex-shrink-0" />
                           <span>{ticket.showDate}</span>
                         </div>
                         <div className="flex items-center gap-1.5">
@@ -271,12 +271,12 @@ export const MyTicketsModal: React.FC<MyTicketsModalProps> = ({ isOpen, onClose 
 
                       {/* Bắp & Nước kèm theo vé */}
                       {ticket.concessions && ticket.concessions.length > 0 && (
-                        <div className="bg-neutral-950/80 rounded-xl p-2.5 border border-neutral-800 text-[11px] space-y-1">
+                        <div className="bg-[#07152E]/90 rounded-xl p-2.5 border border-[#034EA2]/40 text-[11px] space-y-1">
                           <span className="font-bold text-amber-400 block text-[10px] uppercase tracking-wider">
-                            🍿 Bắp & Nước (Nhận tại quầy Concession):
+                            🍿 Bắp & Nước (Nhận tại quầy Concession Beta):
                           </span>
                           {ticket.concessions.map((c, i) => (
-                            <div key={i} className="flex justify-between items-center text-neutral-300">
+                            <div key={i} className="flex justify-between items-center text-slate-300">
                               <span className="truncate pr-2 font-medium">
                                 {c.quantity}x {c.name} ({c.popcornFlavors.map(f => f === "cheese" ? "Phô mai" : f === "caramel" ? "Caramel" : f === "sweet" ? "Ngọt" : "Mặn").join("+")}, {c.drinks.map(d => `${d.type === "pepsi" ? "Pepsi" : d.type === "7up" ? "7Up" : d.type === "mirinda" ? "Mirinda" : "Trà đào"}${d.size === "large" ? " 32oz" : ""}`).join(", ")})
                               </span>
@@ -289,27 +289,27 @@ export const MyTicketsModal: React.FC<MyTicketsModalProps> = ({ isOpen, onClose 
                       )}
 
                       <div className="flex items-center justify-between text-xs pt-1">
-                        <span className="text-neutral-400">
+                        <span className="text-slate-300">
                           Khách hàng: <strong className="text-white">{ticket.customerName}</strong>
                         </span>
-                        <span className="text-accent-red font-black text-sm">
+                        <span className="text-[#00B2FF] font-black text-sm">
                           {formatVND(ticket.totalAmount)}
                         </span>
                       </div>
                     </div>
 
                     {/* VẠCH XÉ CUỐNG VÉ RẠP */}
-                    <div className="hidden sm:block h-36 border-r-2 border-dashed border-neutral-700/80 mr-1" />
+                    <div className="hidden sm:block h-36 border-r-2 border-dashed border-[#034EA2]/50 mr-1" />
 
                     {/* Khung mã QR Code có ký số HMAC */}
-                    <div className="flex flex-col items-center justify-center p-3 bg-white rounded-2xl flex-shrink-0 shadow-lg relative">
+                    <div className="flex flex-col items-center justify-center p-3 bg-white rounded-2xl flex-shrink-0 shadow-lg relative border border-[#00B2FF]/40">
                       {isUsed && (
-                        <div className="absolute inset-0 bg-neutral-950/85 backdrop-blur-[2px] rounded-2xl flex flex-col items-center justify-center text-center p-2 z-10">
+                        <div className="absolute inset-0 bg-[#07152E]/90 backdrop-blur-[2px] rounded-2xl flex flex-col items-center justify-center text-center p-2 z-10">
                           <CheckCircle2 className="w-8 h-8 text-rose-500 mb-1" />
                           <span className="text-[11px] font-black text-white uppercase tracking-wider">
                             VÉ ĐÃ DÙNG
                           </span>
-                          <span className="text-[9px] text-neutral-400 font-mono mt-0.5">
+                          <span className="text-[9px] text-slate-300 font-mono mt-0.5">
                             Check-in rạp xong
                           </span>
                         </div>
@@ -322,12 +322,12 @@ export const MyTicketsModal: React.FC<MyTicketsModalProps> = ({ isOpen, onClose 
                           className="w-28 h-28 object-contain"
                         />
                       ) : (
-                        <div className="w-28 h-28 bg-neutral-100 flex items-center justify-center text-neutral-400">
+                        <div className="w-28 h-28 bg-slate-100 flex items-center justify-center text-slate-400">
                           <QrCode className="w-12 h-12" />
                         </div>
                       )}
 
-                      <span className="text-[9px] text-neutral-800 font-mono font-bold mt-1 tracking-tight">
+                      <span className="text-[9px] text-[#034EA2] font-mono font-bold mt-1 tracking-tight">
                         HMAC VERIFIED
                       </span>
 
@@ -352,14 +352,14 @@ export const MyTicketsModal: React.FC<MyTicketsModalProps> = ({ isOpen, onClose 
         </div>
 
         {/* Footer Modal */}
-        <div className="px-6 py-3.5 border-t border-neutral-800 bg-neutral-900/60 flex items-center justify-between text-xs text-neutral-400">
+        <div className="px-6 py-3.5 border-t border-[#034EA2]/40 bg-[#07152E]/80 flex items-center justify-between text-xs text-slate-300">
           <span className="flex items-center gap-1.5">
             <ShieldCheck className="w-4 h-4 text-emerald-400" />
-            Bảo vệ chống gian lận đa thiết bị
+            Bảo vệ chống gian lận đa thiết bị • Beta Cinemas HITC
           </span>
           <button
             onClick={onClose}
-            className="px-5 py-2 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-white font-semibold transition-colors"
+            className="px-5 py-2 rounded-xl bg-gradient-to-r from-[#034EA2] to-[#00B2FF] hover:brightness-110 text-white font-semibold transition-all shadow-md shadow-[#034EA2]/30"
           >
             Đóng
           </button>
