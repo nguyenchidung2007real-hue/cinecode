@@ -334,11 +334,11 @@ function getSigningSecret(): string {
   const dedicated = process.env.TICKET_SIGNING_SECRET?.trim();
   if (dedicated) return dedicated;
 
-  const adminSecret = process.env.ADMIN_SYNC_SECRET?.trim();
-  if (adminSecret) return adminSecret;
-
   if (process.env.NODE_ENV === "production") {
-    throw new Error("TICKET_SIGNING_SECRET hoặc ADMIN_SYNC_SECRET bắt buộc phải được cấu hình trên production để ký vé an toàn.");
+    throw new Error(
+      "TICKET_SIGNING_SECRET bắt buộc phải được cấu hình trên production để ký vé an toàn. " +
+        "Không dùng ADMIN_SYNC_SECRET làm fallback.",
+    );
   }
 
   // Chỉ dùng khi chạy local chưa cấu hình gì — KHÔNG an toàn nếu để nguyên trên production.
