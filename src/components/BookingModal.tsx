@@ -747,7 +747,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   onClick={() => setViewSeatMode(!viewSeatMode)}
                   className={`px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 border transition-all ${
                     viewSeatMode
-                      ? "bg-cyan-500/20 border-cyan-400 text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.4)]"
+                      ? "bg-[#8a99b5]/20 border-[#8a99b5]/50 text-[#c7d0de] shadow-md"
                       : "bg-neutral-800 border-neutral-700 text-neutral-300 hover:text-white hover:bg-neutral-700"
                   }`}
                 >
@@ -759,23 +759,23 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   <button
                     type="button"
                     onClick={() => setPreviewSeat(selectedSeats[0])}
-                    className="px-3 py-1.5 rounded-xl text-xs font-semibold text-yellow-400 bg-yellow-500/10 border border-yellow-500/30 hover:bg-yellow-500/20 flex items-center gap-1.5 transition-colors"
+                    className="px-3 py-1.5 rounded-xl text-xs font-semibold text-[#d9b95c] bg-[#c9a227]/10 border border-[#c9a227]/30 hover:bg-[#c9a227]/20 flex items-center gap-1.5 transition-colors"
                   >
-                    <Sparkles className="w-3.5 h-3.5" />
+                    <Sparkles className="w-3.5 h-3.5 text-[#d9b95c]" />
                     <span>Góc nhìn ghế {selectedSeats[0].id}</span>
                   </button>
                 )}
               </div>
 
-              <div className="flex items-center gap-1.5 text-[11px] text-yellow-400/90 font-medium">
-                <Sparkles className="w-3.5 h-3.5 text-yellow-400" />
+              <div className="flex items-center gap-1.5 text-[11px] text-[#d9b95c]/90 font-medium">
+                <Sparkles className="w-3.5 h-3.5 text-[#d9b95c]" />
                 <span>Hàng F - G: Vị trí vàng Sweet Spot (Dolby Atmos & THX)</span>
               </div>
             </div>
 
             {/* Cảnh báo Chống Ghế Mồ Côi (Orphan Seat Warning Banner) */}
             {orphanWarning && (
-              <div className="flex items-start gap-3 p-3.5 rounded-xl bg-red-600/20 border border-red-500/60 text-red-200 text-xs shadow-lg shadow-red-900/30 animate-pulse">
+              <div className="flex items-start gap-3 p-3.5 rounded-xl bg-red-600/20 border border-red-500/60 text-red-200 text-xs shadow-lg shadow-black/40">
                 <AlertTriangle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
                 <div>
                   <span className="font-bold block text-red-300 uppercase tracking-wider text-[11px]">
@@ -786,10 +786,10 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               </div>
             )}
 
-            {/* Màn hình cong phát sáng */}
+            {/* Màn hình cong phát sáng nhẹ thanh lịch */}
             <div className="flex flex-col items-center pt-2">
-              <div className="w-3/4 h-2.5 bg-gradient-to-r from-transparent via-accent-cyan to-transparent rounded-full shadow-[0_0_25px_rgba(0,240,255,0.7)]" />
-              <span className="text-[10px] uppercase tracking-widest text-cyan-400 font-extrabold mt-1.5 opacity-90">
+              <div className="w-3/4 h-2 bg-gradient-to-r from-transparent via-accent-cyan to-transparent rounded-full shadow-lg shadow-black/50" />
+              <span className="text-[10px] uppercase tracking-widest text-[#8a99b5] font-extrabold mt-1.5 opacity-90">
                 MÀN HÌNH CHIẾU CONG (CINEMA SCREEN)
               </span>
             </div>
@@ -803,7 +803,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   <div key={rIdx} className="flex items-center justify-center gap-1.5 min-w-[520px]">
                     <span
                       className={`w-6 text-xs font-bold text-center flex items-center justify-center gap-0.5 ${
-                        isSweetSpotRow ? "text-yellow-400 font-black drop-shadow" : "text-neutral-500"
+                        isSweetSpotRow ? "text-[#d9b95c] font-black" : "text-neutral-500"
                       }`}
                       title={isSweetSpotRow ? "Hàng ghế Sweet Spot - Vị trí vàng" : undefined}
                     >
@@ -828,11 +828,11 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                                     ? "bg-amber-900/20 border border-dashed border-amber-700/50 text-amber-700/70 cursor-not-allowed"
                                     : "bg-neutral-800/40 border border-neutral-800 text-neutral-600 cursor-not-allowed"
                                   : isSelected
-                                  ? "bg-accent-red text-white shadow-lg shadow-accent-red/50 scale-105 ring-2 ring-white"
+                                  ? "bg-accent-red text-black shadow-lg shadow-black/40 scale-105 ring-2 ring-white/60 font-black"
                                   : seat.type === "vip"
-                                  ? "bg-amber-500/20 border border-amber-500/40 text-amber-300 hover:bg-amber-500/40 hover:scale-105"
+                                  ? "bg-amber-700/20 border border-amber-600/40 text-amber-200 hover:bg-amber-700/40 hover:scale-105"
                                   : seat.type === "couple"
-                                  ? "bg-pink-500/20 border border-pink-500/40 text-pink-300 hover:bg-pink-500/40 w-16 hover:scale-105"
+                                  ? "bg-[#8a5a8f]/20 border border-[#8a5a8f]/40 text-[#d9b95c] hover:bg-[#8a5a8f]/40 w-16 hover:scale-105"
                                   : "bg-neutral-800 border border-neutral-700 text-neutral-300 hover:bg-neutral-700 hover:scale-105"
                               }`}
                             >
@@ -848,7 +848,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                                   setPreviewSeat(seat);
                                 }}
                                 title={`Xem góc nhìn từ ghế ${seat.id}`}
-                                className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-cyan-500 text-black hidden group-hover:flex items-center justify-center shadow-md scale-90 hover:scale-110 z-10"
+                                className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-[#8a99b5] text-black hidden group-hover:flex items-center justify-center shadow-md scale-90 hover:scale-110 z-10"
                               >
                                 <Eye className="w-2.5 h-2.5" />
                               </button>
@@ -869,11 +869,11 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 <span>Thường (55k)</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <div className="w-4 h-4 rounded bg-amber-500/20 border border-amber-500/40" />
+                <div className="w-4 h-4 rounded bg-amber-700/20 border border-amber-600/40" />
                 <span>VIP (75k)</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <div className="w-4 h-4 rounded bg-pink-500/20 border border-pink-500/40" />
+                <div className="w-4 h-4 rounded bg-[#8a5a8f]/20 border border-[#8a5a8f]/40" />
                 <span>Sweetbox Đôi (130k)</span>
               </div>
               <div className="flex items-center gap-1.5">
@@ -888,7 +888,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 <div className="w-4 h-4 rounded bg-neutral-800/40 border border-neutral-800" />
                 <span>Đã đặt</span>
               </div>
-              <div className="flex items-center gap-1.5 text-yellow-400 font-medium">
+              <div className="flex items-center gap-1.5 text-[#d9b95c] font-medium">
                 <span>★ Sweet Spot</span>
               </div>
             </div>
@@ -969,7 +969,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                       key={combo.id}
                       className={`p-4 rounded-2xl border transition-all flex flex-col justify-between ${
                         qty > 0
-                          ? "bg-neutral-900 border-accent-cyan/60 shadow-lg shadow-cyan-950/20"
+                          ? "bg-neutral-900 border-accent-gold/50 shadow-lg shadow-black/40"
                           : "bg-neutral-900/40 border-neutral-800 hover:border-neutral-700"
                       }`}
                     >
@@ -1247,11 +1247,11 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 onClick={() => setPaymentMethod("momo")}
                 className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all border flex items-center justify-center gap-2 ${
                   paymentMethod === "momo"
-                    ? "bg-pink-600/20 border-pink-500 text-pink-400 ring-1 ring-pink-500"
+                    ? "bg-[#8a5a8f]/20 border-[#8a5a8f]/50 text-[#d9b95c] ring-1 ring-[#8a5a8f]"
                     : "bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-white"
                 }`}
               >
-                <div className="w-3.5 h-3.5 rounded-full bg-pink-500 flex items-center justify-center text-[8px] text-white font-black">M</div>
+                <div className="w-3.5 h-3.5 rounded-full bg-[#8a5a8f] flex items-center justify-center text-[8px] text-white font-black">M</div>
                 <span>Ví MoMo / QR Pay</span>
               </button>
             </div>
@@ -1264,7 +1264,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                     {paymentMethod === "vietqr" ? "NAPAS 247 | VIETQR" : "VÍ ĐIỆN TỬ MOMO"}
                   </span>
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
-                    paymentMethod === "vietqr" ? "bg-blue-100 text-blue-800" : "bg-pink-100 text-pink-800"
+                    paymentMethod === "vietqr" ? "bg-blue-100 text-blue-800" : "bg-purple-100 text-purple-900"
                   }`}>
                     {paymentMethod === "vietqr" ? "MB BANK" : "MOMO PAY"}
                   </span>
@@ -1355,7 +1355,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   <button
                     onClick={handleConfirmPaid}
                     disabled={isSubmitting || h.status !== "held"}
-                    className="w-full py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 disabled:opacity-50 text-white font-extrabold text-sm shadow-lg shadow-emerald-500/30 transition-all flex items-center justify-center gap-2"
+                    className="w-full py-3.5 rounded-xl bg-accent-red hover:bg-accent-redHover disabled:opacity-50 text-black font-extrabold text-sm shadow-lg shadow-black/40 transition-all flex items-center justify-center gap-2"
                   >
                     <Check className="w-4 h-4" />
                     <span>{isSubmitting ? "Đang xác thực thanh toán..." : "Tôi Đã Chuyển Khoản Thành Công"}</span>

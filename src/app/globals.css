@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 :root {
-  --background: #0b0c10;
-  --foreground: #ededed;
+  --background: #070b14;
+  --foreground: #f1f4f9;
 }
 
 body {
@@ -14,38 +14,38 @@ body {
   overflow-x: hidden;
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar - Navy/Gold theme */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0b0c10;
+  background: #070b14;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #232734;
+  background: #1c2a42;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #394154;
+  background: #2b3e5f;
 }
 
-/* Cinema screen glow effect */
+/* Cinema screen glow effect - Soft silver/warm gold instead of harsh neon */
 .cinema-screen-glow {
-  box-shadow: 0 -15px 45px -5px rgba(0, 229, 255, 0.45);
+  box-shadow: 0 -10px 35px -5px rgba(138, 153, 181, 0.25);
 }
 
 .cinema-screen-glow-warm {
-  box-shadow: 0 -15px 45px -5px rgba(229, 9, 20, 0.4);
+  box-shadow: 0 -10px 35px -5px rgba(201, 162, 39, 0.25);
 }
 
-/* Glassmorphism styling */
+/* Glassmorphism styling - Navy & Border Navy */
 .glass-panel {
-  background: rgba(20, 22, 29, 0.75);
+  background: rgba(15, 24, 38, 0.85);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid #25324a;
 }
