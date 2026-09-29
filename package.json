@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "test": "tsx scripts/testAllModules.ts",
+    "test:all": "tsx scripts/testAllModules.ts",
     "test:module3": "tsx scripts/testModule3.ts",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",

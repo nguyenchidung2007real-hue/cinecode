@@ -40,7 +40,7 @@ export function checkOrphanSeats(
     seat.status === "booked" || simulatedSelected.has(seat.id);
 
   const isOccupiedBefore = (seat: Seat) =>
-    seat.status === "booked" || currentSelectedSeatIds.has(seat.id);
+    seat.status === "booked" || (targetSeatToToggle ? currentSelectedSeatIds.has(seat.id) : false);
 
   // Tìm các cụm ghế trống liên tiếp (consecutive free segments)
   const newOrphans: string[] = [];
