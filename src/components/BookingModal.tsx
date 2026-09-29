@@ -308,7 +308,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
   const preselectedRef = useRef(false);
 
-  // (a) Mở/đóng modal: reset, và chọn sẵn suất chiếu sắp tới gần nhất của phim
+  // (a) Mở/đóng modal: reset, và chọn sẵn suất chiếu (ưu tiên initialShowtimeId, tránh ghi đè)
   useEffect(() => {
     if (!movie) {
       setStep(1);
@@ -321,6 +321,21 @@ export const BookingModal: React.FC<BookingModalProps> = ({
       preselectedRef.current = false;
       return;
     }
+
+    // Nếu người dùng/CineBot truyền initialShowtimeId: ưu tiên chọn suất này, không ghi đè
+    if (initialShowtimeId) {
+      const target = movieShowtimes.find((s) => s.id === initialShowtimeId);
+      if (target) {
+        setSelectedCinemaId(target.cinemaId);
+        setSelectedDate(target.date);
+        setSelectedShowtimeId(target.id);
+        return;
+      }
+      // Suất chiếu server chưa tải xong: giữ nguyên initialShowtimeId, không để next ghi đè
+      setSelectedShowtimeId(initialShowtimeId);
+      return;
+    }
+
     const now = Date.now();
     const next = movieShowtimes
       .filter((s) => showtimeStartMs(s) > now)
@@ -332,7 +347,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     } else {
       setSelectedShowtimeId(null);
     }
-  }, [movie, movieShowtimes]);
+  }, [movie, movieShowtimes, initialShowtimeId]);
 
   // (b) CineBot đề xuất ghế: chọn sẵn ĐÚNG MỘT LẦN rồi giữ ghế trên server
   useEffect(() => {
