@@ -30,7 +30,7 @@ const MOOD_FILTERS = [
 ];
 
 export default function HomePage() {
-  const [movies] = useState<Movie[]>(MOCK_MOVIES);
+  const [movies, setMovies] = useState<Movie[]>(MOCK_MOVIES);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCity, setSelectedCity] = useState("Tất cả");
   const [selectedGenre, setSelectedGenre] = useState("Tất cả");
@@ -48,7 +48,27 @@ export default function HomePage() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [ticketCount, setTicketCount] = useState(0);
 
-
+  // Tải danh sách phim mới nhất từ TMDB API
+  useEffect(() => {
+    let isMounted = true;
+    fetch("/api/movies?category=all")
+      .then((res) => res.json())
+      .then((data) => {
+        if (isMounted && data.success && Array.isArray(data.data) && data.data.length > 0) {
+          const combined = [...data.data];
+          for (const mock of MOCK_MOVIES) {
+            if (!combined.some((m) => m.id === mock.id)) {
+              combined.push(mock);
+            }
+          }
+          setMovies(combined);
+        }
+      })
+      .catch((err) => console.error("Lỗi cập nhật phim TMDB:", err));
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Đọc số lượng vé đã đặt
   useEffect(() => {
