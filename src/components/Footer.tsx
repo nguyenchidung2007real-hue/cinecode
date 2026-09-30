@@ -1,5 +1,6 @@
 import React from "react";
-import { Film, Sparkles, Heart, Phone, Mail, MapPin, ShieldCheck } from "lucide-react";
+import Link from "next/link";
+import { Film, Sparkles, Heart, Phone, Mail, MapPin, ShieldCheck, QrCode } from "lucide-react";
 
 export const Footer: React.FC = () => {
   return (
@@ -78,6 +79,26 @@ export const Footer: React.FC = () => {
 
         <div className="pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-slate-500 text-[11px]">
           <p>© 2024 - 2026 Beta Media Joint Stock Company. Bảo lưu mọi quyền.</p>
+          
+          {/* Cổng đăng nhập nội bộ cho Nhân viên & Quản trị */}
+          <div className="flex items-center gap-3 text-[11px]">
+            <Link
+              href="/scanner"
+              className="text-slate-500 hover:text-emerald-400 transition-colors flex items-center gap-1"
+            >
+              <QrCode className="w-3 h-3" />
+              <span>Cổng Soát Vé</span>
+            </Link>
+            <span>•</span>
+            <Link
+              href="/admin"
+              className="text-slate-500 hover:text-cyan-400 transition-colors flex items-center gap-1"
+            >
+              <ShieldCheck className="w-3 h-3" />
+              <span>Quản Trị Rạp</span>
+            </Link>
+          </div>
+
           <p className="flex items-center gap-1">
             Thiết kế theo nhận diện thương hiệu <span className="text-[#00B2FF] font-bold">Beta Cinemas</span>
           </p>

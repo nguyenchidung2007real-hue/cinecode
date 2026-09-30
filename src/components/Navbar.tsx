@@ -60,26 +60,10 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         <div className="flex items-center gap-3">
           <Link
-            href="/scanner"
-            className="hidden sm:flex items-center gap-1 text-emerald-400 hover:text-emerald-300 font-semibold"
-          >
-            <QrCode className="w-3 h-3" />
-            <span>Soát vé</span>
-          </Link>
-          <span className="text-slate-600 hidden sm:inline">•</span>
-          <Link
-            href="/admin"
-            className="hidden sm:flex items-center gap-1 text-cyan-400 hover:text-cyan-300 font-semibold"
-          >
-            <ShieldCheck className="w-3 h-3" />
-            <span>Admin Rạp</span>
-          </Link>
-          <span className="text-slate-600 hidden sm:inline">•</span>
-          <Link
             href="/dashboard"
             className="flex items-center gap-1 text-slate-200 hover:text-white font-medium"
           >
-            <User className="w-3 h-3 text-amber-400" />
+            <User className="w-3.5 h-3.5 text-amber-400" />
             <span>{customerInfo ? `Thành viên: ${customerInfo.name}` : "Đăng nhập Thành viên"}</span>
           </Link>
           <span className="text-slate-600">•</span>
