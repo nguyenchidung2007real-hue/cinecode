@@ -15,17 +15,19 @@
 
 Quy trình mua vé trên website được tối ưu hóa toàn diện theo 5 bước rõ ràng:
 
-```mermaid
-graph LR
-    B1["Bước 1: Chọn Rạp & Suất Chiếu"] --> B2["Bước 2: Sơ Đồ 102 Ghế & Giữ Ghế"]
-    B2 --> B3["Bước 3: Chọn Combo Bắp Nước"]
-    B3 --> B4["Bước 4: Thanh Toán VietQR / MoMo"]
-    B4 --> B5["Bước 5: Nhận Vé Điện Tử E-Ticket & QR"]
+```
+[Bước 1: Chọn Rạp & Suất Chiếu] ──> [Bước 2: Sơ Đồ 102 Ghế & Giữ Ghế]
+                                                 │
+                                                 ▼
+[Bước 4: Thanh Toán VietQR / MoMo] <── [Bước 3: Chọn Combo Bắp Nước]
+       │
+       ▼
+[Bước 5: Nhận Vé Điện Tử E-Ticket & QR]
 ```
 
 ### Chi tiết 5 Bước:
 1. **Bước 1 — Chọn Cụm Rạp & Suất Chiếu**:
-   - Chọn rạp rạp mục tiêu (mặc định: **Beta Cinemas Xuân Thủy**).
+   - Chọn rạp mục tiêu (mặc định: **Beta Cinemas Xuân Thủy**).
    - Lọc suất chiếu theo ngày (Hôm nay, Ngày mai) và định dạng (2D Phụ Đề, 2D Lồng Tiếng, IMAX).
    - Cơ chế phát hiện va chạm tự động (Collision Engine): Các suất chiếu được đệm 10 phút chiếu trailer và 15 phút dọn dẹp vệ sinh phòng chiếu.
 2. **Bước 2 — Sơ Đồ 102 Ghế Động & Cơ Chế Giữ Ghế An Toàn (Seat Map)**:
@@ -57,7 +59,7 @@ graph LR
 ### 3.2. Hệ Thống Quản Trị & Soát Vé Tại Cửa Rạp
 - **Trang Dashboard Doanh Thu (`/dashboard`)**: Theo dõi tỷ lệ lấp đầy ghế theo thời gian thực, doanh thu vé và bắp nước.
 - **Trang Quản Trị Admin (`/admin`)**: Quản lý lịch chiếu phim, ma trận phòng chiếu không xung đột.
-- **Máy Quét Mã QR Cửa Rạp (`/api/tickets/check-in`)**: Dành cho nhân viên soát vé tại cửa rạp. Ngăn chặn triệt để vé giả mạo và vé đã sử dụng qua lệnh nguyên tử `SETNX`.
+- **Máy Quét Mã QR Cửa Rạp (`/api/tickets/check-in` & `/scanner`)**: Dành cho nhân viên soát vé tại cửa rạp. Ngăn chặn triệt để vé giả mạo và vé đã sử dụng qua lệnh nguyên tử `SETNX`.
 
 ### 3.3. Thiết Kế Giao Diện Sang Trọng (Luxury Navy & Gold)
 - Nền xanh Navy sâu thẳm (`#070b14`), bề mặt thẻ phim `#0f1826`, viền `#25324a`.
