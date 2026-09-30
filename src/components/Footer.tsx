@@ -64,7 +64,7 @@ export const Footer: React.FC = () => {
             <div className="space-y-2 text-slate-300 text-[11px]">
               <div className="flex items-center gap-1.5 text-[#00B2FF]">
                 <Sparkles className="w-3.5 h-3.5" />
-                <span className="font-bold">Groq LPU (~500 tokens/s)</span>
+                <span className="font-bold">Trợ Lý Phim Trực Tuyến</span>
               </div>
               <p className="text-[11px] text-slate-400">
                 Tư vấn chọn phim theo cảm xúc và đề xuất ghế ngồi rạp trực quan.

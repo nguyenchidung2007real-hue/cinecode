@@ -2,12 +2,12 @@
 
 import React, { useState, useMemo } from "react";
 import { Movie, Cinema } from "@/types";
-import { MOCK_CINEMAS, MOCK_SHOWTIMES } from "@/lib/mockData";
+import { MOCK_CINEMAS, MOCK_SHOWTIMES, getShowtimesForMovie } from "@/lib/mockData";
 import { Ticket, Film, MapPin, Calendar, Clock, ArrowRight } from "lucide-react";
 
 interface QuickBookingBarProps {
   movies: Movie[];
-  onQuickBook: (movie: Movie, cinemaName: string, date: string, time: string, format: string) => void;
+  onQuickBook: (movie: Movie, cinemaName: string, date: string, time: string, format: string, showtimeId?: string) => void;
 }
 
 function getVnDateString(offsetDays = 0): string {
@@ -32,23 +32,29 @@ export const QuickBookingBar: React.FC<QuickBookingBarProps> = ({ movies, onQuic
     [selectedCinemaId]
   );
 
-  // Lọc suất chiếu phù hợp
+  // Lọc suất chiếu phù hợp với phim, rạp và ngày đã chọn
   const availableShowtimes = useMemo(() => {
-    return MOCK_SHOWTIMES.filter((st) => st.cinemaId === selectedCinemaId || st.cinemaId === "beta-cinemas-xuan-thuy");
-  }, [selectedCinemaId]);
+    const list = getShowtimesForMovie(selectedMovieId).filter(
+      (st) => st.cinemaId === selectedCinemaId && st.date === selectedDate
+    );
+    if (list.length > 0) return list;
+    return getShowtimesForMovie(selectedMovieId).filter((st) => st.cinemaId === selectedCinemaId);
+  }, [selectedMovieId, selectedCinemaId, selectedDate]);
 
   const currentShowtime = useMemo(() => {
     return availableShowtimes.find((st) => st.id === selectedShowtimeId) || availableShowtimes[0];
   }, [availableShowtimes, selectedShowtimeId]);
 
   const handleBookNow = () => {
-    if (!currentMovie || !currentShowtime) return;
+    if (!currentMovie) return;
+    const st = currentShowtime || availableShowtimes[0];
     onQuickBook(
       currentMovie,
       currentCinema.name,
       selectedDate,
-      currentShowtime.time,
-      currentShowtime.format
+      st?.time || "19:30",
+      st?.format || "2D Phụ Đề",
+      st?.id
     );
   };
 

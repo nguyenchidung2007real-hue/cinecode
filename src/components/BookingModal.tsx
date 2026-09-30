@@ -9,6 +9,7 @@ import {
   POPCORN_FLAVOR_OPTIONS,
   DRINK_TYPE_OPTIONS,
   DRINK_SIZE_OPTIONS,
+  getShowtimesForMovie,
 } from "@/lib/mockData";
 import { formatVND } from "@/lib/utils";
 import { checkOrphanSeats } from "@/lib/orphanSeatRule";
@@ -219,13 +220,15 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     fetch(`/api/showtimes?movieId=${encodeURIComponent(String(movie.id))}`)
       .then((res) => (res.ok ? res.json() : Promise.reject()))
       .then((data) => {
-        if (!cancelled && data?.showtimes && Array.isArray(data.showtimes)) {
+        if (!cancelled && data?.showtimes && Array.isArray(data.showtimes) && data.showtimes.length > 0) {
           setServerShowtimes(data.showtimes);
+        } else if (!cancelled) {
+          setServerShowtimes(getShowtimesForMovie(movie.id));
         }
       })
       .catch(() => {
         if (!cancelled) {
-          setServerShowtimes(MOCK_SHOWTIMES.filter((s) => String(s.movieId) === String(movie.id)));
+          setServerShowtimes(getShowtimesForMovie(movie.id));
         }
       })
       .finally(() => {
@@ -239,16 +242,16 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   useEffect(() => {
     if (initialShowtimeId) {
       setSelectedShowtimeId(initialShowtimeId);
-      const st = (serverShowtimes.length > 0 ? serverShowtimes : MOCK_SHOWTIMES).find((s) => s.id === initialShowtimeId);
+      const st = (serverShowtimes.length > 0 ? serverShowtimes : (movie ? getShowtimesForMovie(movie.id) : MOCK_SHOWTIMES)).find((s) => s.id === initialShowtimeId);
       if (st) {
         setSelectedCinemaId(st.cinemaId);
         setSelectedDate(st.date);
       }
     }
-  }, [initialShowtimeId, serverShowtimes]);
+  }, [initialShowtimeId, serverShowtimes, movie]);
 
   const movieShowtimes = useMemo<ShowTime[]>(
-    () => (serverShowtimes.length > 0 ? serverShowtimes : (movie ? MOCK_SHOWTIMES.filter((s) => String(s.movieId) === String(movie.id)) : [])),
+    () => (serverShowtimes.length > 0 ? serverShowtimes : (movie ? getShowtimesForMovie(movie.id) : [])),
     [serverShowtimes, movie],
   );
 
@@ -259,6 +262,45 @@ export const BookingModal: React.FC<BookingModalProps> = ({
         .sort((a, b) => a.time.localeCompare(b.time)),
     [movieShowtimes, selectedCinemaId, selectedDate],
   );
+
+  // Tự động kiểm tra và chọn suất chiếu thông minh (không để người dùng bị kẹt nút "Tiếp tục: Chọn ghế")
+  useEffect(() => {
+    if (!movie || movieShowtimes.length === 0) return;
+
+    const now = Date.now();
+    // 1. Kiểm tra nếu rạp hiện tại không có suất nào hôm nay, tự động kiểm tra ngày mai
+    if (visibleShowtimes.length === 0) {
+      const tomorrowStr = dateOptions[1];
+      const hasTomorrow = movieShowtimes.some((s) => s.cinemaId === selectedCinemaId && s.date === tomorrowStr);
+      if (selectedDate === dateOptions[0] && hasTomorrow) {
+        setSelectedDate(tomorrowStr);
+      }
+      return;
+    }
+
+    // 2. Nếu suất chiếu đang chọn vẫn còn trong danh sách và CHƯA bắt đầu -> giữ nguyên
+    const currentStillValid = visibleShowtimes.find(
+      (st) => st.id === selectedShowtimeId && showtimeStartMs(st) > now
+    );
+    if (currentStillValid) return;
+
+    // 3. Tìm suất chiếu sắp tới sớm nhất (chưa bắt đầu)
+    const upcoming = visibleShowtimes.find((st) => showtimeStartMs(st) > now);
+    if (upcoming) {
+      setSelectedShowtimeId(upcoming.id);
+    } else {
+      // Nếu tất cả suất hôm nay đã bắt đầu rồi:
+      // Tự động chuyển sang ngày mai nếu đang ở ngày hôm nay
+      const tomorrowStr = dateOptions[1];
+      const hasTomorrow = movieShowtimes.some((s) => s.cinemaId === selectedCinemaId && s.date === tomorrowStr);
+      if (selectedDate === dateOptions[0] && hasTomorrow) {
+        setSelectedDate(tomorrowStr);
+      } else {
+        // Hoặc giữ suất đầu tiên của ngày được chọn
+        setSelectedShowtimeId(visibleShowtimes[0].id);
+      }
+    }
+  }, [visibleShowtimes, movieShowtimes, selectedCinemaId, selectedDate, dateOptions, selectedShowtimeId, movie]);
 
   const selectedShowtime = movieShowtimes.find((s) => s.id === selectedShowtimeId) ?? null;
   // Giữ đúng tên biến cũ để JSX bước 3–5 không phải sửa
@@ -701,49 +743,76 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               </div>
 
               {visibleShowtimes.length === 0 ? (
-                <p className="mt-4 text-xs text-neutral-400">
-                  Chưa có suất chiếu phim này tại rạp/ngày đã chọn. Hãy thử rạp hoặc ngày khác.
-                </p>
-              ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
-                  {visibleShowtimes.map((st) => {
-                    const started = showtimeStartMs(st) <= Date.now();
-                    return (
-                      <button
-                        key={st.id}
-                        type="button"
-                        disabled={started}
-                        onClick={() => {
-                          if (st.id !== selectedShowtimeId) {
-                            setSelectedSeats([]); // đổi suất: hook tự nhả ghế của suất cũ
-                            setSelectedShowtimeId(st.id);
-                          }
-                        }}
-                        className={`p-3 rounded-xl border text-center transition-all ${
-                          started
-                            ? "border-neutral-800 bg-neutral-900/20 opacity-40 cursor-not-allowed"
-                            : selectedShowtimeId === st.id
-                            ? "border-accent-red bg-accent-red/10 ring-1 ring-accent-red"
-                            : "border-neutral-800 bg-neutral-900/40 hover:border-neutral-700"
-                        }`}
-                      >
-                        <span className="block font-black text-base text-white">{st.time}</span>
-                        <span className="text-[11px] text-accent-cyan font-semibold">{st.format}</span>
-                        <span className="block text-[10px] text-neutral-400 mt-1">
-                          {started ? "Đã chiếu" : st.roomName}
-                        </span>
-                      </button>
-                    );
-                  })}
+                <div className="mt-4 p-4 rounded-xl bg-neutral-900/60 border border-neutral-800 text-center">
+                  <p className="text-xs text-neutral-300">
+                    Chưa có suất chiếu phim này tại rạp/ngày đã chọn.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedDate(dateOptions[1]);
+                    }}
+                    className="mt-2.5 px-4 py-1.5 rounded-lg bg-[#034EA2]/30 hover:bg-[#034EA2]/50 text-[#00B2FF] font-bold text-xs border border-[#00B2FF]/30 transition-all inline-flex items-center gap-1.5"
+                  >
+                    <span>Xem suất chiếu Ngày mai</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
                 </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
+                    {visibleShowtimes.map((st) => {
+                      const started = showtimeStartMs(st) <= Date.now();
+                      return (
+                        <button
+                          key={st.id}
+                          type="button"
+                          disabled={started}
+                          onClick={() => {
+                            if (st.id !== selectedShowtimeId) {
+                              setSelectedSeats([]); // đổi suất: hook tự nhả ghế của suất cũ
+                              setSelectedShowtimeId(st.id);
+                            }
+                          }}
+                          className={`p-3 rounded-xl border text-center transition-all ${
+                            started
+                              ? "border-neutral-800 bg-neutral-900/20 opacity-40 cursor-not-allowed"
+                              : selectedShowtimeId === st.id
+                              ? "border-accent-red bg-accent-red/10 ring-1 ring-accent-red"
+                              : "border-neutral-800 bg-neutral-900/40 hover:border-neutral-700"
+                          }`}
+                        >
+                          <span className="block font-black text-base text-white">{st.time}</span>
+                          <span className="text-[11px] text-accent-cyan font-semibold">{st.format}</span>
+                          <span className="block text-[10px] text-neutral-400 mt-1">
+                            {started ? "Đã chiếu" : st.roomName}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {visibleShowtimes.length > 0 && visibleShowtimes.every((st) => showtimeStartMs(st) <= Date.now()) && (
+                    <div className="mt-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between text-xs text-amber-200">
+                      <span>Tất cả suất chiếu hôm nay tại rạp này đã kết thúc.</span>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedDate(dateOptions[1])}
+                        className="px-3 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-white font-bold transition-all"
+                      >
+                        Xem Ngày mai
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
             </div>
 
             <div className="pt-4 border-t border-neutral-800 flex justify-end">
               <button
-                disabled={!selectedShowtimeId}
+                disabled={!selectedShowtimeId || (selectedShowtime ? showtimeStartMs(selectedShowtime) <= Date.now() : false)}
                 onClick={() => setStep(2)}
-                className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-accent-red hover:bg-accent-redHover disabled:opacity-50 text-white font-bold text-sm transition-all"
+                className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-accent-red hover:bg-accent-redHover disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm transition-all shadow-lg shadow-accent-red/20"
               >
                 <span>Tiếp tục: Chọn ghế</span>
                 <ArrowRight className="w-4 h-4" />

@@ -43,6 +43,7 @@ export default function HomePage() {
   const [activeDetailMovie, setActiveDetailMovie] = useState<Movie | null>(null);
   const [activeBookingMovie, setActiveBookingMovie] = useState<Movie | null>(null);
   const [bookingInitialSeats, setBookingInitialSeats] = useState<string[]>([]);
+  const [bookingInitialShowtimeId, setBookingInitialShowtimeId] = useState<string | undefined>(undefined);
   const [isAiChatOpen, setIsAiChatOpen] = useState(false);
   const [isMyTicketsOpen, setIsMyTicketsOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -211,7 +212,8 @@ export default function HomePage() {
             {/* 1. Thanh Mua Vé Nhanh 1-Click (Đặc trưng số 1 của CGV & Galaxy Cinema) */}
             <QuickBookingBar
               movies={movies}
-              onQuickBook={(movie, cinemaName, date, time, format) => {
+              onQuickBook={(movie, cinemaName, date, time, format, showtimeId) => {
+                setBookingInitialShowtimeId(showtimeId);
                 setActiveBookingMovie(movie);
               }}
             />
@@ -363,8 +365,8 @@ export default function HomePage() {
                   <div>
                     <h3 className="font-extrabold text-sm sm:text-base text-white flex items-center gap-2">
                       <span>Bạn chưa biết nên xem phim gì tối nay?</span>
-                      <span className="text-[10px] px-2 py-0.5 rounded font-mono font-bold bg-accent-cyan/20 text-accent-cyan border border-accent-cyan/40">
-                        Groq AI ~500 tokens/s
+                      <span className="text-[10px] px-2 py-0.5 rounded font-bold bg-[#034EA2]/30 text-[#00B2FF] border border-[#00B2FF]/30">
+                        Gợi Ý Thông Minh
                       </span>
                     </h3>
                     <p className="text-xs text-neutral-400 mt-0.5">
@@ -468,9 +470,11 @@ export default function HomePage() {
       <BookingModal
         movie={activeBookingMovie}
         initialSeats={bookingInitialSeats}
+        initialShowtimeId={bookingInitialShowtimeId}
         onClose={() => {
           setActiveBookingMovie(null);
           setBookingInitialSeats([]);
+          setBookingInitialShowtimeId(undefined);
         }}
         onBookingSuccess={handleBookingSuccess}
       />

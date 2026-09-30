@@ -247,7 +247,7 @@ const todayVN = getTodayInVietnam();
 const tomorrowVN = shiftDays(todayVN, 1);
 const dayAfterVN = shiftDays(todayVN, 2);
 
-export const MOCK_SHOWTIMES: ShowTime[] = [
+const BASE_MOCK_SHOWTIMES: ShowTime[] = [
   // Suất chiếu hôm nay (todayVN)
   {
     id: "st-beta-today-1",
@@ -499,6 +499,160 @@ export const MOCK_SHOWTIMES: ShowTime[] = [
     date: tomorrowVN,
     time: "20:00",
   },
+];
+
+export type ShowtimeFormat = "2D Phụ Đề" | "2D Lồng Tiếng" | "IMAX Laser" | "4DX";
+
+export interface CinemaScheduleTemplate {
+  cinemaId: string;
+  slots: Array<{ time: string; roomName: string; format: ShowtimeFormat }>;
+}
+
+export const CINEMA_SCHEDULE_TEMPLATES: CinemaScheduleTemplate[] = [
+  {
+    cinemaId: "beta-cinemas-xuan-thuy",
+    slots: [
+      { time: "09:30", roomName: "Phòng Beta 01 (Dolby 7.1)", format: "2D Phụ Đề" },
+      { time: "11:45", roomName: "Phòng Beta 02 (Laser HD)", format: "2D Lồng Tiếng" },
+      { time: "14:15", roomName: "Phòng Beta 01 (Dolby 7.1)", format: "2D Phụ Đề" },
+      { time: "16:45", roomName: "Phòng Beta 03 (Standard)", format: "2D Phụ Đề" },
+      { time: "19:15", roomName: "Phòng Beta 01 (Dolby 7.1)", format: "2D Phụ Đề" },
+      { time: "21:30", roomName: "Phòng Beta 02 (Laser HD)", format: "2D Phụ Đề" },
+      { time: "23:00", roomName: "Phòng Beta 01 (Dolby 7.1)", format: "2D Phụ Đề" },
+    ],
+  },
+  {
+    cinemaId: "cgv-vincom-ba-trieu",
+    slots: [
+      { time: "10:00", roomName: "Phòng ScreenX 01", format: "4DX" },
+      { time: "13:15", roomName: "Phòng Cinema 02", format: "2D Phụ Đề" },
+      { time: "16:00", roomName: "Phòng ScreenX 01", format: "4DX" },
+      { time: "18:45", roomName: "Phòng Cinema 02", format: "2D Phụ Đề" },
+      { time: "21:00", roomName: "Phòng ScreenX 01", format: "4DX" },
+      { time: "22:45", roomName: "Phòng Cinema 02", format: "2D Phụ Đề" },
+    ],
+  },
+  {
+    cinemaId: "lotte-cinema-keangnam",
+    slots: [
+      { time: "10:30", roomName: "Phòng Super Plex", format: "IMAX Laser" },
+      { time: "13:45", roomName: "Phòng Cinema 03", format: "2D Phụ Đề" },
+      { time: "17:00", roomName: "Phòng Super Plex", format: "IMAX Laser" },
+      { time: "19:45", roomName: "Phòng Super Plex", format: "IMAX Laser" },
+      { time: "22:00", roomName: "Phòng Cinema 03", format: "2D Phụ Đề" },
+    ],
+  },
+  {
+    cinemaId: "cgv-landmark-81",
+    slots: [
+      { time: "10:15", roomName: "Phòng IMAX Laser 01", format: "IMAX Laser" },
+      { time: "13:30", roomName: "Phòng Gold Class 01", format: "2D Phụ Đề" },
+      { time: "16:45", roomName: "Phòng IMAX Laser 01", format: "IMAX Laser" },
+      { time: "19:30", roomName: "Phòng IMAX Laser 01", format: "IMAX Laser" },
+      { time: "22:15", roomName: "Phòng IMAX Laser 01", format: "IMAX Laser" },
+    ],
+  },
+  {
+    cinemaId: "bhd-star-bitexco",
+    slots: [
+      { time: "09:45", roomName: "Phòng Star 01", format: "2D Phụ Đề" },
+      { time: "13:00", roomName: "Phòng Deluxe 02", format: "2D Phụ Đề" },
+      { time: "16:15", roomName: "Phòng Star 01", format: "2D Phụ Đề" },
+      { time: "19:00", roomName: "Phòng Star 01", format: "2D Phụ Đề" },
+      { time: "21:45", roomName: "Phòng Deluxe 02", format: "2D Phụ Đề" },
+    ],
+  },
+];
+
+const DYNAMIC_SHOWTIMES_CACHE = new Map<string, ShowTime>();
+
+export function generateShowtimesForMovie(movieId: string | number): ShowTime[] {
+  const idStr = String(movieId);
+  const cleanMovie = idStr.replace(/[^a-zA-Z0-9]/g, "").slice(0, 14);
+  const results: ShowTime[] = [];
+  const baseToday = getTodayInVietnam();
+  const dates = [baseToday, shiftDays(baseToday, 1), shiftDays(baseToday, 2)];
+
+  for (const date of dates) {
+    const dateCompact = date.replace(/-/g, "");
+    for (const tmpl of CINEMA_SCHEDULE_TEMPLATES) {
+      const cinema = MOCK_CINEMAS.find((c) => c.id === tmpl.cinemaId) || MOCK_CINEMAS[0];
+      const cleanCinema = cinema.id.replace(/[^a-zA-Z0-9]/g, "").slice(0, 10);
+
+      for (const slot of tmpl.slots) {
+        const timeCompact = slot.time.replace(":", "");
+        const showtimeId = `st-${cleanCinema}-${cleanMovie}-${dateCompact}-${timeCompact}`;
+        const st: ShowTime = {
+          id: showtimeId,
+          movieId: idStr,
+          cinemaId: cinema.id,
+          cinemaName: cinema.name,
+          roomName: slot.roomName,
+          format: slot.format,
+          date,
+          time: slot.time,
+        };
+        results.push(st);
+        DYNAMIC_SHOWTIMES_CACHE.set(st.id, st);
+      }
+    }
+  }
+
+  return results;
+}
+
+export function resolveShowtimeById(id: string): ShowTime | null {
+  if (DYNAMIC_SHOWTIMES_CACHE.has(id)) {
+    return DYNAMIC_SHOWTIMES_CACHE.get(id)!;
+  }
+  const foundInMock = BASE_MOCK_SHOWTIMES.find((s) => s.id === id);
+  if (foundInMock) return foundInMock;
+
+  const match = id.match(/^st-([a-zA-Z0-9]+)-([a-zA-Z0-9]+)-(\d{8})-(\d{4})$/);
+  if (match) {
+    const [, cinemaPrefix, cleanMovie, ymd, hm] = match;
+    const date = `${ymd.slice(0, 4)}-${ymd.slice(4, 6)}-${ymd.slice(6, 8)}`;
+    const time = `${hm.slice(0, 2)}:${hm.slice(2, 4)}`;
+    const cinema =
+      MOCK_CINEMAS.find((c) => c.id.replace(/[^a-zA-Z0-9]/g, "").slice(0, 10) === cinemaPrefix) ||
+      MOCK_CINEMAS[0];
+
+    const tmpl = CINEMA_SCHEDULE_TEMPLATES.find((t) => t.cinemaId === cinema.id);
+    const slot: { roomName: string; format: ShowtimeFormat } = tmpl?.slots.find((s) => s.time === time) || {
+      roomName: "Phòng Beta 01 (Dolby 7.1)",
+      format: "2D Phụ Đề",
+    };
+
+    const st: ShowTime = {
+      id,
+      movieId: cleanMovie,
+      cinemaId: cinema.id,
+      cinemaName: cinema.name,
+      roomName: slot.roomName,
+      format: slot.format,
+      date,
+      time,
+    };
+    DYNAMIC_SHOWTIMES_CACHE.set(id, st);
+    return st;
+  }
+
+  return null;
+}
+
+export function getShowtimesForMovie(movieId: string | number): ShowTime[] {
+  const fromMock = MOCK_SHOWTIMES.filter((s) => String(s.movieId) === String(movieId));
+  if (fromMock.length > 0) return fromMock;
+  return generateShowtimesForMovie(movieId);
+}
+
+const ALL_MOCK_MOVIES_SHOWTIMES = MOCK_MOVIES.flatMap((m) => generateShowtimesForMovie(m.id));
+
+export const MOCK_SHOWTIMES: ShowTime[] = [
+  ...BASE_MOCK_SHOWTIMES,
+  ...ALL_MOCK_MOVIES_SHOWTIMES.filter(
+    (gen) => !BASE_MOCK_SHOWTIMES.some((base) => base.id === gen.id)
+  ),
 ];
 
 export const POPCORN_FLAVOR_OPTIONS = [

@@ -4,7 +4,7 @@ import {
   type CollisionResult,
   type ShowtimeLike,
 } from "@/lib/showtimeCollision";
-import { MOCK_SHOWTIMES, MOCK_MOVIES } from "@/lib/mockData";
+import { MOCK_SHOWTIMES, MOCK_MOVIES, generateShowtimesForMovie, resolveShowtimeById } from "@/lib/mockData";
 import { getKvConfig, kvCommand, type KvConfig } from "@/lib/kvRest";
 
 /**
@@ -348,11 +348,38 @@ class KvShowtimeStore implements ShowtimeStore {
       }
     });
 
-    return all
+    const filtered = all
       .filter((s) => (filter.date ? s.date === filter.date : true))
       .filter((s) => (filter.cinemaId ? s.cinemaId === filter.cinemaId : true))
-      .filter((s) => (filter.movieId ? s.movieId === filter.movieId : true))
-      .sort((a, b) => compare(a.date, b.date) || compare(a.time, b.time) || compare(a.roomName, b.roomName));
+      .filter((s) => (filter.movieId ? s.movieId === filter.movieId : true));
+
+    if (filter.movieId && filtered.length === 0) {
+      const generated = generateShowtimesForMovie(filter.movieId);
+      const movie = MOCK_MOVIES.find((m) => String(m.id) === String(filter.movieId));
+      const generatedStored: StoredShowtime[] = generated.map((st) => ({
+        id: st.id,
+        cinemaId: st.cinemaId,
+        movieId: String(st.movieId),
+        movieTitle: movie?.title ?? `Phim #${st.movieId}`,
+        format: st.format,
+        roomName: st.roomName,
+        date: st.date,
+        time: st.time,
+        durationMinutes: movie?.durationMinutes ?? 120,
+        createdAt: new Date().toISOString(),
+      }));
+
+      for (const st of generatedStored) {
+        await this.kv.set(directShowtimeKey(st.id), JSON.stringify(st)).catch(() => {});
+      }
+
+      return generatedStored
+        .filter((s) => (filter.date ? s.date === filter.date : true))
+        .filter((s) => (filter.cinemaId ? s.cinemaId === filter.cinemaId : true))
+        .sort((a, b) => compare(a.date, b.date) || compare(a.time, b.time) || compare(a.roomName, b.roomName));
+    }
+
+    return filtered.sort((a, b) => compare(a.date, b.date) || compare(a.time, b.time) || compare(a.roomName, b.roomName));
   }
 
   async getById(id: string): Promise<StoredShowtime | null> {
@@ -368,8 +395,29 @@ class KvShowtimeStore implements ShowtimeStore {
     const found = all.find((s) => s.id === id) ?? null;
     if (found) {
       await this.kv.set(directShowtimeKey(id), JSON.stringify(found)).catch(() => {});
+      return found;
     }
-    return found;
+
+    const fallback = resolveShowtimeById(id);
+    if (fallback) {
+      const movie = MOCK_MOVIES.find((m) => String(m.id) === String(fallback.movieId));
+      const stored: StoredShowtime = {
+        id: fallback.id,
+        cinemaId: fallback.cinemaId,
+        movieId: String(fallback.movieId),
+        movieTitle: movie?.title ?? `Phim #${fallback.movieId}`,
+        format: fallback.format,
+        roomName: fallback.roomName,
+        date: fallback.date,
+        time: fallback.time,
+        durationMinutes: movie?.durationMinutes ?? 120,
+        createdAt: new Date().toISOString(),
+      };
+      await this.kv.set(directShowtimeKey(id), JSON.stringify(stored)).catch(() => {});
+      return stored;
+    }
+
+    return null;
   }
 
   async createChecked(input: NewShowtimeInput): Promise<CreateShowtimeResult> {

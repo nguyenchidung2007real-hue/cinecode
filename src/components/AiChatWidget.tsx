@@ -182,8 +182,8 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
               <div>
                 <div className="flex items-center gap-1.5">
                   <h4 className="font-extrabold text-sm text-white">CineBot AI</h4>
-                  <span className="text-[10px] px-1.5 py-0.2 rounded font-mono font-bold bg-accent-cyan/20 text-accent-cyan border border-accent-cyan/40">
-                    Llama 3.3
+                  <span className="text-[10px] px-1.5 py-0.5 rounded font-bold bg-[#034EA2]/30 text-[#00B2FF] border border-[#00B2FF]/40">
+                    Trực Tuyến
                   </span>
                 </div>
                 <p className="text-[10px] text-emerald-400 flex items-center gap-1 font-medium">
