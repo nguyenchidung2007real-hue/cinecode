@@ -24,6 +24,7 @@ import {
   AlertTriangle,
   PlusCircle,
   Trash2,
+  LogOut,
 } from "lucide-react";
 import { MOCK_MOVIES, MOCK_SHOWTIMES, CONCESSION_COMBOS } from "@/lib/mockData";
 import { formatVND } from "@/lib/utils";
@@ -195,6 +196,13 @@ export default function AdminDashboardPage() {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/admin-logout", { method: "POST" });
+    } catch {}
+    window.location.href = "/admin/login";
+  };
+
   return (
     <div className="min-h-screen bg-[#0B0C10] text-neutral-100 flex flex-col font-sans">
       {/* Top Navbar */}
@@ -237,6 +245,14 @@ export default function AdminDashboardPage() {
             >
               Xem Dashboard Khách
             </Link>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-red-950/40 hover:bg-red-950/80 border border-red-800/60 text-red-300 transition-colors"
+              title="Đăng xuất quản trị"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span>Đăng Xuất</span>
+            </button>
           </div>
         </div>
       </header>

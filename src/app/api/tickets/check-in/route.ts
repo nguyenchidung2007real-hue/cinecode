@@ -1,26 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getTicketStore, verifyTicketToken, type TicketRecord } from "@/lib/ticketStore";
-import { safeEqual } from "@/lib/adminAuth";
+import { verifyStaffCredentials } from "@/lib/staffAuth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-/**
- * Route đặc quyền dành cho nhân viên soát vé (/scanner). Xác thực qua STAFF_SCAN_SECRET
- * trong header Authorization: Bearer <STAFF_SCAN_SECRET>.
- * Sử dụng safeEqual (timingSafeEqual) để chống tấn công timing attack.
- */
-function isAuthorized(request: NextRequest): boolean {
-  if (process.env.NODE_ENV !== "production") return true;
-  const secret = process.env.STAFF_SCAN_SECRET;
-  if (!secret) return false;
-
-  const header = request.headers.get("authorization") ?? "";
-  const prefix = "Bearer ";
-  if (!header.startsWith(prefix)) return false;
-
-  return safeEqual(header.slice(prefix.length), secret);
-}
 
 function maskPhone(phone: string): string {
   const clean = phone.trim();
@@ -55,14 +38,12 @@ function sanitizeTicketForStaff(ticket: TicketRecord) {
 
 interface CheckInBody {
   token?: unknown;
+  staffId?: unknown;
+  passcode?: unknown;
   scannedBy?: unknown;
 }
 
 export async function POST(request: NextRequest): Promise<Response> {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ error: "Không có quyền soát vé." }, { status: 403 });
-  }
-
   let raw: unknown;
   try {
     raw = await request.json();
@@ -72,7 +53,22 @@ export async function POST(request: NextRequest): Promise<Response> {
 
   const body = raw as CheckInBody;
   const token = typeof body.token === "string" ? body.token : null;
-  const scannedBy = typeof body.scannedBy === "string" ? body.scannedBy.slice(0, 100) : undefined;
+  const staffId = typeof body.staffId === "string" ? body.staffId : undefined;
+  const passcode = typeof body.passcode === "string" ? body.passcode : undefined;
+
+  // Xác thực quyền nhân viên (cặp staffId:passcode hoặc header Bearer fallback)
+  const auth = verifyStaffCredentials({
+    staffId,
+    passcode,
+    bearerToken: request.headers.get("authorization")?.replace(/^Bearer\s+/i, ""),
+  });
+
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.reason || "Không có quyền soát vé." }, { status: 403 });
+  }
+
+  // Dùng nhãn nhân viên được server xác minh (không dùng chuỗi do client tự khai)
+  const verifiedScannedBy = auth.scannedByLabel;
 
   if (!token) {
     return NextResponse.json({ error: "Thiếu mã vé (token)." }, { status: 400 });
@@ -88,7 +84,7 @@ export async function POST(request: NextRequest): Promise<Response> {
 
   try {
     const store = getTicketStore();
-    const result = await store.markUsed(bookingId, scannedBy);
+    const result = await store.markUsed(bookingId, verifiedScannedBy);
 
     if (result.outcome === "not_found") {
       return NextResponse.json(

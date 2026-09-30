@@ -115,6 +115,7 @@ export default function StaffScannerPage() {
   const [isScanning, setIsScanning] = useState<boolean>(false);
   const [manualToken, setManualToken] = useState<string>("");
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
+  const [staffId, setStaffId] = useState<string>("");
   const [staffPasscode, setStaffPasscode] = useState<string>("");
   const [selectedGate, setSelectedGate] = useState<string>("Cổng 01 - Screen 1 (Beta Xuân Thủy)");
   const [showConfigModal, setShowConfigModal] = useState<boolean>(false);
@@ -130,9 +131,11 @@ export default function StaffScannerPage() {
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const processingRef = useRef(false);
   const lastScanRef = useRef<{ token: string; at: number } | null>(null);
+  const staffIdRef = useRef("");
   const passcodeRef = useRef("");
   const gateRef = useRef(selectedGate);
 
+  useEffect(() => { staffIdRef.current = staffId; }, [staffId]);
   useEffect(() => { passcodeRef.current = staffPasscode; }, [staffPasscode]);
   useEffect(() => { gateRef.current = selectedGate; }, [selectedGate]);
 
@@ -140,13 +143,15 @@ export default function StaffScannerPage() {
   const scannerRef = useRef<unknown>(null);
   const html5QrCodeId = "reader";
 
-  // Khởi tạo passcode từ sessionStorage (an toàn hơn cho phiên làm việc nhân viên)
+  // Khởi tạo thông tin nhân viên từ sessionStorage
   useEffect(() => {
-    const saved =
+    const savedId = (typeof sessionStorage !== "undefined" && sessionStorage.getItem("cinemax_staff_id")) || "";
+    const savedPass =
       (typeof sessionStorage !== "undefined" && sessionStorage.getItem("cinemax_staff_secret")) ||
       (typeof localStorage !== "undefined" && localStorage.getItem("cinemax_staff_secret")) ||
       "";
-    setStaffPasscode(saved);
+    setStaffId(savedId);
+    setStaffPasscode(savedPass);
   }, []);
 
   // Cleanup dừng camera khi rời trang
@@ -156,10 +161,13 @@ export default function StaffScannerPage() {
     };
   }, []);
 
-  const handleSavePasscode = (code: string) => {
+  const handleSaveStaff = (id: string, code: string) => {
+    setStaffId(id);
     setStaffPasscode(code);
+    staffIdRef.current = id;
     passcodeRef.current = code;
     try {
+      sessionStorage.setItem("cinemax_staff_id", id);
       sessionStorage.setItem("cinemax_staff_secret", code);
       localStorage.setItem("cinemax_staff_secret", code);
     } catch {}
@@ -189,6 +197,8 @@ export default function StaffScannerPage() {
         headers,
         body: JSON.stringify({
           token: clean,
+          staffId: staffIdRef.current.trim(),
+          passcode: passcodeRef.current.trim(),
           scannedBy: gateRef.current,
         }),
       });
@@ -378,11 +388,11 @@ export default function StaffScannerPage() {
 
             <button
               onClick={() => setShowConfigModal(true)}
-              title="Cài đặt mã phân quyền nhân viên"
+              title="Cài đặt mã phân quyền nhân viên ca trực"
               className="p-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 text-neutral-300 transition-colors flex items-center gap-1.5 text-xs font-medium"
             >
               <Key className="w-4 h-4 text-amber-400" />
-              <span className="hidden sm:inline">Phân quyền</span>
+              <span>{staffId ? `NV: ${staffId}` : "Ca Trực"}</span>
             </button>
           </div>
         </div>
@@ -641,7 +651,7 @@ export default function StaffScannerPage() {
         </div>
       </main>
 
-      {/* Modal Cài Đặt Passcode Nhân Viên */}
+      {/* Modal Cài Đặt Thông Tin Nhân Viên Soát Vé */}
       {showConfigModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
           <div className="bg-neutral-900 border border-neutral-700 rounded-2xl p-6 max-w-sm w-full space-y-4 text-white">
@@ -650,16 +660,36 @@ export default function StaffScannerPage() {
               <h3 className="font-bold text-base">Phân Quyền Nhân Viên Soát Vé</h3>
             </div>
             <p className="text-xs text-neutral-400">
-              Nhập mã bí mật <strong>STAFF_SCAN_SECRET</strong> được quản lý rạp cấp. Mã này được lưu an toàn trong máy nhân viên để gửi kèm yêu cầu soát vé.
+              Nhập <strong>Mã nhân viên</strong> và <strong>Mật khẩu ca trực</strong> do rạp cấp. Khi soát vé, thông tin cá nhân sẽ được server xác thực và ghi vết chính xác vào vé.
             </p>
 
-            <input
-              type="password"
-              defaultValue={staffPasscode}
-              id="staff-passcode-input"
-              placeholder="Nhập secret (để trống nếu môi trường dev)"
-              className="w-full bg-neutral-950 border border-neutral-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-accent-cyan"
-            />
+            <div className="space-y-3">
+              <div>
+                <label className="block text-[11px] font-semibold text-neutral-400 uppercase mb-1">
+                  Mã nhân viên (Staff ID)
+                </label>
+                <input
+                  type="text"
+                  defaultValue={staffId}
+                  id="staff-id-input"
+                  placeholder="Ví dụ: NV01"
+                  className="w-full bg-neutral-950 border border-neutral-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-accent-cyan"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-neutral-400 uppercase mb-1">
+                  Mật khẩu ca trực (Passcode)
+                </label>
+                <input
+                  type="password"
+                  defaultValue={staffPasscode}
+                  id="staff-passcode-input"
+                  placeholder="Nhập passcode ca trực"
+                  className="w-full bg-neutral-950 border border-neutral-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-accent-cyan"
+                />
+              </div>
+            </div>
 
             <div className="flex justify-end gap-2 pt-2">
               <button
@@ -670,8 +700,9 @@ export default function StaffScannerPage() {
               </button>
               <button
                 onClick={() => {
-                  const input = document.getElementById("staff-passcode-input") as HTMLInputElement;
-                  handleSavePasscode(input?.value || "");
+                  const idInput = document.getElementById("staff-id-input") as HTMLInputElement;
+                  const passInput = document.getElementById("staff-passcode-input") as HTMLInputElement;
+                  handleSaveStaff(idInput?.value || "", passInput?.value || "");
                 }}
                 className="px-4 py-2 rounded-xl bg-accent-red hover:bg-accent-redHover text-xs font-bold text-white"
               >
