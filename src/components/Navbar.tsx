@@ -25,6 +25,18 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const [searchValue, setSearchValue] = useState("");
 
+  const [customerInfo, setCustomerInfo] = useState<{ name: string; phone: string } | null>(null);
+
+  React.useEffect(() => {
+    try {
+      const phone = localStorage.getItem("cinemax_customer_phone");
+      const name = localStorage.getItem("cinemax_customer_name");
+      if (phone) {
+        setCustomerInfo({ phone, name: name || phone });
+      }
+    } catch {}
+  }, []);
+
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setSearchValue(val);
@@ -68,7 +80,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             className="flex items-center gap-1 text-slate-200 hover:text-white font-medium"
           >
             <User className="w-3 h-3 text-amber-400" />
-            <span>Đăng nhập / Đăng ký</span>
+            <span>{customerInfo ? `Thành viên: ${customerInfo.name}` : "Đăng nhập Thành viên"}</span>
           </Link>
           <span className="text-slate-600">•</span>
           <div className="flex items-center gap-1 text-slate-300 cursor-pointer hover:text-white">

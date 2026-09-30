@@ -583,6 +583,10 @@ export const BookingModal: React.FC<BookingModalProps> = ({
       try {
         const existing = JSON.parse(localStorage.getItem("cinemax_tickets") || "[]");
         localStorage.setItem("cinemax_tickets", JSON.stringify([newTicket, ...existing]));
+        if (customerPhone.trim()) {
+          localStorage.setItem("cinemax_customer_phone", customerPhone.trim().replace(/[\s.\-()]/g, ""));
+          localStorage.setItem("cinemax_customer_name", customerName.trim() || "Khách Hàng Beta");
+        }
       } catch (err) {
         console.error("Lỗi lưu vé vào LocalStorage:", err);
       }
