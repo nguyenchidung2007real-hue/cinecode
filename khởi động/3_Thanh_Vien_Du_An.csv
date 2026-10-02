@@ -1,0 +1,7 @@
+﻿DANH SÁCH THÀNH VIÊN VÀ PHÂN CÔNG TRÁCH NHIỆM,,,,,
+Dự án CineMax AI — 4 Thành viên (Không bao gồm Đặng Quốc Toản),,,,,
+STT,Họ và Tên,Vai Trò / Vị Trí,Tên Viết Tắt (Trong bảng),Phân Hệ Phụ Trách,Nhiệm Vụ Cụ Thể Trong Dự Án
+1,Nguyễn Chí Dũng,Trưởng Nhóm / Fullstack Lead & AI Integration,Dũng,Toàn hệ thống & AI Engine,"Quản lý mã nguồn (Git Repo), Kiến trúc tổng thể hệ thống, Tích hợp TMDB API & Groq AI Chatbot, Xây dựng Semantic Search RAG, Tối ưu hóa UI/UX Home & Booking Modal, Quản lý phim & Đánh giá."
+2,Nguyễn Hải Đăng,Database Architect & Backend Engineer,Đăng,Cơ Sở Dữ Liệu & Concurrency,"Thiết kế cấu trúc CSDL Upstash Redis (Hash, Set, Key patterns), Viết các kịch bản Lua Script giữ ghế nguyên tử (hold/commit 300s), Quản lý phân tán khóa phòng chiếu (Distributed Mutex), Thu hồi ghế khi hủy suất."
+3,Nguyễn Văn Tuấn,Backend Services & Business Logic Engineer,Tuấn,Engine Nghiệp Vụ & Báo Cáo,"Xây dựng Showtime Collision Engine (xử lý va chạm lịch chiếu), Thuật toán Orphan Seat Rule (chống ghế mồ côi), Module F&B Upsell & Pricing Engine, API Thống kê doanh thu rạp, Quản lý Voucher."
+4,Đào Duy Minh,Frontend Lead & Security Engineer,Minh,"Giao Diện, Auth & Scanner","Phát triển Cổng Quản trị Admin (/admin), Xây dựng Cổng Nhân viên Soát vé (/scanner), Bảo mật vé với chữ ký số HMAC-SHA256, Cơ chế phiên đăng nhập Admin HttpOnly Cookie, Dashboard khách hàng."

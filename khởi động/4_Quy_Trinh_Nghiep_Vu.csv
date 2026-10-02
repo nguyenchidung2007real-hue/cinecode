@@ -1,0 +1,27 @@
+﻿,ĐẶC TẢ CÁC QUY TRÌNH NGHIỆP VỤ CỐT LÕI (CORE BUSINESS WORKFLOWS),,,,,
+,"Quy trình giữ ghế nguyên tử, ký vé số HMAC, kiểm tra va chạm phòng chiếu và chính sách đổi trả hoàn tiền",,,,,
+,Bước,Giai Đoạn,Tác Nhân (Actor),Hành Động & Thao Tác Hệ Thống,Xử Lý Backend / Database,Ràng Buộc & Biện Pháp Chống Gian Lận
+,Quy Trình 1: Đặt Vé & Giữ Ghế Nguyên Tử 300s (Seat Hold & Booking),,,,,
+,B1,Chọn ghế,Khách hàng,Bấm chọn các ghế mong muốn trên sơ đồ 102 ghế.,Kiểm tra Orphan Seat Rule phía Client; Giới hạn tối đa 8 ghế/lần.,Không được để trống 1 ghế đơn độc.
+,B2,Yêu cầu giữ chỗ,Client Frontend,Gọi API POST /api/seats/hold gửi danh sách ghế.,Thực thi Redis Lua Script kiểm tra trạng thái toàn bộ ghế phải là 'free'.,"Khóa nguyên tử atomic, nếu có 1 ghế bị người khác chọn trước -> Từ chối trọn gói 409 SEAT_TAKEN."
+,B3,Đếm ngược giữ chỗ,Hệ thống,Trả về holdId và thời hạn 300 giây (expiresAt).,Tạo key cinemax:{showtimeId}:hold:{holdId} với TTL 300s.,Sau 300s Redis tự động giải phóng ghế về free nếu chưa thanh toán.
+,B4,Thanh toán,Khách hàng,Quét mã VietQR chuyển khoản chính xác số tiền.,Tạo bản ghi vé Pending; Kiểm tra thời gian giữ chỗ còn tối thiểu > 30s.,Chặn thanh toán nếu thời gian giữ ghế còn dưới 30s để tránh race condition.
+,B5,Chốt ghế & Xuất vé,Hệ thống,Server xác thực thanh toán thành công.,Lua Script chuyển trạng thái ghế từ 'held' sang 'booked' vĩnh viễn; Promote vé thành 'valid'.,Cấp mã vé QR kèm chữ ký số HMAC-SHA256.
+,Quy Trình 2: Soát Vé Điện Tử Tại Cửa Bằng Mã QR (Anti-Fraud Scanner),,,,,
+,B1,Trình vé,Khách hàng,Mở điện thoại hiển thị mã QR trên vé đã mua tại /dashboard.,Mã QR chứa token dạng: cinemax:ticket:bk-xxxx:HMAC_HASH.,Không thể chỉnh sửa mã vé vì sai chữ ký số.
+,B2,Quét mã,Nhân viên rạp,Mở /scanner quét camera vào mã QR.,Client tách chuỗi lấy bookingId và chữ ký số gửi lên API POST /api/tickets/check-in.,Xác thực danh tính nhân viên qua STAFF_ACCOUNTS.
+,B3,Kiểm tra tính toàn vẹn,Hệ thống,Server băm lại HMAC(bookingId + secret) và so sánh chuỗi an toàn.,Sử dụng timingSafeEqual để chống timing attack.,Nếu sai khác -> Từ chối 403 INVALID_TOKEN báo vé giả mạo.
+,B4,Kiểm tra quét trùng,Hệ thống,Kiểm tra trạng thái vé và thực thi lệnh ghi nhận tại Redis.,SET cinemax:ticket:used:<id> 'staffId' EX 2592000 NX.,Nếu key đã tồn tại -> Báo lỗi 409 TICKET_ALREADY_USED và hiển thị người đã soát trước đó.
+,B5,Cho phép vào phòng,Nhân viên rạp,"Màn hình chuyển xanh: HỢP LỆ kèm số ghế, phòng chiếu.","Cập nhật vé: ticket_status = 'used', scanned_at = NOW(), scanned_by = staffName.",Ghi log lịch sử soát vé vào hệ thống.
+,Quy Trình 3: Xếp Lịch Chiếu & Kiểm Tra Va Chạm Phòng (Collision Engine),,,,,
+,B1,Nhập thông tin suất,Quản trị viên,"Chọn rạp, phòng chiếu, phim, ngày và giờ chiếu.",Client tính toán thời lượng phim + 10p quảng cáo trailer + 15p dọn phòng.,"Khoảng chiếm dụng phòng là [start, start + duration + 25p)."
+,B2,Kiểm tra va chạm,Hệ thống,Hệ thống lấy toàn bộ các suất chiếu đã có trong phòng vào ngày đó.,Chạy hàm checkShowtimeCollision so khớp khoảng thời gian tuyệt đối.,Hai suất khác phòng chiếu cùng giờ được duyệt; cùng phòng bị chặn ngay.
+,B3,Xử lý xung đột,Hệ thống,Nếu bị đè giờ hoặc vi phạm 15p dọn phòng -> Báo lỗi xung đột.,Collision Engine tự động tính toán và trả về 3 khung giờ trống hợp lệ gần nhất.,Gợi ý giờ chiếu tối ưu cho người quản lý rạp.
+,B4,Ghi dữ liệu an toàn,Hệ thống,Nếu không va chạm -> Lấy khóa phân tán phòng chiếu để ghi.,Lưu suất chiếu vào bucket phòng chiếu trong Upstash Redis.,Khóa phân tán (Distributed Mutex) đảm bảo 2 admin không thể tạo đè lịch cùng 1 giây.
+,Quy Trình 4: Quy Trình Xử Lý Hoàn Trả & Hủy Vé 6 Bước (Refund Policy),,,,,
+,B1,Tiếp nhận khiếu nại,Khách hàng & NV,Khách yêu cầu hủy vé (do sự cố rạp/đổi suất) trước giờ chiếu 60 phút.,"Tiếp nhận mã vé, số điện thoại người mua, lý do và biên lai chuyển khoản.",Quy định rạp: Không nhận hủy vé khi suất chiếu đã bắt đầu.
+,B2,Xác minh thông tin,Nhân viên / Admin,Tra cứu vé trên hệ thống để kiểm tra trạng thái vé.,Kiểm tra vé phải ở trạng thái 'valid' (chưa quét vào phòng chiếu).,Nếu vé đã ở trạng thái 'used' -> Từ chối hoàn tiền ngay lập tức.
+,B3,Vô hiệu hóa vé (Void),Quản trị viên,Admin bấm nút 'Hủy vé' trên trang quản trị.,"Cập nhật vé ticket_status = 'void', ghi rõ void_reason và nhân viên thực hiện.",Vé bị hủy sẽ không thể quét qua cửa soát vé nữa.
+,B4,Giải phóng ghế phòng,Hệ thống,Hệ thống trả ghế về trạng thái 'free' trên sơ đồ rạp.,Xóa ghế khỏi Hash phòng chiếu để khách hàng khác có thể đặt lại.,Cập nhật tồn kho ghế tức thì.
+,B5,Chuyển tiền hoàn trả,Quản trị viên,Kế toán/Admin chuyển khoản trả lại tiền cho khách hàng qua STK/Ví.,Ghi nhận booking: payment_status = 'refunded'.,Lưu biên lai giao dịch hoàn tiền vào hệ thống.
+,B6,Thông báo hoàn tất,Hệ thống,Gửi email / tin nhắn thông báo hoàn tiền thành công cho khách.,Lưu vết toàn bộ thao tác vào Activity Log để phục vụ kiểm toán.,Hoàn tất quy trình hoàn trả minh bạch.

@@ -1,0 +1,109 @@
+﻿,TỪ ĐIỂN DỮ LIỆU CƠ SỞ DỮ LIỆU CHI TIẾT (DATA DICTIONARY & ERD),,,,,,,
+,"Chi tiết toàn bộ bảng, cấu trúc trường, kiểu dữ liệu, khóa chính, khóa ngoại và ràng buộc toàn vẹn",,,,,,,
+,Tên Bảng,Tên Cột (Field),Kiểu Dữ Liệu,Độ Dài / Định Dạng,Khóa (Key),Null?,Giá Trị Mặc Định,Mô Tả Nghiệp Vụ & Ràng Buộc
+,BẢNG DỮ LIỆU: USERS,,,,,,,
+,users,id,VARCHAR,36,PK,No,UUIDv4,Mã định danh duy nhất của tài khoản
+,users,full_name,VARCHAR,100,,No,None,Họ và tên người dùng
+,users,email,VARCHAR,150,,Yes,None,Địa chỉ email (duy nhất nếu có)
+,users,phone,VARCHAR,15,,No,None,Số điện thoại định danh người dùng (Unique)
+,users,password_hash,VARCHAR,255,,Yes,None,Mật khẩu đã băm (dành cho Admin/Staff)
+,users,role,TINYINT,1,,No,0,"Phân quyền: 0=Customer, 1=Staff, 2=Admin"
+,users,status,VARCHAR,20,,No,'active',"Trạng thái: 'active', 'locked', 'suspended'"
+,users,created_at,TIMESTAMP,,,No,CURRENT_TIMESTAMP,Thời điểm tạo tài khoản
+,users,updated_at,TIMESTAMP,,,No,CURRENT_TIMESTAMP,Thời điểm cập nhật gần nhất
+,users,deleted_at,TIMESTAMP,,,Yes,NULL,Thời điểm xóa mềm (Soft delete)
+,BẢNG DỮ LIỆU: CINEMAS,,,,,,,
+,cinemas,id,VARCHAR,50,PK,No,None,Mã rạp (VD: 'beta-cinemas-xuan-thuy')
+,cinemas,name,VARCHAR,150,,No,None,Tên cụm rạp (VD: 'Beta Cinemas Xuân Thủy')
+,cinemas,address,VARCHAR,255,,No,None,Địa chỉ thực tế của rạp
+,cinemas,city,VARCHAR,50,,No,None,"Tỉnh / Thành phố (Hà Nội, TP.HCM...)"
+,cinemas,status,VARCHAR,20,,No,'active',Trạng thái hoạt động của rạp
+,cinemas,created_at,TIMESTAMP,,,No,CURRENT_TIMESTAMP,Thời điểm thêm rạp
+,BẢNG DỮ LIỆU: ROOMS,,,,,,,
+,rooms,id,VARCHAR,60,PK,No,None,Mã phòng chiếu duy nhất
+,rooms,cinema_id,VARCHAR,50,FK,No,None,Khóa ngoại tham chiếu bảng cinemas(id)
+,rooms,room_name,VARCHAR,100,,No,None,Tên phòng chiếu (Phòng Beta 01 Dolby 7.1)
+,rooms,total_seats,INT,,,No,102,Tổng số ghế trong phòng (chuẩn 102 ghế)
+,rooms,room_type,VARCHAR,30,,No,'Standard',"Loại phòng: Standard, IMAX Laser, ScreenX"
+,rooms,status,VARCHAR,20,,No,'active',"Trạng thái phòng chiếu: active, maintenance"
+,BẢNG DỮ LIỆU: MOVIES,,,,,,,
+,movies,id,VARCHAR,60,PK,No,None,"Mã phim (VD: 'dune-2', 'lat-mat-7', 'tmdb-939243')"
+,movies,title,VARCHAR,255,,No,None,Tiêu đề phim phát hành tại Việt Nam
+,movies,original_title,VARCHAR,255,,Yes,None,Tiêu đề gốc tiếng Anh/quốc tế
+,movies,overview,TEXT,,,Yes,None,Nội dung tóm tắt phim
+,movies,poster_url,VARCHAR,500,,Yes,None,Đường dẫn ảnh áp phích (Poster CDN)
+,movies,backdrop_url,VARCHAR,500,,Yes,None,Đường dẫn ảnh bìa ngang (Backdrop CDN)
+,movies,duration_minutes,INT,,,No,120,Thời lượng phim tính bằng phút
+,movies,release_date,DATE,,,Yes,None,Ngày công chiếu chính thức
+,movies,age_rating,VARCHAR,10,,No,'T18',"Phân loại độ tuổi: P, T13, T16, T18"
+,movies,status,VARCHAR,20,,No,'now_playing',"Trạng thái: now_playing, upcoming, trending"
+,movies,vote_average,DECIMAL,"3,1",,No,0.0,Điểm đánh giá trung bình (1-10)
+,movies,trailer_youtube_id,VARCHAR,30,,Yes,None,Mã định danh video trailer trên YouTube
+,BẢNG DỮ LIỆU: SHOWTIMES,,,,,,,
+,showtimes,id,VARCHAR,64,PK,No,None,"Mã suất chiếu (VD: 'st-beta-1', 'st-xxxx')"
+,showtimes,movie_id,VARCHAR,60,FK,No,None,Tham chiếu bảng movies(id)
+,showtimes,cinema_id,VARCHAR,50,FK,No,None,Tham chiếu bảng cinemas(id)
+,showtimes,room_name,VARCHAR,100,,No,None,Tên phòng tổ chức chiếu phim
+,showtimes,show_date,DATE,,,No,None,Ngày chiếu (YYYY-MM-DD theo giờ Việt Nam)
+,showtimes,show_time,VARCHAR,5,,No,None,Giờ bắt đầu chiếu (HH:mm)
+,showtimes,format,VARCHAR,30,,No,'2D Phụ Đề',"Định dạng: 2D Phụ Đề, 2D Lồng Tiếng, IMAX, 4DX"
+,showtimes,duration_minutes,INT,,,No,120,Thời lượng phim dùng để tính va chạm phòng
+,showtimes,created_at,TIMESTAMP,,,No,CURRENT_TIMESTAMP,Thời điểm tạo suất chiếu
+,showtimes,deleted_at,TIMESTAMP,,,Yes,NULL,Thời điểm xóa mềm suất chiếu
+,BẢNG DỮ LIỆU: SEAT_LAYOUTS,,,,,,,
+,seat_layouts,seat_id,VARCHAR,5,PK,No,None,"Tên ghế theo sơ đồ (A1..H12, K1..K6)"
+,seat_layouts,row_label,VARCHAR,2,,No,None,"Ký tự hàng ghế: A, B, C, D, E, F, G, H, K"
+,seat_layouts,seat_number,TINYINT,,,No,None,Số thứ tự trong hàng (1 đến 12)
+,seat_layouts,seat_tier,VARCHAR,20,,No,'standard',"Phân tầng ghế: standard (55k), vip (75k), couple (130k)"
+,seat_layouts,is_sweet_spot,BOOLEAN,,,No,FALSE,"Đánh dấu ghế vị trí vàng trung tâm (Hàng E, F)"
+,BẢNG DỮ LIỆU: SEAT_HOLDS,,,,,,,
+,seat_holds,hold_id,VARCHAR,32,PK,No,None,Mã phiên giữ ghế (CSPRNG 16-byte hex)
+,seat_holds,showtime_id,VARCHAR,64,FK,No,None,Suất chiếu đang thực hiện giữ ghế
+,seat_holds,seats_json,TEXT,,,No,None,"Mảng danh sách các ghế đang giữ (VD: ['E5', 'E6'])"
+,seat_holds,created_at,BIGINT,,,No,None,Timestamp epoch ms thời điểm bắt đầu giữ ghế
+,seat_holds,expires_at,BIGINT,,,No,None,Timestamp hết hạn TTL (300 giây = 5 phút)
+,seat_holds,client_ip,VARCHAR,45,,Yes,None,Địa chỉ IP hoặc danh tính phiên của khách hàng
+,BẢNG DỮ LIỆU: BOOKINGS,,,,,,,
+,bookings,booking_id,VARCHAR,32,PK,No,None,Mã đơn đặt vé duy nhất (bk-xxxxxxxx)
+,bookings,hold_id,VARCHAR,32,,No,None,Mã phiên giữ ghế tương ứng để đối soát Idempotent
+,bookings,showtime_id,VARCHAR,64,FK,No,None,Suất chiếu được đặt
+,bookings,customer_name,VARCHAR,150,,No,None,Họ tên người mua vé
+,bookings,customer_phone,VARCHAR,15,,No,None,Số điện thoại nhận vé & tra cứu
+,bookings,customer_email,VARCHAR,150,,Yes,None,Email nhận vé điện tử
+,bookings,seats_summary,VARCHAR,100,,No,None,"Chuỗi danh sách ghế (VD: 'E5, E6')"
+,bookings,ticket_amount,INT,,,No,0,Tiền vé xem phim (VNĐ)
+,bookings,concession_amount,INT,,,No,0,Tiền bắp nước mua kèm (VNĐ)
+,bookings,discount_amount,INT,,,No,0,Số tiền được giảm giá qua voucher (VNĐ)
+,bookings,total_amount,INT,,,No,None,Tổng tiền thanh toán cuối cùng (Server xác thực)
+,bookings,payment_method,VARCHAR,20,,No,'vietqr',"Phương thức: 'vietqr', 'momo', 'counter'"
+,bookings,payment_status,VARCHAR,20,,No,'paid',"Trạng thái thanh toán: unpaid, paid, refunded"
+,bookings,created_at,TIMESTAMP,,,No,CURRENT_TIMESTAMP,Thời điểm tạo đơn thành công
+,BẢNG DỮ LIỆU: TICKETS,,,,,,,
+,tickets,booking_id,VARCHAR,32,"PK, FK",No,None,Khóa ngoại tham chiếu chính xác bookings(booking_id)
+,tickets,qr_token,VARCHAR,255,,No,None,Chuỗi ký số HMAC-SHA256 chống làm giả vé
+,tickets,ticket_status,VARCHAR,20,,No,'valid',"Trạng thái: pending, valid, used, void"
+,tickets,scanned_at,TIMESTAMP,,,Yes,NULL,Thời điểm nhân viên quét vé vào rạp
+,tickets,scanned_by,VARCHAR,100,,Yes,NULL,Tên hoặc Mã nhân viên đã thực hiện soát vé
+,tickets,void_reason,VARCHAR,255,,Yes,NULL,Lý do hủy vé nếu trạng thái là void
+,tickets,created_at,TIMESTAMP,,,No,CURRENT_TIMESTAMP,Thời điểm phát hành vé
+,BẢNG DỮ LIỆU: VOUCHERS,,,,,,,
+,vouchers,code,VARCHAR,30,PK,No,None,"Mã khuyến mãi (VD: 'SINHVIEN20', 'CINE10K')"
+,vouchers,title,VARCHAR,150,,No,None,Tên chương trình ưu đãi
+,vouchers,discount_type,VARCHAR,10,,No,'percent',Loại giảm giá: 'percent' hoặc 'fixed'
+,vouchers,discount_value,INT,,,No,None,Giá trị giảm (VD: 20% hoặc 20000 VNĐ)
+,vouchers,min_order_value,INT,,,No,0,Giá trị đơn hàng tối thiểu để áp dụng
+,vouchers,max_discount,INT,,,Yes,NULL,Mức giảm tối đa nếu tính theo phần trăm
+,vouchers,usage_limit,INT,,,No,100,Tổng số lượt sử dụng tối đa của mã
+,vouchers,used_count,INT,,,No,0,Số lượt đã được khách hàng sử dụng
+,vouchers,start_date,DATE,,,No,None,Ngày bắt đầu áp dụng mã
+,vouchers,end_date,DATE,,,No,None,Ngày hết hạn của mã khuyến mãi
+,vouchers,status,VARCHAR,20,,No,'active',"Trạng thái mã: active, disabled, expired"
+,BẢNG DỮ LIỆU: REVIEWS,,,,,,,
+,reviews,id,VARCHAR,36,PK,No,UUIDv4,Mã định danh bản đánh giá
+,reviews,movie_id,VARCHAR,60,FK,No,None,Tham chiếu bảng movies(id)
+,reviews,booking_id,VARCHAR,32,FK,No,None,Mã vé đã mua để đảm bảo Verified Review
+,reviews,customer_phone,VARCHAR,15,,No,None,Số điện thoại người đánh giá
+,reviews,rating_stars,TINYINT,,,No,5,Điểm số từ 1 đến 5 sao
+,reviews,comment_text,TEXT,,,Yes,None,Nội dung nhận xét cảm nhận về phim
+,reviews,status,VARCHAR,20,,No,'approved',"Kiểm duyệt: pending, approved, hidden"
+,reviews,created_at,TIMESTAMP,,,No,CURRENT_TIMESTAMP,Thời điểm gửi đánh giá
