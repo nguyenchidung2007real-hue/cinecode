@@ -1,0 +1,13 @@
+﻿STT,Bảng Nguồn (Parent),Khóa Chính (PK),Bản Số,Mũi Tên Liên Kết,Bảng Đích (Child),Khóa Ngoại (FK),Ràng Buộc Toàn Vẹn,Ý Nghĩa Nghiệp Vụ
+1,cinemas,id,1 : N,────────(1 : N)────────►,rooms,cinema_id,CASCADE,"Một cụm rạp quản lý nhiều phòng chiếu (Phòng Standard, IMAX Laser, ScreenX). Xóa rạp thì xóa phòng."
+2,cinemas,id,1 : N,────────(1 : N)────────►,showtimes,cinema_id,RESTRICT,Một cụm rạp tổ chức nhiều suất chiếu. Không được xóa rạp nếu đang có suất chiếu tương lai.
+3,rooms,id,1 : N,────────(1 : N)────────►,seat_layouts,room_id,CASCADE,"Một phòng chiếu sở hữu cấu hình sơ đồ 102 ghế cố định (A1-H12, K1-K6)."
+4,rooms,id,1 : N,────────(1 : N)────────►,showtimes,room_id,RESTRICT,Một phòng chiếu tổ chức nhiều suất chiếu. Showtime Collision Engine kiểm tra không trùng giờ trên cùng 1 room_id.
+5,movies,id,1 : N,────────(1 : N)────────►,showtimes,movie_id,RESTRICT,Một bộ phim được xếp lịch chiếu tại nhiều khung giờ và rạp khác nhau. Dùng duration_minutes để tính thời lượng.
+6,movies,id,1 : N,────────(1 : N)────────►,reviews,movie_id,CASCADE,Một bộ phim nhận được nhiều nhận xét đánh giá từ khán giả. Xóa phim sẽ xóa các đánh giá liên quan.
+7,showtimes,id,1 : N,────────(1 : N)────────►,seat_holds,showtime_id,CASCADE,Một suất chiếu có nhiều phiên giữ ghế tạm thời. Redis Key: cinemax:{showtimeId}:hold:{holdId} với TTL 300s.
+8,showtimes,id,1 : N,────────(1 : N)────────►,bookings,showtime_id,RESTRICT,Một suất chiếu có nhiều đơn đặt vé đã thanh toán thành công. Không thể xóa suất chiếu nếu đã bán vé.
+9,users,id / phone,1 : N,────────(1 : N)────────►,bookings,customer_phone,SET NULL,Một tài khoản người dùng / số điện thoại thực hiện nhiều đơn đặt vé. Dùng để xem lịch sử vé tại /dashboard.
+10,vouchers,code,1 : N,────────(1 : N)────────►,bookings,voucher_code,SET NULL,Một mã khuyến mãi có thể được áp dụng cho nhiều đơn vé khác nhau cho đến khi hết hạn mức usage_limit.
+11,bookings,booking_id,1 : 1,────────(1 : 1)────────►,tickets,booking_id,CASCADE,Quan hệ 1-1 CHẶT CHẼ: Mỗi đơn đặt vé phát hành DUY NHẤT 1 vé điện tử chứa chuỗi mã QR ký số HMAC-SHA256.
+12,bookings,booking_id,1 : 1,────────(1 : 1)────────►,reviews,booking_id,SET NULL,Quan hệ 1-1 BẢO MẬT: Mỗi đơn vé chỉ được đánh giá phim 1 lần duy nhất (Verified Review chống đánh giá ảo).

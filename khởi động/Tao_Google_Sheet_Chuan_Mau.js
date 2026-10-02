@@ -1,6 +1,7 @@
 /**
  * =========================================================================================
  * GOOGLE APPS SCRIPT: TẠO BẢNG TÍNH CINEMAX AI CHUẨN MẪU GOOGLE SHEET ĐÍNH KÈM
+ * (BAO GỒM ĐẦY ĐỦ SƠ ĐỒ MŨI TÊN LIÊN KẾT QUAN HỆ CƠ SỞ DỮ LIỆU ERD 11 BẢNG)
  * =========================================================================================
  * Dự án: Hệ Thống Đặt Vé Xem Phim Trực Tuyến Tích Hợp AI (CineMax AI)
  * Thành viên (4 người, KHÔNG CÓ Đặng Quốc Toản):
@@ -13,7 +14,7 @@
  * 1. Mở trang Google Sheets mới tại: https://sheets.new
  * 2. Trên menu, chọn: Tiện ích mở rộng (Extensions) > Apps Script
  * 3. Xóa code cũ, dán toàn bộ đoạn code này vào rồi bấm "Chạy" (Run) (Hàm createCineMaxGoogleSheet)
- * 4. Mở lại Google Sheets: Bảng tính được tạo xong 100% giống link mẫu của bạn!
+ * 4. Mở lại Google Sheets: Bảng tính được tạo xong 100% với 4 tab hoàn chỉnh!
  * =========================================================================================
  */
 
@@ -26,6 +27,7 @@ function createCineMaxGoogleSheet() {
   const COLOR_STAFF = "#F0FDF4";       // Xanh lá rất nhẹ
   const COLOR_USER = "#FFFBEB";        // Vàng cam rất nhẹ
   const COLOR_ZEBRA = "#F8FAFC";
+  const COLOR_ARROW = "#0284C7";       // Xanh nổi bật mũi tên liên kết
 
   function getOrCreateSheet(title) {
     let sheet = ss.getSheetByName(title);
@@ -311,20 +313,16 @@ function createCineMaxGoogleSheet() {
     );
   }
 
-  // Formatting Sheet 1
   sheet1.getRange("A2").setFontSize(14).setFontWeight("bold").setFontColor(COLOR_HEADER);
   sheet1.getRange("A4").setFontSize(11).setFontWeight("bold").setFontColor(COLOR_HEADER);
-
   sheet1.getRange("B4").setFontSize(10).setBackground("#F8FAFC").setWrap(true);
   sheet1.getRange("C4").setFontSize(10).setBackground("#F8FAFC").setWrap(true);
   sheet1.getRange("E4").setFontSize(11).setFontWeight("bold").setFontColor("#0284C7").setWrap(true);
 
-  // Table Header (Row 6)
   const headerRange1 = sheet1.getRange("A6:E6");
   headerRange1.setBackground(COLOR_HEADER).setFontColor("#FFFFFF").setFontWeight("bold").setHorizontalAlignment("center").setVerticalAlignment("middle");
   sheet1.setFrozenRows(6);
 
-  // Table Data (Row 7 to 27)
   const tableDataRange = sheet1.getRange(7, 1, 21, 5);
   tableDataRange.setBorder(true, true, true, true, true, true, "#CBD5E1", SpreadsheetApp.BorderStyle.SOLID);
   tableDataRange.setWrap(true).setVerticalAlignment("top");
@@ -345,7 +343,6 @@ function createCineMaxGoogleSheet() {
     sheet1.getRange(r, 5).setFontStyle("italic").setFontColor("#991B1B");
   }
 
-  // Format Bottom Workflows (from Row 29 onwards)
   const totalRows1 = sheet1.getLastRow();
   for (let r = 29; r <= totalRows1; r++) {
     const val = sheet1.getRange(r, 1).getValue().toString();
@@ -358,14 +355,268 @@ function createCineMaxGoogleSheet() {
     }
   }
 
-  sheet1.setColumnWidth(1, 130);  // Phân quyền
-  sheet1.setColumnWidth(2, 230);  // Chức năng
-  sheet1.setColumnWidth(3, 580);  // Mô tả
-  sheet1.setColumnWidth(4, 110);  // Người làm
-  sheet1.setColumnWidth(5, 420);  // Khó khăn
+  sheet1.setColumnWidth(1, 130);
+  sheet1.setColumnWidth(2, 230);
+  sheet1.setColumnWidth(3, 580);
+  sheet1.setColumnWidth(4, 110);
+  sheet1.setColumnWidth(5, 420);
 
   // =======================================================================================
-  // SHEET 2: DATABASE (11 BẢNG CSDL CHI TIẾT)
+  // SHEET 2: SƠ ĐỒ LIÊN KẾT ERD (MŨI TÊN CHỈ MỐI QUAN HỆ & BẢN SỐ)
+  // =======================================================================================
+  const sheetERD = getOrCreateSheet("SƠ ĐỒ LIÊN KẾT ERD");
+  sheetERD.setTabColor(COLOR_ARROW);
+
+  // Vẽ sơ đồ khối ASCII Diagram trực quan
+  const asciiDiagram = [
+    ["SƠ ĐỒ TRỰC QUAN MỐI LIÊN KẾT VÀ QUAN HỆ GIỮA 11 BẢNG CƠ SỞ DỮ LIỆU CINEMAX AI", "", "", "", "", "", "", "", ""],
+    ["Ký hiệu: [Bảng Dữ Liệu] ──(Bản số: 1:N / 1:1)──► [Bảng Tham Chiếu Khóa Ngoại]", "", "", "", "", "", "", "", ""],
+    ["", "", "", "", "", "", "", "", ""],
+    ["┌────────────────────────┐                   ┌────────────────────────┐                   ┌────────────────────────┐", "", "", "", "", "", "", "", ""],
+    ["│   cinemas (Cụm Rạp)    │──( 1 : N )───────►│  rooms (Phòng Chiếu)   │──( 1 : N )───────►│ seat_layouts (102 Ghế) │", "", "", "", "", "", "", "", ""],
+    ["│   PK: id               │                   │  PK: id, FK: cinema_id │                   │  PK: seat_id           │", "", "", "", "", "", "", "", ""],
+    ["└──────────┬─────────────┘                   └──────────┬─────────────┘                   │  FK: room_id           │", "", "", "", "", "", "", "", ""],
+    ["           │                                            │                                 └────────────────────────┘", "", "", "", "", "", "", "", ""],
+    ["        ( 1 : N )                                    ( 1 : N )", "", "", "", "", "", "", "", ""],
+    ["           │                                            │", "", "", "", "", "", "", "", ""],
+    ["           ▼                                            ▼", "", "", "", "", "", "", "", ""],
+    ["┌────────────────────────┐                   ┌────────────────────────┐                   ┌────────────────────────┐", "", "", "", "", "", "", "", ""],
+    ["│  movies (Phim Chiếu)   │──( 1 : N )───────►│ showtimes (Suất Chiếu) │──( 1 : N )───────►│ seat_holds (Giữ 300s)  │", "", "", "", "", "", "", "", ""],
+    ["│  PK: id                │                   │  PK: id                │                   │  PK: hold_id           │", "", "", "", "", "", "", "", ""],
+    ["└──────────┬─────────────┘                   │  FK: movie_id, room_id │                   │  FK: showtime_id       │", "", "", "", "", "", "", "", ""],
+    ["           │                                 └──────────┬─────────────┘                   └────────────────────────┘", "", "", "", "", "", "", "", ""],
+    ["           │                                            │", "", "", "", "", "", "", "", ""],
+    ["           │                                         ( 1 : N )", "", "", "", "", "", "", "", ""],
+    ["           │                                            │", "", "", "", "", "", "", "", ""],
+    ["           │    ┌────────────────────────┐              ▼", "", "", "", "", "", "", "", ""],
+    ["           │    │  users (Khách / Phone) │──( 1 : N )──►┌────────────────────────┐                   ┌────────────────────────┐", "", "", "", "", "", "", "", ""],
+    ["           │    │  PK: id, phone         │              │ bookings (Đơn Đặt Vé)  │──( 1 : 1 )───────►│  tickets (Mã QR HMAC)  │", "", "", "", "", "", "", "", ""],
+    ["           │    └────────────────────────┘              │  PK: booking_id        │  [CHẶT CHẼ]       │  PK,FK: booking_id     │", "", "", "", "", "", "", "", ""],
+    ["           │    ┌────────────────────────┐              │  FK: showtime_id, phone│                   │  qr_token (HMAC-SHA256)│", "", "", "", "", "", "", "", ""],
+    ["           │    │  vouchers (Khuyến Mãi) │──( 1 : N )──►│  FK: voucher_code      │                   └────────────────────────┘", "", "", "", "", "", "", "", ""],
+    ["           │    │  PK: code              │              └──────────┬─────────────┘", "", "", "", "", "", "", "", ""],
+    ["           │    └────────────────────────┘                         │", "", "", "", "", "", "", "", ""],
+    ["           │                                                    ( 1 : 1 ) [Verified Review]", "", "", "", "", "", "", "", ""],
+    ["        ( 1 : N )                                                  │", "", "", "", "", "", "", "", ""],
+    ["           │                                                       ▼", "", "", "", "", "", "", "", ""],
+    ["           └────────────────────────────────────────────►┌────────────────────────┐", "", "", "", "", "", "", "", ""],
+    ["                                                         │ reviews (Đánh Giá Phim)│", "", "", "", "", "", "", "", ""],
+    ["                                                         │  PK: id                │", "", "", "", "", "", "", "", ""],
+    ["                                                         │  FK: movie_id, booking │", "", "", "", "", "", "", "", ""],
+    ["                                                         └────────────────────────┘", "", "", "", "", "", "", "", ""],
+    ["", "", "", "", "", "", "", "", ""]
+  ];
+
+  sheetERD.getRange(1, 1, asciiDiagram.length, 9).setValues(asciiDiagram);
+  sheetERD.getRange("A1").setFontSize(14).setFontWeight("bold").setFontColor(COLOR_HEADER);
+  sheetERD.getRange("A2").setFontSize(10).setFontItalic(true).setFontColor("#555555");
+  sheetERD.getRange("A4:A35").setFontFamily("Consolas").setFontSize(9.5).setFontColor("#0F172A");
+
+  // Bảng ánh xạ quan hệ chi tiết (Dòng 37 trở đi)
+  const dataERDTable = [
+  [
+    "SƠ ĐỒ QUAN HỆ & BẢNG ÁNH XẠ MỐI LIÊN KẾT CƠ SỞ DỮ LIỆU (ERD)"
+  ],
+  [
+    "Đặc tả trực quan 11 bảng dữ liệu, khóa chính (PK), khóa ngoại (FK), mũi tên liên kết và bản số (Cardinality 1:N, 1:1)"
+  ],
+  [
+    "BẢNG QUAN HỆ & RÀNG BUỘC TOÀN VẸN KHÓA NGOẠI (FOREIGN KEY MAPPING MATRIX)"
+  ],
+  [
+    "Chi tiết các đường liên kết giữa các thực thể, bản số và quy tắc toàn vẹn dữ liệu"
+  ],
+  [
+    "STT",
+    "Bảng Nguồn (Parent)",
+    "Khóa Chính (PK)",
+    "Bản Số",
+    "Mũi Tên Liên Kết (Relationship)",
+    "Bảng Đích (Child)",
+    "Khóa Ngoại (FK)",
+    "Ràng Buộc (Cascade/Restrict)",
+    "Ý Nghĩa Nghiệp Vụ Cốt Lõi"
+  ],
+  [
+    "1",
+    "cinemas",
+    "id",
+    "1 : N",
+    "────────(1 : N)────────►",
+    "rooms",
+    "cinema_id",
+    "CASCADE",
+    "Một cụm rạp quản lý nhiều phòng chiếu (Phòng Standard, IMAX Laser, ScreenX). Xóa rạp thì xóa phòng."
+  ],
+  [
+    "2",
+    "cinemas",
+    "id",
+    "1 : N",
+    "────────(1 : N)────────►",
+    "showtimes",
+    "cinema_id",
+    "RESTRICT",
+    "Một cụm rạp tổ chức nhiều suất chiếu. Không được xóa rạp nếu đang có suất chiếu tương lai."
+  ],
+  [
+    "3",
+    "rooms",
+    "id",
+    "1 : N",
+    "────────(1 : N)────────►",
+    "seat_layouts",
+    "room_id",
+    "CASCADE",
+    "Một phòng chiếu sở hữu cấu hình sơ đồ 102 ghế cố định (A1-H12, K1-K6)."
+  ],
+  [
+    "4",
+    "rooms",
+    "id",
+    "1 : N",
+    "────────(1 : N)────────►",
+    "showtimes",
+    "room_id",
+    "RESTRICT",
+    "Một phòng chiếu tổ chức nhiều suất chiếu. Showtime Collision Engine kiểm tra không trùng giờ trên cùng 1 room_id."
+  ],
+  [
+    "5",
+    "movies",
+    "id",
+    "1 : N",
+    "────────(1 : N)────────►",
+    "showtimes",
+    "movie_id",
+    "RESTRICT",
+    "Một bộ phim được xếp lịch chiếu tại nhiều khung giờ và rạp khác nhau. Dùng duration_minutes để tính thời lượng."
+  ],
+  [
+    "6",
+    "movies",
+    "id",
+    "1 : N",
+    "────────(1 : N)────────►",
+    "reviews",
+    "movie_id",
+    "CASCADE",
+    "Một bộ phim nhận được nhiều nhận xét đánh giá từ khán giả. Xóa phim sẽ xóa các đánh giá liên quan."
+  ],
+  [
+    "7",
+    "showtimes",
+    "id",
+    "1 : N",
+    "────────(1 : N)────────►",
+    "seat_holds",
+    "showtime_id",
+    "CASCADE",
+    "Một suất chiếu có nhiều phiên giữ ghế tạm thời. Redis Key: cinemax:{showtimeId}:hold:{holdId} với TTL 300s."
+  ],
+  [
+    "8",
+    "showtimes",
+    "id",
+    "1 : N",
+    "────────(1 : N)────────►",
+    "bookings",
+    "showtime_id",
+    "RESTRICT",
+    "Một suất chiếu có nhiều đơn đặt vé đã thanh toán thành công. Không thể xóa suất chiếu nếu đã bán vé."
+  ],
+  [
+    "9",
+    "users",
+    "id / phone",
+    "1 : N",
+    "────────(1 : N)────────►",
+    "bookings",
+    "customer_phone",
+    "SET NULL",
+    "Một tài khoản người dùng / số điện thoại thực hiện nhiều đơn đặt vé. Dùng để xem lịch sử vé tại /dashboard."
+  ],
+  [
+    "10",
+    "vouchers",
+    "code",
+    "1 : N",
+    "────────(1 : N)────────►",
+    "bookings",
+    "voucher_code",
+    "SET NULL",
+    "Một mã khuyến mãi có thể được áp dụng cho nhiều đơn vé khác nhau cho đến khi hết hạn mức usage_limit."
+  ],
+  [
+    "11",
+    "bookings",
+    "booking_id",
+    "1 : 1",
+    "────────(1 : 1)────────►",
+    "tickets",
+    "booking_id",
+    "CASCADE",
+    "Quan hệ 1-1 CHẶT CHẼ: Mỗi đơn đặt vé phát hành DUY NHẤT 1 vé điện tử chứa chuỗi mã QR ký số HMAC-SHA256."
+  ],
+  [
+    "12",
+    "bookings",
+    "booking_id",
+    "1 : 1",
+    "────────(1 : 1)────────►",
+    "reviews",
+    "booking_id",
+    "SET NULL",
+    "Quan hệ 1-1 BẢO MẬT: Mỗi đơn vé chỉ được đánh giá phim 1 lần duy nhất (Verified Review chống đánh giá ảo)."
+  ]
+];
+  if (dataERDTable.length > 0) {
+    const startRowERD = 38;
+    const maxColsERD = Math.max(...dataERDTable.map(r => r.length));
+    sheetERD.getRange(startRowERD, 1, dataERDTable.length, maxColsERD).setValues(
+      dataERDTable.map(r => {
+        const newR = [...r];
+        while (newR.length < maxColsERD) newR.push("");
+        return newR;
+      })
+    );
+    
+    // Style table headers and data
+    sheetERD.getRange(startRowERD + 2, 1, 1, 9).setBackground(COLOR_HEADER).setFontColor("#FFFFFF").setFontWeight("bold").setHorizontalAlignment("center");
+    const dataRowsCount = dataERDTable.length - 3;
+    if (dataRowsCount > 0) {
+      const erdDataRange = sheetERD.getRange(startRowERD + 3, 1, dataRowsCount, 9);
+      erdDataRange.setBorder(true, true, true, true, true, true, "#CBD5E1", SpreadsheetApp.BorderStyle.SOLID);
+      erdDataRange.setWrap(true).setVerticalAlignment("middle");
+
+      for (let r = startRowERD + 3; r <= startRowERD + 2 + dataRowsCount; r++) {
+        if (r % 2 === 0) {
+          sheetERD.getRange(r, 1, 1, 9).setBackground(COLOR_ZEBRA);
+        }
+        sheetERD.getRange(r, 1).setHorizontalAlignment("center").setFontWeight("bold");
+        sheetERD.getRange(r, 2).setHorizontalAlignment("center").setFontWeight("bold");
+        sheetERD.getRange(r, 3).setHorizontalAlignment("center").setFontColor("#B91C1C").setFontWeight("bold");
+        sheetERD.getRange(r, 4).setHorizontalAlignment("center").setFontWeight("bold");
+        sheetERD.getRange(r, 5).setHorizontalAlignment("center").setFontFamily("Consolas").setFontColor(COLOR_ARROW).setFontWeight("bold");
+        sheetERD.getRange(r, 6).setHorizontalAlignment("center").setFontWeight("bold");
+        sheetERD.getRange(r, 7).setHorizontalAlignment("center").setFontColor("#047857").setFontWeight("bold");
+        sheetERD.getRange(r, 8).setHorizontalAlignment("center").setFontWeight("bold");
+      }
+    }
+  }
+
+  sheetERD.setColumnWidth(1, 60);
+  sheetERD.setColumnWidth(2, 160);
+  sheetERD.setColumnWidth(3, 130);
+  sheetERD.setColumnWidth(4, 90);
+  sheetERD.setColumnWidth(5, 230);
+  sheetERD.setColumnWidth(6, 160);
+  sheetERD.setColumnWidth(7, 140);
+  sheetERD.setColumnWidth(8, 140);
+  sheetERD.setColumnWidth(9, 450);
+
+  // =======================================================================================
+  // SHEET 3: DATABASE (11 BẢNG CSDL CHI TIẾT)
   // =======================================================================================
   const sheet2 = getOrCreateSheet("DATABASE (11 BẢNG)");
   sheet2.setTabColor("#0284C7");
@@ -1384,7 +1635,6 @@ function createCineMaxGoogleSheet() {
 
   sheet2.getRange("A2").setFontSize(14).setFontWeight("bold").setFontColor(COLOR_HEADER);
   sheet2.getRange("A3").setFontSize(11).setFontItalic(true).setFontColor("#555555");
-
   sheet2.getRange("A5:H5").setBackground(COLOR_HEADER).setFontColor("#FFFFFF").setFontWeight("bold").setHorizontalAlignment("center");
   sheet2.setFrozenRows(5);
 
@@ -1422,7 +1672,7 @@ function createCineMaxGoogleSheet() {
   sheet2.setColumnWidth(8, 420);
 
   // =======================================================================================
-  // SHEET 3: THÀNH VIÊN DỰ ÁN (4 NGƯỜI)
+  // SHEET 4: THÀNH VIÊN DỰ ÁN (4 NGƯỜI)
   // =======================================================================================
   const sheet3 = getOrCreateSheet("THÀNH VIÊN DỰ ÁN");
   sheet3.setTabColor("#047857");
@@ -1502,10 +1752,10 @@ function createCineMaxGoogleSheet() {
   const defaultSheets = ["Sheet1", "Trang tính 1", "Sheet"];
   defaultSheets.forEach(name => {
     const s = ss.getSheetByName(name);
-    if (s && ss.getSheets().length > 3) {
+    if (s && ss.getSheets().length > 4) {
       ss.deleteSheet(s);
     }
   });
 
-  SpreadsheetApp.getActiveSpreadsheet().toast("Đã tạo bảng tính CineMax AI chuẩn mẫu thành công!", "Hoàn tất 100%", 5);
+  SpreadsheetApp.getActiveSpreadsheet().toast("Đã tạo bảng tính CineMax AI với Sơ đồ ERD thành công!", "Hoàn tất 100%", 5);
 }
