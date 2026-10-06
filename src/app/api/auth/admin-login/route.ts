@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { ADMIN_COOKIE_NAME, createAdminSessionToken, safeEqual } from "@/lib/adminAuth";
 import { getClientIp } from "@/lib/rateLimit";
@@ -41,6 +42,22 @@ function clearFailedAttempts(ip: string) {
   failedAttemptsMap.delete(ip);
 }
 
+// Bộ nhớ tạm lưu mật khẩu admin ngẫu nhiên cho môi trường phát triển (sống sót qua HMR)
+const globalForAdminAuth = globalThis as unknown as { __cinemaxDevAdminPassword?: string };
+
+function getDevAdminPassword(): string {
+  if (!globalForAdminAuth.__cinemaxDevAdminPassword) {
+    const generated = randomBytes(12).toString("hex");
+    globalForAdminAuth.__cinemaxDevAdminPassword = generated;
+    console.warn(
+      `\n[CineMax Admin] ⚠️ Chưa cấu hình ADMIN_LOGIN_PASSWORD trong biến môi trường.\n` +
+      `[CineMax Admin] 🔑 Mật khẩu admin tạm thời (ngẫu nhiên cho phiên này): ${generated}\n` +
+      `[CineMax Admin] Để dùng mật khẩu cố định, vui lòng đặt ADMIN_LOGIN_PASSWORD trong .env.local.\n`
+    );
+  }
+  return globalForAdminAuth.__cinemaxDevAdminPassword;
+}
+
 export async function POST(request: NextRequest) {
   const clientIp = getClientIp(request);
   const lockout = checkLockout(clientIp);
@@ -76,8 +93,8 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Môi trường dev fallback nếu chưa đặt
-  const activePassword = expectedPassword || "cinemax2026";
+  // Môi trường dev fallback: sinh ngẫu nhiên một lần cho mỗi lần chạy server khi chưa đặt biến môi trường
+  const activePassword = expectedPassword || getDevAdminPassword();
 
   if (!safeEqual(password, activePassword)) {
     const attempt = recordFailedAttempt(clientIp);

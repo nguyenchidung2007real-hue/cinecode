@@ -5,10 +5,16 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ShieldCheck, Lock, Eye, EyeOff, AlertCircle, ArrowLeft, Loader2 } from "lucide-react";
 
+function safeNext(value: string | null): string {
+  return value && value.startsWith("/") && !value.startsWith("//") && !value.includes("\\")
+    ? value
+    : "/admin";
+}
+
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const fromUrl = searchParams.get("from") || "/admin";
+  const fromUrl = safeNext(searchParams.get("from"));
 
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);

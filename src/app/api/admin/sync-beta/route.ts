@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { safeEqual } from "@/lib/adminAuth";
 import { syncBetaXuanThuyMovies, getLastSyncTime } from "@/lib/betaCrawler";
 
 export const dynamic = "force-dynamic";
 
+// GET không cần auth — chỉ trả metadata tĩnh (status + lastSyncTime), không có dữ liệu nhạy cảm
 export async function GET() {
   return NextResponse.json({
     status: "ready",
@@ -12,18 +14,27 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  // Bảo vệ route trên môi trường Production
-  const adminSecret = process.env.ADMIN_SYNC_SECRET;
-  const authHeader = req.headers.get("authorization");
+  const adminSecret = process.env.ADMIN_SYNC_SECRET?.trim();
 
-  if (process.env.NODE_ENV === "production") {
-    // Nếu có cài ADMIN_SYNC_SECRET thì kiểm tra Bearer token, nếu không thì chặn gọi trực tiếp
-    if (!adminSecret || authHeader !== `Bearer ${adminSecret}`) {
-      return NextResponse.json(
-        { error: "Thao tác chỉ khả dụng ở chế độ cục bộ hoặc yêu cầu Authorization Bearer Secret." },
-        { status: 403 }
-      );
+  // Production bắt buộc phải cấu hình ADMIN_SYNC_SECRET
+  if (process.env.NODE_ENV === "production" && !adminSecret) {
+    return NextResponse.json(
+      { error: "Chưa cấu hình ADMIN_SYNC_SECRET trên máy chủ." },
+      { status: 500 },
+    );
+  }
+
+  // Nếu có secret (bất kể NODE_ENV): luôn kiểm tra — không để tên môi trường quyết định bật/tắt auth
+  if (adminSecret) {
+    const provided = (req.headers.get("authorization") ?? "").replace(/^Bearer\s+/i, "");
+    if (!safeEqual(provided, adminSecret)) {
+      return NextResponse.json({ error: "Không có quyền." }, { status: 403 });
     }
+  } else {
+    // Không có secret và không phải production: cho qua (dev), nhưng cảnh báo rõ
+    console.warn(
+      "[CineMax Sync] ⚠️ ADMIN_SYNC_SECRET chưa được cấu hình — endpoint sync-beta đang mở không cần auth. Đặt biến môi trường này trước khi deploy.",
+    );
   }
 
   try {
@@ -33,7 +44,7 @@ export async function POST(req: NextRequest) {
     console.error("[API Sync Beta] Lỗi đồng bộ:", error);
     return NextResponse.json(
       { success: false, error: "Không thể làm mới dữ liệu mô phỏng lúc này." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
