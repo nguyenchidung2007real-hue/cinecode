@@ -28,6 +28,7 @@ export interface TicketRecord extends BookingInfo {
   usedAt?: string;
   scannedBy?: string;
   voidReason?: string;
+  lastTxnRef?: string;
 }
 
 export type CreateTicketInput = BookingInfo;
@@ -46,7 +47,7 @@ export interface TicketStoreAdapter {
   readonly name: "memory" | "vercel-kv";
   create(input: CreateTicketInput): Promise<CreateOutcome>;
   createPending(input: CreateTicketInput): Promise<CreateOutcome>;
-  promotePendingToValid(bookingId: string): Promise<TicketRecord | null>;
+  promotePendingToValid(bookingId: string, txnRef?: string): Promise<TicketRecord | null>;
   voidTicket(bookingId: string, reason?: string): Promise<TicketRecord | null>;
   get(bookingId: string): Promise<TicketRecord | null>;
   markUsed(bookingId: string, scannedBy?: string): Promise<CheckInOutcome>;
@@ -86,21 +87,32 @@ class MemoryTicketStore implements TicketStoreAdapter {
   async createPending(input: CreateTicketInput): Promise<CreateOutcome> {
     const map = getMemoryMap();
     const existing = map.get(input.bookingId);
-    if (existing) return { outcome: "already_exists", ticket: existing };
+    if (existing) {
+      if (existing.status === "pending" || existing.status === "void") {
+        const updated: TicketRecord = { ...existing, ...input, status: "pending", voidReason: undefined };
+        map.set(input.bookingId, updated);
+        return { outcome: "created", ticket: updated };
+      }
+      return { outcome: "already_exists", ticket: existing };
+    }
 
     const ticket: TicketRecord = { ...input, status: "pending" };
     map.set(input.bookingId, ticket);
     return { outcome: "created", ticket };
   }
 
-  async promotePendingToValid(bookingId: string): Promise<TicketRecord | null> {
+  async promotePendingToValid(bookingId: string, txnRef?: string): Promise<TicketRecord | null> {
     const map = getMemoryMap();
     const ticket = map.get(bookingId);
     if (!ticket) return null;
     if (ticket.status === "valid" || ticket.status === "used") return ticket;
     if (ticket.status === "void") return null;
 
-    const updated: TicketRecord = { ...ticket, status: "valid" };
+    const updated: TicketRecord = {
+      ...ticket,
+      status: "valid",
+      ...(txnRef ? { lastTxnRef: txnRef } : {}),
+    };
     map.set(bookingId, updated);
     return updated;
   }
@@ -190,11 +202,18 @@ class VercelKvTicketStore implements TicketStoreAdapter {
     if (setResult === "OK") return { outcome: "created", ticket };
 
     const existing = await this.get(input.bookingId);
-    if (existing) return { outcome: "already_exists", ticket: existing };
+    if (existing) {
+      if (existing.status === "pending" || existing.status === "void") {
+        const updated: TicketRecord = { ...existing, ...input, status: "pending", voidReason: undefined };
+        await kvCommand(this.config, ["SET", key, JSON.stringify(updated)]);
+        return { outcome: "created", ticket: updated };
+      }
+      return { outcome: "already_exists", ticket: existing };
+    }
     return this.createPending(input);
   }
 
-  async promotePendingToValid(bookingId: string): Promise<TicketRecord | null> {
+  async promotePendingToValid(bookingId: string, txnRef?: string): Promise<TicketRecord | null> {
     const key = TICKET_KEY_PREFIX + bookingId;
     const raw = await kvCommand(this.config, ["GET", key]);
     if (typeof raw !== "string") return null;
@@ -209,7 +228,11 @@ class VercelKvTicketStore implements TicketStoreAdapter {
     if (base.status === "valid" || base.status === "used") return base;
     if (base.status === "void") return null;
 
-    const updated: TicketRecord = { ...base, status: "valid" };
+    const updated: TicketRecord = {
+      ...base,
+      status: "valid",
+      ...(txnRef ? { lastTxnRef: txnRef } : {}),
+    };
     await kvCommand(this.config, ["SET", key, JSON.stringify(updated)]);
     return updated;
   }

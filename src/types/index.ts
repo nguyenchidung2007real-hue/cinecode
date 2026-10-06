@@ -67,6 +67,9 @@ export interface SelectedComboItem {
 
 export interface BookingInfo {
   bookingId: string;
+  holdId?: string;
+  showtimeId?: string;
+  currentTxnRef?: string;
   movieTitle: string;
   posterPath: string;
   cinemaName: string;
