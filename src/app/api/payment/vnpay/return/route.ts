@@ -7,6 +7,13 @@ export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   const queryParams = Object.fromEntries(request.nextUrl.searchParams.entries());
+
+  if (process.env.NODE_ENV !== "production") {
+    console.log("\n--- [VNPay Return Incoming Payload] ---");
+    console.log(JSON.stringify(queryParams, null, 2));
+    console.log("---------------------------------------\n");
+  }
+
   const { isValid, data } = verifyVnpaySignature(queryParams);
 
   const txnRef = data.vnp_TxnRef || "";

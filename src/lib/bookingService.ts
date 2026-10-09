@@ -113,8 +113,20 @@ function sanitizePosterPath(raw: unknown): string {
 /*  Suất chiếu                                                                */
 /* -------------------------------------------------------------------------- */
 
-function showtimeStartMs(showtime: StoredShowtime): number {
+export function showtimeStartMs(showtime: StoredShowtime): number {
   return Date.parse(`${showtime.date}T${showtime.time}:00+07:00`); // giờ chiếu theo múi giờ Việt Nam
+}
+
+/**
+ * Tính TTL cho ghế trạng thái sold: giữ đến khi suất chiếu kết thúc + SOLD_RETENTION_HOURS_AFTER_START (48h).
+ * Nếu parse giờ chiếu lỗi hoặc quá hạn, fallback an toàn là 7 ngày (7 * 24 * 3600s).
+ */
+export function computeSoldTtlSeconds(showtime: StoredShowtime, now = Date.now()): number {
+  const start = showtimeStartMs(showtime);
+  if (!Number.isFinite(start)) {
+    return 7 * 24 * 3600;
+  }
+  return Math.max(3600, Math.ceil((start - now) / 1000)) + SOLD_RETENTION_HOURS_AFTER_START * 3600;
 }
 
 export async function loadSellableShowtime(rawId: unknown): Promise<StoredShowtime> {
@@ -328,8 +340,7 @@ export async function confirmBooking(input: ConfirmInput): Promise<ConfirmResult
   }
 
   // 6) Chốt ghế nguyên tử (held -> sold).
-  const soldTtlSeconds =
-    Math.max(3600, Math.ceil((showtimeStartMs(showtime) - Date.now()) / 1000)) + SOLD_RETENTION_HOURS_AFTER_START * 3600;
+  const soldTtlSeconds = computeSoldTtlSeconds(showtime);
 
   const commit = await seatStore.commit(hold, bookingId, soldTtlSeconds);
   if (commit.outcome === "already_committed") {

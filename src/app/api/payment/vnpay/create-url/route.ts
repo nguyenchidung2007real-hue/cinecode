@@ -57,8 +57,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Đơn đặt vé này đã được thanh toán hoàn tất.", bookingId }, { status: 409 });
     }
 
-    // 5. Tính số lần attempt duy nhất cho VNPay
+    // 5. Tính số lần attempt duy nhất cho VNPay (trần tối đa 5 lần thử cho một đơn vé)
     const attempt = await nextPaymentAttempt(bookingId, Math.ceil(remainingHoldMs / 1000));
+    if (attempt > 5) {
+      return NextResponse.json(
+        { error: "Đã vượt quá số lần thử thanh toán tối đa (5 lần). Vui lòng đặt lại vé mới.", code: "MAX_PAYMENT_ATTEMPTS" },
+        { status: 429 }
+      );
+    }
     const txnRef = `${bookingId}.${attempt}`;
 
     // 6. Lưu vé pending - BẮT BUỘC lưu cả holdId, showtimeId VÀ currentTxnRef để chống void nhầm lần thử mới
@@ -87,17 +93,17 @@ export async function POST(request: NextRequest) {
     // 6. Tính hạn thanh toán (ExpireDate): min(thời gian giữ ghế, 15 phút)
     const expireDate = new Date(Date.now() + Math.min(remainingHoldMs, 15 * 60 * 1000));
 
-    // 7. Chuẩn hóa OrderInfo an toàn (chỉ giữ chữ cái, số, khoảng trắng, gạch ngang)
-    const cleanPhone = String(customer.phone).replace(/\D/g, "");
-    const rawOrderInfo = `Thanh toan ve ${bookingId} DT ${cleanPhone}`;
+    // 7. Chuẩn hóa OrderInfo an toàn (chỉ chứa bookingId, loại bỏ PII số điện thoại)
+    const rawOrderInfo = `Thanh toan ve ${bookingId}`;
     const safeOrderInfo = rawOrderInfo.replace(/[^a-zA-Z0-9\s,\-_]/g, " ").trim();
 
-    // 8. Sinh URL chuyển hướng VNPay
+    // 8. Sinh URL chuyển hướng VNPay (đảm bảo ip hợp lệ, không để lọt 'unknown' lên VNPay)
+    const safeIp = !ip || ip === "unknown" || !/^[0-9a-fA-F:.]+$/.test(ip) ? "127.0.0.1" : ip;
     const paymentUrl = createVnpayPaymentUrl({
       amount: totalAmount,
       txnRef,
       orderInfo: safeOrderInfo,
-      ipAddr: ip,
+      ipAddr: safeIp,
       expireDate,
     });
 

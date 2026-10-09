@@ -1,6 +1,7 @@
 import { getSeatStore, newHoldId } from "../src/lib/seatStore";
 import { getTicketStore } from "../src/lib/ticketStore";
-import { deriveBookingId } from "../src/lib/bookingService";
+import { deriveBookingId, computeSoldTtlSeconds } from "../src/lib/bookingService";
+import { getShowtimeStore } from "../src/lib/showtimeStore";
 import { calculatePrice } from "../src/lib/pricing";
 import { createVnpayPaymentUrl, nextPaymentAttempt, buildVnpaySignData, verifyVnpaySignature } from "../src/lib/vnpay";
 import { createHmac } from "node:crypto";
@@ -8,8 +9,8 @@ import { createHmac } from "node:crypto";
 async function runE2ETests() {
   console.log("=== BẮT ĐẦU CHẠY 3 CA KIỂM THỬ VNPAY SANDBOX E2E ===\n");
 
-  process.env.VNPAY_TMN_CODE = "2QXUI4B4";
-  process.env.VNPAY_HASH_SECRET = "RAOCTAVTGKUXNZODZAGCMSRAUQWBIDIU";
+  process.env.VNPAY_TMN_CODE = "CUOQNZLU";
+  process.env.VNPAY_HASH_SECRET = "HTRLPQFTBFKYZOHMBKIWIOVWKJCBUEMX";
   process.env.VNPAY_RETURN_URL = "http://localhost:3000/api/payment/vnpay/return";
 
   const secret = process.env.VNPAY_HASH_SECRET;
@@ -90,7 +91,7 @@ async function runE2ETests() {
     vnp_OrderInfo: "Thanh toan ve Mai",
     vnp_PayDate: "20261006173015",
     vnp_ResponseCode: "00",
-    vnp_TmnCode: "2QXUI4B4",
+    vnp_TmnCode: "CUOQNZLU",
     vnp_TransactionNo: "14829103",
     vnp_TransactionStatus: "00",
     vnp_TxnRef: txnRef1,
@@ -105,7 +106,9 @@ async function runE2ETests() {
   if (!ticket1 || ticket1.status !== "pending") throw new Error("Ca 1: Vé không ở pending");
 
   const hold1 = await seatStore.getHold(ticket1.showtimeId!, ticket1.holdId!);
-  const commit1 = await seatStore.commit(hold1!, bookingId1, 24 * 3600);
+  const showtime1 = await getShowtimeStore().getById(ticket1.showtimeId!);
+  const soldTtlSeconds1 = showtime1 ? computeSoldTtlSeconds(showtime1) : 7 * 24 * 3600;
+  const commit1 = await seatStore.commit(hold1!, bookingId1, soldTtlSeconds1);
   if (commit1.outcome === "lost") throw new Error("Ca 1: Commit ghế thất bại do ghế bị mất");
 
   const validTicket1 = await ticketStore.promotePendingToValid(bookingId1, txnRef1);
@@ -157,7 +160,7 @@ async function runE2ETests() {
     vnp_CurrCode: "VND",
     vnp_OrderInfo: "Thanh toan ve Dune",
     vnp_ResponseCode: "24", // Hủy giao dịch
-    vnp_TmnCode: "2QXUI4B4",
+    vnp_TmnCode: "CUOQNZLU",
     vnp_TransactionStatus: "02",
     vnp_TxnRef: txnRef2_1,
     vnp_Version: "2.1.0",
@@ -223,14 +226,16 @@ async function runE2ETests() {
     vnp_CurrCode: "VND",
     vnp_OrderInfo: "Thanh toan ve Dune",
     vnp_ResponseCode: "00",
-    vnp_TmnCode: "2QXUI4B4",
+    vnp_TmnCode: "CUOQNZLU",
     vnp_TransactionStatus: "00",
     vnp_TxnRef: txnRef2_2,
     vnp_Version: "2.1.0",
   });
 
   const hold2 = await seatStore.getHold(showtimeId, holdId2);
-  const commit2 = await seatStore.commit(hold2!, bookingId2, 24 * 3600);
+  const showtime2 = await getShowtimeStore().getById(showtimeId);
+  const soldTtlSeconds2 = showtime2 ? computeSoldTtlSeconds(showtime2) : 7 * 24 * 3600;
+  const commit2 = await seatStore.commit(hold2!, bookingId2, soldTtlSeconds2);
   if (commit2.outcome === "lost") throw new Error("Ca 3: Commit ghế thất bại do ghế bị mất");
 
   const validTicket2 = await ticketStore.promotePendingToValid(bookingId2, txnRef2_2);

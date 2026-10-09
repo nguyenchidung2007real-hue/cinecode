@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { verifyVnpaySignature, parseVnpayTxnRef } from "@/lib/vnpay";
 import { getTicketStore } from "@/lib/ticketStore";
 import { getSeatStore } from "@/lib/seatStore";
+import { getShowtimeStore } from "@/lib/showtimeStore";
+import { computeSoldTtlSeconds } from "@/lib/bookingService";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -9,6 +11,12 @@ export const dynamic = "force-dynamic";
 export async function GET(request: NextRequest) {
   // App Router: trích xuất query parameters sạch dạng Record<string, string>
   const queryParams = Object.fromEntries(request.nextUrl.searchParams.entries());
+
+  if (process.env.NODE_ENV !== "production") {
+    console.log("\n--- [VNPay IPN Incoming Payload] ---");
+    console.log(JSON.stringify(queryParams, null, 2));
+    console.log("------------------------------------\n");
+  }
 
   // 1. Xác thực chữ ký số HMAC-SHA512
   const { isValid, data } = verifyVnpaySignature(queryParams);
@@ -95,7 +103,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ RspCode: "00", Message: "Confirm Success" });
     }
 
-    const commitOutcome = await seatStore.commit(hold, bookingId, 24 * 3600);
+    const showtime = await getShowtimeStore().getById(ticket.showtimeId);
+    const soldTtlSeconds = showtime ? computeSoldTtlSeconds(showtime) : 7 * 24 * 3600;
+
+    const commitOutcome = await seatStore.commit(hold, bookingId, soldTtlSeconds);
     if (commitOutcome.outcome === "lost") {
       console.error(`[VNPay IPN] ⚠️ GHẾ BỊ TRANH CHẤP KHI COMMIT: ${bookingId}. Kích hoạt hoàn tiền.`);
       await ticketStore.voidTicket(bookingId, "Ghế bị tranh chấp - cần hoàn tiền");
@@ -103,9 +114,21 @@ export async function GET(request: NextRequest) {
     }
 
     // Nâng vé pending sang valid, lưu lại lastTxnRef để chống thu trùng
-    await ticketStore.promotePendingToValid(bookingId, txnRef);
-
-    return NextResponse.json({ RspCode: "00", Message: "Confirm Success" });
+    try {
+      const validTicket = await ticketStore.promotePendingToValid(bookingId, txnRef);
+      if (!validTicket) throw new Error("promotePendingToValid returned null");
+      return NextResponse.json({ RspCode: "00", Message: "Confirm Success" });
+    } catch (promoteError) {
+      console.error(
+        `[VNPay IPN] 🚨 LỖI KÍCH HOẠT VÉ SAU KHI COMMIT GHẾ: ${bookingId}. Thực hiện rollback ghế và void vé:`,
+        promoteError
+      );
+      await seatStore.rollbackCommit(hold, bookingId).catch((rollbackErr) => {
+        console.error(`[VNPay IPN] 🚨 Rollback ghế thất bại cho ${bookingId}:`, rollbackErr);
+      });
+      await ticketStore.voidTicket(bookingId, "Lỗi nâng vé sau khi chốt ghế - Cần hoàn tiền thủ công").catch(() => {});
+      return NextResponse.json({ RspCode: "99", Message: "Ticket activation failed, rolled back seats" });
+    }
   } catch (err) {
     console.error(`[VNPay IPN] Lỗi hoàn tất đơn vé ${bookingId}:`, err);
     return NextResponse.json({ RspCode: "99", Message: "Unknown error" });

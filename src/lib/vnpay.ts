@@ -152,19 +152,26 @@ export function parseVnpayTxnRef(txnRef: string): { bookingId: string; attempt: 
 // Bộ nhớ tạm cho dev khi không có Redis
 const memoryAttempts = new Map<string, number>();
 
+const ATTEMPT_LUA =
+  "local c = redis.call('INCR', KEYS[1]) redis.call('EXPIRE', KEYS[1], ARGV[1]) return c";
+
 /**
  * Sinh số lần thanh toán tăng dần (attempt) cho bookingId.
- * Lưu trữ trong Redis (INCR) với TTL theo thời gian giữ ghế.
+ * Lưu trữ trong Redis (INCR + EXPIRE nguyên tử bằng Lua script) với TTL theo thời gian giữ ghế.
  */
 export async function nextPaymentAttempt(bookingId: string, ttlSeconds: number): Promise<number> {
   const kvConfig = getKvConfig();
   const key = `cinemax:pay_attempt:${bookingId}`;
 
   if (kvConfig) {
-    const raw = await kvCommand(kvConfig, ["INCR", key]);
-    const count = typeof raw === "number" ? raw : Number(raw) || 1;
-    await kvCommand(kvConfig, ["EXPIRE", key, String(Math.max(60, ttlSeconds))]);
-    return count;
+    const raw = await kvCommand(kvConfig, [
+      "EVAL",
+      ATTEMPT_LUA,
+      "1",
+      key,
+      String(Math.max(60, ttlSeconds)),
+    ]);
+    return typeof raw === "number" ? raw : Number(raw) || 1;
   }
 
   const current = (memoryAttempts.get(key) ?? 0) + 1;
