@@ -1,0 +1,651 @@
+// ==============================================================================
+// PRISMA SCHEMA FILE CHO DỰ ÁN CINEMAX (ĐẦY ĐỦ 29 MODELS: HIỆN TẠI & TƯƠNG LAI)
+// ==============================================================================
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum AgeRating {
+  P
+  K
+  T13
+  T16
+  T18
+  C
+}
+
+enum MovieStatus {
+  COMING_SOON
+  NOW_SHOWING
+  SNEAK_SHOW
+  ENDED
+}
+
+enum HallType {
+  STANDARD_2D
+  DIGITAL_3D
+  IMAX_LASER
+  FOUR_DX
+  SCREEN_X
+  GOLD_CLASS
+}
+
+enum SeatType {
+  STANDARD
+  VIP
+  SWEETBOX
+  ACCESSIBLE
+  AISLE
+}
+
+enum SeatStatus {
+  AVAILABLE
+  HOLD
+  BOOKED
+  BLOCKED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  EXPIRED
+  REFUNDED
+}
+
+enum UserRole {
+  CUSTOMER
+  STAFF
+  CINEMA_MANAGER
+  SUPER_ADMIN
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED_AMOUNT
+}
+
+enum RefundStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  PROCESSED
+}
+
+enum ConcessionDeliveryType {
+  EXPRESS_COUNTER
+  AT_SEAT_DELIVERY
+  TAKE_AWAY
+}
+
+enum WaitingRoomStatus {
+  WAITING
+  ADMITTED
+  EXPIRED
+}
+
+// 1. CỤM RẠP
+model Cinema {
+  id          String       @id @default(uuid()) @db.Uuid
+  name        String       @db.VarChar(150)
+  slug        String       @unique @db.VarChar(180)
+  address     String       @db.VarChar(255)
+  ward        String?      @db.VarChar(100)
+  district    String       @db.VarChar(100)
+  city        String       @db.VarChar(100)
+  latitude    Decimal?     @db.Decimal(10, 7)
+  longitude   Decimal?     @db.Decimal(10, 7)
+  phone       String?      @db.VarChar(25)
+  amenities   Json?        @default("[\"Parking\", \"AirConditioned\", \"PopcornBar\"]")
+  isActive    Boolean      @default(true) @map("is_active")
+  createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime     @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  halls       Hall[]
+  concessions Concession[]
+
+  @@map("cinemas")
+}
+
+// 2. PHÒNG CHIẾU
+model Hall {
+  id            String         @id @default(uuid()) @db.Uuid
+  cinemaId      String         @map("cinema_id") @db.Uuid
+  name          String         @db.VarChar(50)
+  hallType      HallType       @default(STANDARD_2D) @map("hall_type")
+  soundSystem   String?        @default("Dolby Atmos 7.1") @map("sound_system") @db.VarChar(50)
+  projectorType String?        @default("Christie 4K Laser") @map("projector_type") @db.VarChar(50)
+  totalSeats    Int            @map("total_seats")
+  rowsCount     Int            @map("rows_count")
+  colsCount     Int            @map("cols_count")
+  isActive      Boolean        @default(true) @map("is_active")
+  createdAt     DateTime       @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime       @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  cinema        Cinema         @relation(fields: [cinemaId], references: [id], onDelete: Cascade)
+  seatTemplates SeatTemplate[]
+  showtimes     Showtime[]
+
+  @@unique([cinemaId, name])
+  @@map("halls")
+}
+
+// 3. SƠ ĐỒ GHẾ MẪU CỦA PHÒNG
+model SeatTemplate {
+  id         String     @id @default(uuid()) @db.Uuid
+  hallId     String     @map("hall_id") @db.Uuid
+  rowCode    String     @map("row_code") @db.VarChar(5)
+  seatNumber Int        @map("seat_number")
+  seatType   SeatType   @default(STANDARD) @map("seat_type")
+  coordX     Int        @map("coord_x")
+  coordY     Int        @map("coord_y")
+  isActive   Boolean    @default(true) @map("is_active")
+  createdAt  DateTime   @default(now()) @map("created_at") @db.Timestamptz
+
+  hall       Hall       @relation(fields: [hallId], references: [id], onDelete: Cascade)
+  showtimeSeats ShowtimeSeat[]
+
+  @@unique([hallId, rowCode, seatNumber])
+  @@map("seat_templates")
+}
+
+// 4. THỂ LOẠI PHIM
+model Genre {
+  id          String      @id @default(uuid()) @db.Uuid
+  name        String      @unique @db.VarChar(80)
+  slug        String      @unique @db.VarChar(100)
+  description String?     @db.Text
+  createdAt   DateTime    @default(now()) @map("created_at") @db.Timestamptz
+
+  movies      MovieGenre[]
+
+  @@map("genres")
+}
+
+// 5. PHIM ĐIỆN ẢNH
+model Movie {
+  id               String       @id @default(uuid()) @db.Uuid
+  title            String       @db.VarChar(255)
+  originalTitle    String?      @map("original_title") @db.VarChar(255)
+  slug             String       @unique @db.VarChar(280)
+  overview         String?      @db.Text
+  posterUrl        String       @map("poster_url") @db.Text
+  backdropUrl      String?      @map("backdrop_url") @db.Text
+  trailerYoutubeId String?      @map("trailer_youtube_id") @db.VarChar(50)
+  durationMin      Int          @map("duration_min")
+  releaseDate      DateTime     @map("release_date") @db.Date
+  endDate          DateTime?    @map("end_date") @db.Date
+  ageRating        AgeRating    @default(T13) @map("age_rating")
+  director         String?      @db.VarChar(150)
+  castMembers      String[]     @map("cast_members")
+  producer         String?      @db.VarChar(150)
+  country          String?      @default("Việt Nam") @db.VarChar(80)
+  ratingAverage    Decimal?     @default(0.0) @map("rating_average") @db.Decimal(3, 1)
+  ratingCount      Int?         @default(0) @map("rating_count")
+  status           MovieStatus  @default(NOW_SHOWING)
+  createdAt        DateTime     @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt        DateTime     @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  genres           MovieGenre[]
+  showtimes        Showtime[]
+  reviews          MovieReview[]
+  watchlists       MovieWatchlist[]
+
+  @@map("movies")
+}
+
+// 6. LIÊN KẾT PHIM & THỂ LOẠI (N:M)
+model MovieGenre {
+  movieId String @map("movie_id") @db.Uuid
+  genreId String @map("genre_id") @db.Uuid
+
+  movie   Movie  @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  genre   Genre  @relation(fields: [genreId], references: [id], onDelete: Cascade)
+
+  @@id([movieId, genreId])
+  @@map("movie_genres")
+}
+
+// 7. SUẤT CHIẾU
+model Showtime {
+  id        String       @id @default(uuid()) @db.Uuid
+  movieId   String       @map("movie_id") @db.Uuid
+  hallId    String       @map("hall_id") @db.Uuid
+  startTime DateTime     @map("start_time") @db.Timestamptz
+  endTime   DateTime     @map("end_time") @db.Timestamptz
+  format    String       @default("2D Phụ Đề") @db.VarChar(40)
+  basePrice Decimal      @map("base_price") @db.Decimal(12, 2)
+  status    String       @default("SCHEDULED") @db.VarChar(20)
+  createdAt DateTime     @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime     @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  movie     Movie        @relation(fields: [movieId], references: [id], onDelete: Restrict)
+  hall      Hall         @relation(fields: [hallId], references: [id], onDelete: Cascade)
+  seats     ShowtimeSeat[]
+  bookings  Booking[]
+  groupBookings GroupBooking[]
+  waitingRooms  WaitingRoomSession[]
+
+  @@map("showtimes")
+}
+
+// 8. TRẠNG THÁI GHẾ ĐỘNG THEO SUẤT CHIẾU
+model ShowtimeSeat {
+  id                   String        @id @default(uuid()) @db.Uuid
+  showtimeId           String        @map("showtime_id") @db.Uuid
+  seatTemplateId       String        @map("seat_template_id") @db.Uuid
+  status               SeatStatus    @default(AVAILABLE)
+  price                Decimal       @db.Decimal(12, 2)
+  reservedByUserId     String?       @map("reserved_by_user_id") @db.Uuid
+  reservationExpiresAt DateTime?     @map("reservation_expires_at") @db.Timestamptz
+  version              Int           @default(1)
+  updatedAt            DateTime      @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  showtime             Showtime      @relation(fields: [showtimeId], references: [id], onDelete: Cascade)
+  seatTemplate         SeatTemplate  @relation(fields: [seatTemplateId], references: [id], onDelete: Cascade)
+  ticket               Ticket?
+  groupMembers         GroupBookingMember[]
+
+  @@unique([showtimeId, seatTemplateId])
+  @@map("showtime_seats")
+}
+
+// 9. NGƯỜI DÙNG & TÀI KHOẢN
+model User {
+  id             String      @id @default(uuid()) @db.Uuid
+  fullName       String      @map("full_name") @db.VarChar(120)
+  email          String      @unique @db.VarChar(120)
+  phone          String?     @unique @db.VarChar(25)
+  passwordHash   String?     @map("password_hash") @db.VarChar(255)
+  role           UserRole    @default(CUSTOMER)
+  avatarUrl      String?     @map("avatar_url") @db.Text
+  loyaltyPoints  Int         @default(0) @map("loyalty_points")
+  isActive       Boolean     @default(true) @map("is_active")
+  createdAt      DateTime    @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  bookings       Booking[]
+  audits         SystemAuditLog[]
+  loyaltyTxns    UserLoyaltyTransaction[]
+  couponUsages   CouponRedemption[]
+  reviews        MovieReview[]
+  reviewLikes    ReviewLike[]
+  watchlists     MovieWatchlist[]
+  groupLeaders   GroupBooking[]
+  groupMembers   GroupBookingMember[]
+  refundRequests RefundRequest[]
+  giftCardsSent  GiftCard[]
+
+  @@map("users")
+}
+
+// 10. ĐƠN ĐẶT VÉ (BOOKINGS)
+model Booking {
+  id             String        @id @default(uuid()) @db.Uuid
+  bookingCode    String        @unique @map("booking_code") @db.VarChar(50)
+  userId         String        @map("user_id") @db.Uuid
+  showtimeId     String        @map("showtime_id") @db.Uuid
+  totalAmount    Decimal       @map("total_amount") @db.Decimal(12, 2)
+  discountAmount Decimal       @default(0) @map("discount_amount") @db.Decimal(12, 2)
+  finalAmount    Decimal       @map("final_amount") @db.Decimal(12, 2)
+  paymentStatus  PaymentStatus @default(PENDING) @map("payment_status")
+  idempotencyKey String        @unique @map("idempotency_key") @db.VarChar(100)
+  customerNotes  String?       @map("customer_notes") @db.Text
+  createdAt      DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime      @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  user           User          @relation(fields: [userId], references: [id], onDelete: Restrict)
+  showtime       Showtime      @relation(fields: [showtimeId], references: [id], onDelete: Restrict)
+  tickets        Ticket[]
+  concessions    BookingConcession[]
+  payments       Payment[]
+  couponUsages   CouponRedemption[]
+  loyaltyTxns    UserLoyaltyTransaction[]
+  refundRequests RefundRequest[]
+  deliveries     ConcessionDelivery[]
+
+  @@map("bookings")
+}
+
+// 11. VÉ ĐIỆN TỬ (TICKETS)
+model Ticket {
+  id                   String        @id @default(uuid()) @db.Uuid
+  bookingId            String        @map("booking_id") @db.Uuid
+  showtimeSeatId       String        @unique @map("showtime_seat_id") @db.Uuid
+  ticketCode           String        @unique @map("ticket_code") @db.VarChar(60)
+  qrCodePayload        String        @map("qr_code_payload") @db.Text
+  isCheckedIn          Boolean       @default(false) @map("is_checked_in")
+  checkedInAt          DateTime?     @map("checked_in_at") @db.Timestamptz
+  checkedInByStaffId   String?       @map("checked_in_by_staff_id") @db.Uuid
+  createdAt            DateTime      @default(now()) @map("created_at") @db.Timestamptz
+
+  booking              Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  showtimeSeat         ShowtimeSeat  @relation(fields: [showtimeSeatId], references: [id], onDelete: Restrict)
+
+  @@map("tickets")
+}
+
+// 12. BẮP NƯỚC (CONCESSIONS)
+model Concession {
+  id          String              @id @default(uuid()) @db.Uuid
+  cinemaId    String              @map("cinema_id") @db.Uuid
+  name        String              @db.VarChar(120)
+  category    String              @default("COMBO") @db.VarChar(50)
+  description String?             @db.Text
+  price       Decimal             @db.Decimal(12, 2)
+  imageUrl    String?             @map("image_url") @db.Text
+  isActive    Boolean             @default(true) @map("is_active")
+  createdAt   DateTime            @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime            @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  cinema      Cinema              @relation(fields: [cinemaId], references: [id], onDelete: Cascade)
+  bookings    BookingConcession[]
+
+  @@map("concessions")
+}
+
+// 13. CHI TIẾT BẮP NƯỚC THEO ĐƠN HÀNG
+model BookingConcession {
+  id           String     @id @default(uuid()) @db.Uuid
+  bookingId    String     @map("booking_id") @db.Uuid
+  concessionId String     @map("concession_id") @db.Uuid
+  quantity     Int        @default(1)
+  unitPrice    Decimal    @map("unit_price") @db.Decimal(12, 2)
+  subtotal     Decimal    @db.Decimal(12, 2)
+  createdAt    DateTime   @default(now()) @map("created_at") @db.Timestamptz
+
+  booking      Booking    @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  concession   Concession @relation(fields: [concessionId], references: [id], onDelete: Restrict)
+
+  @@map("booking_concessions")
+}
+
+// 14. LỊCH SỬ THANH TOÁN (PAYMENTS)
+model Payment {
+  id                   String    @id @default(uuid()) @db.Uuid
+  bookingId            String    @map("booking_id") @db.Uuid
+  gateway              String    @db.VarChar(30)
+  gatewayTransactionId String?   @map("gateway_transaction_id") @db.VarChar(100)
+  amount               Decimal   @db.Decimal(12, 2)
+  currency             String?   @default("VND") @db.VarChar(10)
+  status               String    @db.VarChar(30)
+  webhookPayload       Json?     @map("webhook_payload")
+  createdAt            DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  booking              Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}
+
+// 15. NHẬT KÝ AN NINH (SYSTEM_AUDIT_LOGS)
+model SystemAuditLog {
+  id           BigInt    @id @default(autoincrement())
+  userId       String?   @map("user_id") @db.Uuid
+  action       String    @db.VarChar(80)
+  resourceType String    @map("resource_type") @db.VarChar(50)
+  resourceId   String    @map("resource_id") @db.VarChar(100)
+  ipAddress    String?   @map("ip_address") @db.VarChar(45)
+  userAgent    String?   @map("user_agent") @db.Text
+  metadata     Json?
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  user         User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("system_audit_logs")
+}
+
+// ==============================================================================
+// CÁC TÍNH NĂNG MỞ RỘNG & TƯƠNG LAI (UPCOMING MODELS 16 -> 29)
+// ==============================================================================
+
+// 16. HẠNG THÀNH VIÊN
+model MembershipTier {
+  id              String   @id @default(uuid()) @db.Uuid
+  tierName        String   @unique @map("tier_name") @db.VarChar(50)
+  minSpending     Decimal  @default(0) @map("min_spending") @db.Decimal(12, 2)
+  pointMultiplier Decimal  @default(1.0) @map("point_multiplier") @db.Decimal(3, 2)
+  benefits        Json?    @default("[]")
+  badgeColor      String?  @default("#94a3b8") @map("badge_color") @db.VarChar(20)
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@map("membership_tiers")
+}
+
+// 17. SỔ CÁI ĐIỂM THƯỞNG
+model UserLoyaltyTransaction {
+  id              String   @id @default(uuid()) @db.Uuid
+  userId          String   @map("user_id") @db.Uuid
+  bookingId       String?  @map("booking_id") @db.Uuid
+  pointsDelta     Int      @map("points_delta")
+  transactionType String   @map("transaction_type") @db.VarChar(50)
+  description     String?  @db.Text
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  booking         Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+
+  @@map("user_loyalty_transactions")
+}
+
+// 18. MÃ KHUYẾN MÃI
+model Coupon {
+  id                 String       @id @default(uuid()) @db.Uuid
+  code               String       @unique @db.VarChar(50)
+  description        String?      @db.Text
+  discountType       DiscountType @default(PERCENTAGE) @map("discount_type")
+  discountValue      Decimal      @map("discount_value") @db.Decimal(12, 2)
+  minOrderAmount     Decimal?     @default(0) @map("min_order_amount") @db.Decimal(12, 2)
+  maxDiscountAmount  Decimal?     @map("max_discount_amount") @db.Decimal(12, 2)
+  totalUsageLimit    Int?         @map("total_usage_limit")
+  currentUsageCount  Int          @default(0) @map("current_usage_count")
+  perUserLimit       Int          @default(1) @map("per_user_limit")
+  validFrom          DateTime     @map("valid_from") @db.Timestamptz
+  validTo            DateTime     @map("valid_to") @db.Timestamptz
+  applicableCinemaIds String[]    @map("applicable_cinema_ids") @db.Uuid
+  applicableMovieIds  String[]    @map("applicable_movie_ids") @db.Uuid
+  isActive           Boolean      @default(true) @map("is_active")
+  createdAt          DateTime     @default(now()) @map("created_at") @db.Timestamptz
+
+  redemptions        CouponRedemption[]
+
+  @@map("coupons")
+}
+
+// 19. LỊCH SỬ DÙNG MÃ GIẢM GIÁ
+model CouponRedemption {
+  id              String   @id @default(uuid()) @db.Uuid
+  couponId        String   @map("coupon_id") @db.Uuid
+  userId          String   @map("user_id") @db.Uuid
+  bookingId       String   @map("booking_id") @db.Uuid
+  discountApplied Decimal  @map("discount_applied") @db.Decimal(12, 2)
+  redeemedAt      DateTime @default(now()) @map("redeemed_at") @db.Timestamptz
+
+  coupon          Coupon   @relation(fields: [couponId], references: [id], onDelete: Restrict)
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  booking         Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@map("coupon_redemptions")
+}
+
+// 20. THẺ QUÀ TẶNG & VÍ TRẢ TRƯỚC
+model GiftCard {
+  id              String   @id @default(uuid()) @db.Uuid
+  cardCode        String   @unique @map("card_code") @db.VarChar(30)
+  pinHash         String   @map("pin_hash") @db.VarChar(255)
+  initialBalance  Decimal  @map("initial_balance") @db.Decimal(12, 2)
+  currentBalance  Decimal  @map("current_balance") @db.Decimal(12, 2)
+  senderUserId    String?  @map("sender_user_id") @db.Uuid
+  recipientEmail  String?  @map("recipient_email") @db.VarChar(120)
+  greetingMessage String?  @map("greeting_message") @db.Text
+  isActive        Boolean  @default(true) @map("is_active")
+  expiresAt       DateTime @map("expires_at") @db.Timestamptz
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  sender          User?    @relation(fields: [senderUserId], references: [id], onDelete: SetNull)
+  transactions    GiftCardTransaction[]
+
+  @@map("gift_cards")
+}
+
+// 21. GIAO DỊCH THẺ QUÀ TẶNG
+model GiftCardTransaction {
+  id             String   @id @default(uuid()) @db.Uuid
+  giftCardId     String   @map("gift_card_id") @db.Uuid
+  bookingId      String?  @map("booking_id") @db.Uuid
+  amountDeducted Decimal  @map("amount_deducted") @db.Decimal(12, 2)
+  remainingBalance Decimal @map("remaining_balance") @db.Decimal(12, 2)
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  giftCard       GiftCard @relation(fields: [giftCardId], references: [id], onDelete: Cascade)
+
+  @@map("gift_card_transactions")
+}
+
+// 22. ĐÁNH GIÁ PHIM
+model MovieReview {
+  id              String   @id @default(uuid()) @db.Uuid
+  movieId         String   @map("movie_id") @db.Uuid
+  userId          String   @map("user_id") @db.Uuid
+  bookingId       String?  @map("booking_id") @db.Uuid
+  ratingScore     Int      @map("rating_score")
+  title           String?  @db.VarChar(150)
+  content         String?  @db.Text
+  hasSpoilers     Boolean  @default(false) @map("has_spoilers")
+  isVerifiedBuyer Boolean  @default(false) @map("is_verified_buyer")
+  likesCount      Int      @default(0) @map("likes_count")
+  isApproved      Boolean  @default(true) @map("is_approved")
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  movie           Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  likes           ReviewLike[]
+
+  @@unique([movieId, userId])
+  @@map("movie_reviews")
+}
+
+// 23. LƯỢT THÍCH REVIEW
+model ReviewLike {
+  reviewId  String      @map("review_id") @db.Uuid
+  userId    String      @map("user_id") @db.Uuid
+  createdAt DateTime    @default(now()) @map("created_at") @db.Timestamptz
+
+  review    MovieReview @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([reviewId, userId])
+  @@map("review_likes")
+}
+
+// 24. THEO DÕI VÉ SỚM
+model MovieWatchlist {
+  id               String   @id @default(uuid()) @db.Uuid
+  userId           String   @map("user_id") @db.Uuid
+  movieId          String   @map("movie_id") @db.Uuid
+  notifyOnPresale  Boolean  @default(true) @map("notify_on_presale")
+  isNotified       Boolean  @default(false) @map("is_notified")
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  movie            Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, movieId])
+  @@map("movie_watchlists")
+}
+
+// 25. ĐẶT VÉ THEO NHÓM
+model GroupBooking {
+  id                String   @id @default(uuid()) @db.Uuid
+  leaderUserId      String   @map("leader_user_id") @db.Uuid
+  showtimeId        String   @map("showtime_id") @db.Uuid
+  groupName         String?  @default("Xem Phim Cùng Bạn Bè") @map("group_name") @db.VarChar(100)
+  inviteCode        String   @unique @map("invite_code") @db.VarChar(20)
+  totalSeatsTarget  Int      @default(2) @map("total_seats_target")
+  status            String   @default("ORGANIZING") @db.VarChar(30)
+  expiresAt         DateTime @map("expires_at") @db.Timestamptz
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  leader            User     @relation(fields: [leaderUserId], references: [id], onDelete: Restrict)
+  showtime          Showtime @relation(fields: [showtimeId], references: [id], onDelete: Cascade)
+  members           GroupBookingMember[]
+
+  @@map("group_bookings")
+}
+
+// 26. THÀNH VIÊN NHÓM XEM PHIM
+model GroupBookingMember {
+  id             String        @id @default(uuid()) @db.Uuid
+  groupBookingId String        @map("group_booking_id") @db.Uuid
+  userId         String?       @map("user_id") @db.Uuid
+  guestName      String?       @map("guest_name") @db.VarChar(100)
+  showtimeSeatId String?       @map("showtime_seat_id") @db.Uuid
+  hasPaid        Boolean       @default(false) @map("has_paid")
+  createdAt      DateTime      @default(now()) @map("created_at") @db.Timestamptz
+
+  groupBooking   GroupBooking  @relation(fields: [groupBookingId], references: [id], onDelete: Cascade)
+  user           User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  showtimeSeat   ShowtimeSeat? @relation(fields: [showtimeSeatId], references: [id], onDelete: SetNull)
+
+  @@map("group_booking_members")
+}
+
+// 27. YÊU CẦU HOÀN TIỀN
+model RefundRequest {
+  id                  String       @id @default(uuid()) @db.Uuid
+  bookingId           String       @map("booking_id") @db.Uuid
+  userId              String       @map("user_id") @db.Uuid
+  reason              String       @db.Text
+  originalAmount      Decimal      @map("original_amount") @db.Decimal(12, 2)
+  refundAmount        Decimal      @map("refund_amount") @db.Decimal(12, 2)
+  penaltyFee          Decimal?     @default(0) @map("penalty_fee") @db.Decimal(12, 2)
+  status              RefundStatus @default(PENDING)
+  processedByStaffId  String?      @map("processed_by_staff_id") @db.Uuid
+  processedAt         DateTime?    @map("processed_at") @db.Timestamptz
+  bankAccountInfo     Json?        @map("bank_account_info")
+  createdAt           DateTime     @default(now()) @map("created_at") @db.Timestamptz
+
+  booking             Booking      @relation(fields: [bookingId], references: [id], onDelete: Restrict)
+  user                User         @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@map("refund_requests")
+}
+
+// 28. GIAO BẮP TẬN GHẾ
+model ConcessionDelivery {
+  id                   String                 @id @default(uuid()) @db.Uuid
+  bookingId            String                 @map("booking_id") @db.Uuid
+  deliveryType         ConcessionDeliveryType @default(EXPRESS_COUNTER) @map("delivery_type")
+  seatLocation         String?                @map("seat_location") @db.VarChar(20)
+  estimatedDeliveryTime DateTime?             @map("estimated_delivery_time") @db.Timestamptz
+  deliveryStatus       String?                @default("PREPARING") @map("delivery_status") @db.VarChar(30)
+  deliveredByStaffId   String?                @map("delivered_by_staff_id") @db.Uuid
+  createdAt            DateTime               @default(now()) @map("created_at") @db.Timestamptz
+
+  booking              Booking                @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@map("concession_deliveries")
+}
+
+// 29. PHÒNG CHỜ ẢO CAO ĐIỂM
+model WaitingRoomSession {
+  id           String            @id @default(uuid()) @db.Uuid
+  showtimeId   String            @map("showtime_id") @db.Uuid
+  userIp       String            @map("user_ip") @db.VarChar(45)
+  sessionToken String            @unique @map("session_token") @db.VarChar(100)
+  queueNumber  Int               @map("queue_number")
+  status       WaitingRoomStatus @default(WAITING)
+  admittedAt   DateTime?         @map("admitted_at") @db.Timestamptz
+  expiresAt    DateTime          @map("expires_at") @db.Timestamptz
+  createdAt    DateTime          @default(now()) @map("created_at") @db.Timestamptz
+
+  showtime     Showtime          @relation(fields: [showtimeId], references: [id], onDelete: Cascade)
+
+  @@map("waiting_room_sessions")
+}

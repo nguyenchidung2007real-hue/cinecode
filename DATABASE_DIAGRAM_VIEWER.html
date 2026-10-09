@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CineMax - Sơ Đồ Cơ Sở Dữ Liệu & Giải Thích Nhẹ 29 Bảng</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Mermaid.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            cinema: {
+              900: '#0b0f19',
+              800: '#111827',
+              700: '#1f2937',
+              accent: '#e11d48',
+              gold: '#f59e0b',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @media print {
+      .no-print { display: none !important; }
+      body { background: white !important; color: black !important; }
+      .print-card { break-inside: avoid; border: 1px solid #ccc !important; background: white !important; color: black !important; }
+      .print-badge { border: 1px solid #333 !important; color: black !important; }
+    }
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #111827; }
+    ::-webkit-scrollbar-thumb { background: #374151; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #4b5563; }
+  </style>
+</head>
+<body class="bg-[#0b0f19] text-gray-100 min-h-screen font-sans antialiased selection:bg-rose-500 selection:text-white">
+
+  <!-- TOP HEADER -->
+  <header class="border-b border-gray-800 bg-[#111827]/90 backdrop-blur sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-rose-600 to-amber-500 flex items-center justify-center text-xl shadow-lg shadow-rose-900/40">
+          🎬
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-lg sm:text-xl font-bold bg-gradient-to-r from-white via-gray-100 to-gray-400 bg-clip-text text-transparent">
+              CineMax Database Studio
+            </h1>
+            <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-rose-500/20 text-rose-300 border border-rose-500/30">
+              29 Bảng Chuẩn Doanh Nghiệp
+            </span>
+          </div>
+          <p class="text-xs text-gray-400">Sơ đồ CSDL và bộ cẩm nang giải thích bình dân phục vụ vấn đáp đồ án</p>
+        </div>
+      </div>
+
+      <!-- Action buttons -->
+      <div class="flex items-center gap-2 no-print">
+        <button onclick="copyDbml()" class="px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-200 text-xs font-medium border border-gray-700 flex items-center gap-1.5 transition">
+          <span>📋</span>
+          <span id="copyBtnText">Copy DBML (cho dbdiagram.io)</span>
+        </button>
+        <a href="https://dbdiagram.io/d" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium flex items-center gap-1.5 transition">
+          <span>🌐</span>
+          <span>Mở dbdiagram.io</span>
+        </a>
+        <button onclick="window.print()" class="px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-200 text-xs font-medium border border-gray-700 flex items-center gap-1.5 transition">
+          <span>🖨️</span>
+          <span>In / Xuất PDF</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- NAVIGATION TABS -->
+  <div class="bg-gray-900/60 border-b border-gray-800 no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4 overflow-x-auto py-2">
+      <div class="flex items-center gap-2 text-sm font-medium">
+        <button onclick="switchTab('explain')" id="tabBtn-explain" class="px-4 py-2 rounded-lg bg-rose-600 text-white transition flex items-center gap-2">
+          <span>💡</span>
+          <span>Giải Thích Nhẹ 29 Bảng</span>
+          <span class="px-1.5 py-0.2 rounded bg-rose-800 text-[11px] font-bold">29</span>
+        </button>
+        <button onclick="switchTab('erd')" id="tabBtn-erd" class="px-4 py-2 rounded-lg text-gray-400 hover:text-gray-200 hover:bg-gray-800 transition flex items-center gap-2">
+          <span>📊</span>
+          <span>Sơ Đồ ERD Quan Hệ (Mermaid)</span>
+        </button>
+        <button onclick="switchTab('qa')" id="tabBtn-qa" class="px-4 py-2 rounded-lg text-gray-400 hover:text-gray-200 hover:bg-gray-800 transition flex items-center gap-2">
+          <span>🎯</span>
+          <span>Bộ Câu Hỏi Vấn Đáp Thầy Cô</span>
+        </button>
+      </div>
+
+      <!-- Live Search Box -->
+      <div class="relative w-72 flex-shrink-0">
+        <input 
+          type="text" 
+          id="searchInput" 
+          oninput="handleSearch()" 
+          placeholder="Tìm bảng: vé, bắp, hoàn tiền, seats..." 
+          class="w-full bg-gray-800/90 border border-gray-700 focus:border-rose-500 rounded-lg px-3 py-1.5 text-xs text-gray-200 placeholder-gray-500 focus:outline-none transition pl-8"
+        >
+        <span class="absolute left-2.5 top-2 text-gray-500 text-xs">🔍</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- TAB 1: GIẢI THÍCH NHẸ 29 BẢNG -->
+    <div id="tabContent-explain">
+      <!-- Quick Group Filters -->
+      <div class="flex flex-wrap items-center gap-2 mb-6 no-print">
+        <span class="text-xs text-gray-400 font-medium mr-1">Lọc theo phân hệ:</span>
+        <button onclick="filterGroup('all')" class="group-filter-btn px-2.5 py-1 rounded-md text-xs font-medium bg-rose-600 text-white" data-group="all">Tất cả (29)</button>
+        <button onclick="filterGroup('locations')" class="group-filter-btn px-2.5 py-1 rounded-md text-xs font-medium bg-gray-800 text-gray-300 hover:bg-gray-700" data-group="locations">🏢 1. Rạp & Phòng (3)</button>
+        <button onclick="filterGroup('movies')" class="group-filter-btn px-2.5 py-1 rounded-md text-xs font-medium bg-gray-800 text-gray-300 hover:bg-gray-700" data-group="movies">🎬 2. Phim & Ghế (5)</button>
+        <button onclick="filterGroup('customers')" class="group-filter-btn px-2.5 py-1 rounded-md text-xs font-medium bg-gray-800 text-gray-300 hover:bg-gray-700" data-group="customers">👤 3. Đơn Hàng & Vé (3)</button>
+        <button onclick="filterGroup('concessions')" class="group-filter-btn px-2.5 py-1 rounded-md text-xs font-medium bg-gray-800 text-gray-300 hover:bg-gray-700" data-group="concessions">🍿 4. Bắp Nước F&B (3)</button>
+        <button onclick="filterGroup('payments')" class="group-filter-btn px-2.5 py-1 rounded-md text-xs font-medium bg-gray-800 text-gray-300 hover:bg-gray-700" data-group="payments">💳 5. Thanh Toán & An Ninh (3)</button>
+        <button onclick="filterGroup('loyalty')" class="group-filter-btn px-2.5 py-1 rounded-md text-xs font-medium bg-gray-800 text-gray-300 hover:bg-gray-700" data-group="loyalty">👑 6. Thành Viên & Voucher (6)</button>
+        <button onclick="filterGroup('community')" class="group-filter-btn px-2.5 py-1 rounded-md text-xs font-medium bg-gray-800 text-gray-300 hover:bg-gray-700" data-group="community">👥 7. Cộng Đồng & Hàng Đợi (6)</button>
+      </div>
+
+      <!-- CARDS GRID -->
+      <div id="cardsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <!-- Rendered by JavaScript -->
+      </div>
+    </div>
+
+    <!-- TAB 2: MERMAID ERD -->
+    <div id="tabContent-erd" class="hidden">
+      <div class="bg-gray-900 border border-gray-800 rounded-xl p-5 mb-4">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h2 class="text-base font-bold text-gray-100 flex items-center gap-2">
+              <span>📊</span>
+              <span>Sơ Đồ Thực Thể Quan Hệ (Entity Relationship Diagram - ERD)</span>
+            </h2>
+            <p class="text-xs text-gray-400">Các đường nối thể hiện quan hệ Khóa chính (PK) và Khóa ngoại (FK) giữa 29 bảng</p>
+          </div>
+          <span class="text-xs text-rose-400 bg-rose-500/10 px-2.5 py-1 rounded-md border border-rose-500/20 font-medium">
+            Mermaid 10.x Engine
+          </span>
+        </div>
+        <div class="overflow-x-auto bg-[#070b13] p-4 rounded-lg border border-gray-800/80">
+          <pre class="mermaid text-xs">
+erDiagram
+    cinemas ||--o{ halls : "có nhiều phòng"
+    halls ||--o{ seat_templates : "có sơ đồ ghế cố định"
+    halls ||--o{ showtimes : "tổ chức suất chiếu"
+    movies ||--o{ showtimes : "được chiếu vào các suất"
+    movies ||--o{ movie_genres : "thuộc nhiều thể loại"
+    genres ||--o{ movie_genres : "chứa nhiều phim"
+
+    showtimes ||--o{ showtime_seats : "sinh ra trạng thái ghế động"
+    seat_templates ||--o{ showtime_seats : "ánh xạ vị trí ghế"
+
+    users ||--o{ bookings : "đặt các đơn hàng"
+    showtimes ||--o{ bookings : "được đặt trong đơn"
+    bookings ||--o{ tickets : "in ra các vé QR"
+    showtime_seats ||--|| tickets : "gắn liền với 1 vé"
+
+    cinemas ||--o{ concessions : "cung cấp menu bắp nước"
+    bookings ||--o{ booking_concessions : "mua kèm bắp nước"
+    concessions ||--o{ booking_concessions : "được chọn trong đơn"
+    bookings ||--o{ concession_deliveries : "yêu cầu giao tận ghế"
+
+    bookings ||--o{ payments : "thanh toán qua cổng"
+    bookings ||--o{ refund_requests : "yêu cầu hoàn vé"
+    users ||--o{ refund_requests : "gửi yêu cầu hoàn"
+
+    users ||--o{ user_loyalty_transactions : "tích / tiêu điểm thưởng"
+    bookings ||--o{ user_loyalty_transactions : "tích điểm từ đơn"
+    coupons ||--o{ coupon_redemptions : "được sử dụng"
+    users ||--o{ coupon_redemptions : "áp mã giảm giá"
+    bookings ||--o{ coupon_redemptions : "hưởng giảm giá"
+
+    users ||--o{ gift_cards : "mua thẻ quà tặng"
+    gift_cards ||--o{ gift_card_transactions : "trừ tiền thẻ"
+    bookings ||--o{ gift_card_transactions : "thanh toán bằng thẻ"
+
+    movies ||--o{ movie_reviews : "nhận đánh giá"
+    users ||--o{ movie_reviews : "viết đánh giá"
+    bookings ||--o{ movie_reviews : "chứng thực mua vé thật"
+    movie_reviews ||--o{ review_likes : "nhận lượt like"
+    users ||--o{ review_likes : "thả tim review"
+
+    users ||--o{ movie_watchlists : "theo dõi phim"
+    movies ||--o{ movie_watchlists : "được theo dõi"
+
+    users ||--o{ group_bookings : "làm trưởng nhóm"
+    showtimes ||--o{ group_bookings : "suất chiếu của nhóm"
+    group_bookings ||--o{ group_booking_members : "có các bạn tham gia"
+    users ||--o{ group_booking_members : "thành viên nhóm"
+    showtime_seats ||--o{ group_booking_members : "ghế của thành viên"
+
+    showtimes ||--o{ waiting_room_sessions : "xếp hàng chờ suất hot"
+    users ||--o{ system_audit_logs : "thao tác trên hệ thống"
+          </pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: BỘ CÂU HỎI VẤN ĐÁP THẦY CÔ -->
+    <div id="tabContent-qa" class="hidden">
+      <div class="mb-5">
+        <h2 class="text-base font-bold text-gray-100 flex items-center gap-2">
+          <span>🎯</span>
+          <span>Bộ Câu Hỏi & Đáp Vấn Đáp Thầy Cô (Tuyệt Kỹ Ghi Điểm 10)</span>
+        </h2>
+        <p class="text-xs text-gray-400">Các câu hỏi xoáy sâu vào logic CSDL, chuẩn hóa và tối ưu hóa hệ thống mà thầy cô hội đồng hay hỏi</p>
+      </div>
+
+      <div id="qaAccordion" class="space-y-4">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+
+  </main>
+
+  <!-- MODAL CHI TIẾT BẢNG KHI CLICK VÀO CARD -->
+  <div id="detailModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-gray-900 border border-gray-700 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl relative">
+      <button onclick="closeModal()" class="absolute right-4 top-4 w-8 h-8 rounded-full bg-gray-800 hover:bg-gray-700 text-gray-300 flex items-center justify-center text-sm transition">
+        ✕
+      </button>
+      <div id="modalContent">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+  </div>
+
+  <footer class="border-t border-gray-800/80 bg-gray-950 py-6 text-center text-xs text-gray-500 no-print mt-12">
+    <p>Dự Án CineMax Movie Ticket Booking Platform • Enterprise Database Architecture (29 Bảng)</p>
+    <p class="mt-1">FPT Polytechnic • Đồ Án Chuyên Ngành Phát Triển Phần Mềm</p>
+  </footer>
+
+  <!-- SCRIPT DATA & RENDER -->
+  <script>
+    const tables = [{"id":1,"name":"cinemas","vietnamese":"Cụm Rạp Chiếu Phim Ngoài Đời","group":"locations","groupName":"1. Địa Điểm & Rạp Chiếu","groupColor":"bg-emerald-500/10 border-emerald-500/30 text-emerald-400","badgeColor":"bg-emerald-500/20 text-emerald-300","icon":"🏢","brief":"Lưu danh sách các chi nhánh rạp trong chuỗi (CGV, Galaxy, Lotte...). Giúp khách tìm rạp gần nhất qua GPS và xem tiện ích bãi đỗ xe.","example":"Ví dụ: CGV Vincom Đồng Khởi (Quận 1, TP.HCM), Galaxy Cinema Nguyễn Du.","qaQuestion":"Tại sao lại cần tọa độ GPS (latitude, longitude) và amenities ở bảng này?","qaAnswer":"Tọa độ GPS giúp ứng dụng tự động tính khoảng cách thực tế giữa vị trí người dùng và rạp để gợi ý rạp gần nhất. Cột amenities lưu danh sách tiện ích (bãi đỗ ô tô, quầy bắp nước, máy lạnh...) dưới dạng JSONB giúp khách dễ dàng chọn rạp phù hợp.","keyColumns":["id (UUID PK)","name (Tên rạp)","slug (Đường dẫn web)","address (Địa chỉ)","city, district (Tỉnh/Quận)","latitude, longitude (Tọa độ GPS)","amenities (Tiện ích JSONB)"]},{"id":2,"name":"halls","vietnamese":"Phòng Chiếu Trong Rạp","group":"locations","groupName":"1. Địa Điểm & Rạp Chiếu","groupColor":"bg-emerald-500/10 border-emerald-500/30 text-emerald-400","badgeColor":"bg-emerald-500/20 text-emerald-300","icon":"🚪","brief":"Quản lý các phòng chiếu trong rạp (Phòng 01, IMAX Laser, 4DX, ScreenX). Một rạp có nhiều phòng với cấu hình máy chiếu, âm thanh khác nhau.","example":"Ví dụ: Rạp CGV Landmark 81 có Phòng IMAX 01 (300 ghế, âm thanh Dolby Atmos 7.1) và Phòng Standard 02 (150 ghế).","qaQuestion":"Quan hệ giữa cinemas và halls là gì? Khi xóa 1 rạp thì các phòng chiếu có bị mất không?","qaAnswer":"Quan hệ 1 - N (Một rạp có nhiều phòng, mỗi phòng thuộc 1 rạp duy nhất). Dùng ON DELETE CASCADE: Khi một rạp đóng cửa hoặc bị xóa khỏi hệ thống, toàn bộ phòng chiếu thuộc rạp đó sẽ tự động xóa theo để tránh dữ liệu mồ côi.","keyColumns":["id (UUID PK)","cinema_id (FK -> cinemas.id)","name (Tên phòng)","hall_type (2D, 3D, IMAX, 4DX)","sound_system, projector_type (Âm thanh/Máy chiếu)","total_seats (Tổng ghế)","rows_count, cols_count (Hàng/Cột)"]},{"id":3,"name":"seat_templates","vietnamese":"Sơ Đồ Ghế Vật Lý Cố Định","group":"locations","groupName":"1. Địa Điểm & Rạp Chiếu","groupColor":"bg-emerald-500/10 border-emerald-500/30 text-emerald-400","badgeColor":"bg-emerald-500/20 text-emerald-300","icon":"💺","brief":"Sơ đồ ghế vật lý bắt ốc vít cố định trong phòng chiếu (A1, A2, B1...). Thiết lập 1 lần dùng mãi mãi, định vị tọa độ X-Y trên màn hình vẽ.","example":"Ví dụ: Ghế VIP F7 tại hàng F, số 7, tọa độ x=6, y=5 trong phòng chiếu IMAX 01.","qaQuestion":"Tại sao không lưu trạng thái Ghế Đã Bán ở bảng này luôn mà phải tách riêng thành bảng khác?","qaAnswer":"Vì ghế vật lý bắt ốc vít cố định không bao giờ biến mất hay thay đổi. Trạng thái ĐÃ BÁN hay TRỐNG chỉ có ý nghĩa theo từng SUẤT CHIẾU (ngày giờ) cụ thể. Nếu lưu trạng thái ở đây thì một phòng chiếu chỉ xem được duy nhất 1 lần rồi hết ghế vĩnh viễn!","keyColumns":["id (UUID PK)","hall_id (FK -> halls.id)","row_code (Mã hàng: A, B, C...)","seat_number (Số ghế: 1, 2, 3...)","seat_type (STANDARD, VIP, SWEETBOX)","coord_x, coord_y (Tọa độ ma trận vẽ)","is_active (Ghế còn dùng được)"]},{"id":4,"name":"genres","vietnamese":"Thể Loại Phim","group":"movies","groupName":"2. Phim & Suất Chiếu","groupColor":"bg-indigo-500/10 border-indigo-500/30 text-indigo-400","badgeColor":"bg-indigo-500/20 text-indigo-300","icon":"🏷️","brief":"Danh mục phân loại phim (Hành động, Viễn tưởng, Hoạt hình, Kinh dị, Tâm lý, Hài...) để khách hàng lọc phim theo sở thích.","example":"Ví dụ: Thể loại Hành động (Action), Khoa học viễn tưởng (Sci-Fi), Anime Nhật Bản.","qaQuestion":"Tại sao không lưu thể loại thành 1 cột chuỗi trong bảng movies (vd: genres: \"Hành động, Viễn tưởng\")?","qaAnswer":"Nếu lưu chuỗi gộp thì vi phạm Chuẩn hóa 1NF (Tính nguyên tử của dữ liệu), rất khó để lập chỉ mục Index, tìm kiếm chậm chạp và khó làm bộ lọc nhiều thể loại. Tách bảng danh mục riêng giúp quản lý nhất quán và tìm kiếm tức thì.","keyColumns":["id (UUID PK)","name (Tên thể loại)","slug (Đường dẫn url)","description (Mô tả thể loại)"]},{"id":5,"name":"movies","vietnamese":"Kho Phim Điện Ảnh","group":"movies","groupName":"2. Phim & Suất Chiếu","groupColor":"bg-indigo-500/10 border-indigo-500/30 text-indigo-400","badgeColor":"bg-indigo-500/20 text-indigo-300","icon":"🎬","brief":"Thông tin chi tiết các bộ phim nhập về chiếu tại rạp (Tên phim, thời lượng, nhãn tuổi T13/T18, đạo diễn, trailer Youtube, poster, điểm đánh giá).","example":"Ví dụ: Phim \"Dune: Part Two\", thời lượng 166 phút, phân loại độ tuổi T16, đạo diễn Denis Villeneuve.","qaQuestion":"Cột age_rating lưu gì và tại sao lại dùng kiểu dữ liệu ENUM?","qaAnswer":"Cột age_rating phân loại độ tuổi theo quy định Thông tư 05/2023/TT-BVHTTDL của Bộ Văn hóa (P: Mọi lứa tuổi, K: Dưới 13 tuổi có phụ huynh, T13: Từ 13+, T16: Từ 16+, T18: Từ 18+, C: Cấm chiếu). Dùng ENUM để tránh nhập sai chính tả và đảm bảo toàn vẹn dữ liệu.","keyColumns":["id (UUID PK)","title (Tên phim)","duration_min (Thời lượng phút)","age_rating (Phân loại độ tuổi ENUM)","release_date (Ngày khởi chiếu)","trailer_youtube_id (Mã video trailer)","status (Đang chiếu / Sắp chiếu)"]},{"id":6,"name":"movie_genres","vietnamese":"Nối Phim & Thể Loại (N:M)","group":"movies","groupName":"2. Phim & Suất Chiếu","groupColor":"bg-indigo-500/10 border-indigo-500/30 text-indigo-400","badgeColor":"bg-indigo-500/20 text-indigo-300","icon":"🔗","brief":"Bảng cầu nối Nhiều - Nhiều (N:M). Một bộ phim có thể thuộc nhiều thể loại, và một thể loại có thể có hàng trăm bộ phim.","example":"Ví dụ: Phim \"Avengers: Endgame\" vừa là Hành động, vừa là Viễn tưởng, vừa là Phiêu lưu.","qaQuestion":"Khóa chính của bảng movie_genres là gì?","qaAnswer":"Khóa chính là khóa phức hợp gồm cả 2 trường (movie_id, genre_id). Nhờ đó vừa đóng vai trò xác định duy nhất bản ghi, vừa ngăn chặn lỗi vô tình gán 1 thể loại cho 1 bộ phim 2 lần.","keyColumns":["movie_id (FK -> movies.id)","genre_id (FK -> genres.id)","PRIMARY KEY (movie_id, genre_id)"]},{"id":7,"name":"showtimes","vietnamese":"Lịch Suất Chiếu","group":"movies","groupName":"2. Phim & Suất Chiếu","groupColor":"bg-indigo-500/10 border-indigo-500/30 text-indigo-400","badgeColor":"bg-indigo-500/20 text-indigo-300","icon":"⏰","brief":"Xếp lịch chiếu: Phim nào chiếu ở phòng nào, vào khung giờ nào (bắt đầu - kết thúc), định dạng 2D hay 3D, giá vé cơ bản bao nhiêu.","example":"Ví dụ: Phim \"Mai\" chiếu tại Phòng 01 lúc 19:30 đến 21:45 ngày thứ Bảy, giá gốc 110.000đ.","qaQuestion":"Làm sao để hệ thống không bị lỗi xếp đè 2 phim vào cùng 1 phòng trong cùng 1 khung giờ?","qaAnswer":"Ta đặt ràng buộc CHECK (end_time > start_time) và dùng truy vấn kiểm tra khoảng thời gian giao nhau (Time Range Overlap): Suất mới bắt đầu phải sau khi suất cũ kết thúc cộng thêm 15-20 phút thời gian nghỉ cho khán giả ra về và nhân viên dọn dẹp phòng.","keyColumns":["id (UUID PK)","movie_id (FK -> movies.id)","hall_id (FK -> halls.id)","start_time, end_time (Giờ chiếu)","format (2D Phụ Đề, IMAX 3D)","base_price (Giá vé gốc)"]},{"id":8,"name":"showtime_seats","vietnamese":"Trạng Thái Ghế Động Theo Suất","group":"movies","groupName":"2. Phim & Suất Chiếu","groupColor":"bg-indigo-500/10 border-indigo-500/30 text-indigo-400","badgeColor":"bg-indigo-500/20 text-indigo-300","icon":"🎯","brief":"⭐ BẢNG THEN CHỐT CỦA CẢ HỆ THỐNG. Cùng là ghế F7 nhưng suất 18h đã bán, suất 20h còn trống. Bảng này quản lý ghế theo từng giờ và cơ chế giữ chỗ tạm thời 5 phút.","example":"Ví dụ: Suất 19:30, ghế F7 đang ở trạng thái HOLD (đang giữ 5 phút cho khách A thanh toán), hết 5 phút tự động trả về AVAILABLE nếu không trả tiền.","qaQuestion":"Cột version và reservation_expires_at giải quyết bài toán kỹ thuật nào?","qaAnswer":"Cột version dùng cho cơ chế Khóa lạc quan (Optimistic Concurrency Control) ngăn chặn Race Condition khi 1000 người cùng bấm chọn ghế F7 tại đúng 1 tích tắc. Cột reservation_expires_at dùng để tự động giải phóng ghế khi khách giữ ghế quá 5 phút mà không thanh toán.","keyColumns":["id (UUID PK)","showtime_id (FK -> showtimes.id)","seat_template_id (FK -> seat_templates.id)","status (AVAILABLE, HOLD, BOOKED, BLOCKED)","price (Giá bán thực tế của ghế)","reservation_expires_at (Hạn giữ chỗ)","version (Khóa lạc quan OCC)"]},{"id":9,"name":"users","vietnamese":"Tài Khoản & Người Dùng","group":"customers","groupName":"3. Khách Hàng, Đơn Hàng & Vé","groupColor":"bg-amber-500/10 border-amber-500/30 text-amber-400","badgeColor":"bg-amber-500/20 text-amber-300","icon":"👤","brief":"Quản lý tất cả tài khoản trong hệ thống: Khách mua vé (CUSTOMER), Nhân viên soát vé (STAFF), Quản lý chi nhánh (CINEMA_MANAGER), Super Admin.","example":"Ví dụ: Khách hàng Nguyễn Văn A, SĐT 0901234567, mật khẩu mã hóa bcrypt, có 150 điểm tích lũy thành viên.","qaQuestion":"Mật khẩu người dùng được lưu trữ như thế nào để đảm bảo an toàn nếu CSDL bị rò rỉ?","qaAnswer":"Tuyệt đối không lưu mật khẩu dạng văn bản thuần (plain text). Mật khẩu được băm (hash) bằng thuật toán chuẩn công nghiệp bcrypt có kèm Salt ngẫu nhiên, lưu vào cột password_hash. Ngay cả Admin vào xem DB cũng không thể đọc được mật khẩu gốc.","keyColumns":["id (UUID PK)","full_name (Họ tên)","email (Email duy nhất)","phone (Số điện thoại)","password_hash (Mật khẩu băm bcrypt)","role (Phân quyền ENUM)","loyalty_points (Điểm tích lũy)"]},{"id":10,"name":"bookings","vietnamese":"Đơn Đặt Vé Tổng","group":"customers","groupName":"3. Khách Hàng, Đơn Hàng & Vé","groupColor":"bg-amber-500/10 border-amber-500/30 text-amber-400","badgeColor":"bg-amber-500/20 text-amber-300","icon":"🧾","brief":"Hóa đơn tổng của một lần mua vé: Lưu mã đơn hàng, tổng tiền vé + bắp nước, tiền giảm giá voucher, trạng thái thanh toán và mã chống trùng.","example":"Ví dụ: Đơn #BK20261007-8899 gồm 2 vé + 1 bắp nước, tổng tiền 320.000đ, giảm giá 50.000đ, khách cần trả 270.000đ.","qaQuestion":"Cột idempotency_key dùng để làm gì trong các giao dịch thanh toán?","qaAnswer":"Dùng để chống trừ tiền nhiều lần (Trùng giao dịch). Khi mạng bị lag hoặc khách sốt ruột bấm nút \"Xác nhận thanh toán\" liên tiếp 3 lần, idempotency_key gửi lên cùng 1 mã duy nhất, backend nhận diện được và chỉ xử lý trừ tiền duy nhất 1 lần.","keyColumns":["id (UUID PK)","booking_code (Mã đơn duy nhất)","user_id (FK -> users.id)","showtime_id (FK -> showtimes.id)","total_amount, discount_amount, final_amount (Tiền)","payment_status (PENDING, PAID, FAILED, REFUNDED)","idempotency_key (Khóa chống trùng)"]},{"id":11,"name":"tickets","vietnamese":"Vé Điện Tử Chi Tiết","group":"customers","groupName":"3. Khách Hàng, Đơn Hàng & Vé","groupColor":"bg-amber-500/10 border-amber-500/30 text-amber-400","badgeColor":"bg-amber-500/20 text-amber-300","icon":"🎟️","brief":"Chi tiết từng tấm vé điện tử. Đơn mua 3 ghế thì in ra 3 vé. Mỗi vé có mã QR riêng biệt và duy nhất để nhân viên cầm máy quét khi khách vào cửa rạp.","example":"Ví dụ: Đơn của bạn Dũng có 2 vé: Vé 1 (ghế F7, mã QR #QR111) và Vé 2 (ghế F8, mã QR #QR222).","qaQuestion":"Tại sao không để mã QR ở bảng bookings mà lại tạo riêng từng vé ở bảng tickets?","qaAnswer":"Vì trải nghiệm ngoài đời: Nhóm bạn 3 người đi xem phim có thể tới rạp ở 3 khung giờ khác nhau. Mỗi bạn nhận 1 mã QR vé của riêng mình để tự tin quét vào rạp trước mà không cần chờ người đặt vé đứng ở cửa dẫn vào.","keyColumns":["id (UUID PK)","booking_id (FK -> bookings.id)","showtime_seat_id (FK -> showtime_seats.id UNIQUE)","ticket_code (Mã vé duy nhất)","qr_code_payload (Nội dung mã QR mã hóa)","is_checked_in (Đã quét vào cửa chưa)","checked_in_at, checked_in_by_staff_id"]},{"id":12,"name":"concessions","vietnamese":"Menu Đồ Ăn Bắp Nước F&B","group":"concessions","groupName":"4. Bắp Nước & Giao Tận Ghế","groupColor":"bg-orange-500/10 border-orange-500/30 text-orange-400","badgeColor":"bg-orange-500/20 text-orange-300","icon":"🍿","brief":"Danh mục đồ ăn thức uống bán tại quầy rạp (Bắp ngọt, bắp phô mai, bắp caramel, Coca-Cola lớn, Combo đôi tình nhân, xúc xích...).","example":"Ví dụ: Combo Couple (1 Bắp Ngọt Lớn + 2 Nước Ngọt Vừa) giá 119.000đ.","qaQuestion":"Tại sao cột cinema_id lại nằm trong bảng concessions?","qaAnswer":"Vì giá bắp nước và menu ở mỗi rạp có thể khác nhau (ví dụ rạp trung tâm TP.HCM có thể bán giá khác rạp ở tỉnh, hoặc một số cụm rạp độc quyền các vị bắp đặc biệt theo vùng miền).","keyColumns":["id (UUID PK)","cinema_id (FK -> cinemas.id)","name (Tên món)","category (COMBO, POPCORN, DRINK, SNACK)","price (Giá bán)","image_url (Ảnh minh họa)","is_active (Còn hàng không)"]},{"id":13,"name":"booking_concessions","vietnamese":"Chi Tiết Bắp Nước Trong Đơn","group":"concessions","groupName":"4. Bắp Nước & Giao Tận Ghế","groupColor":"bg-orange-500/10 border-orange-500/30 text-orange-400","badgeColor":"bg-orange-500/20 text-orange-300","icon":"🥤","brief":"Lưu khách mua kèm những món bắp nước nào và số lượng bao nhiêu trong đơn đặt vé xem phim.","example":"Ví dụ: Đơn #BK123 của khách có kèm: 1 Combo Couple (119.000đ) + 1 Bắp Phô Mai Thêm (39.000đ).","qaQuestion":"Tại sao cần lưu cả unit_price và subtotal ở bảng này thay vì chỉ lưu concession_id và quantity rồi nhân giá từ bảng gốc?","qaAnswer":"Để đóng băng giá tại thời điểm mua (Snapshot Pricing). Sau này nếu rạp tăng giá Combo từ 119k lên 139k thì hóa đơn lịch sử trong quá khứ của khách hàng và báo cáo tài chính tháng trước vẫn đúng số tiền 119k.","keyColumns":["id (UUID PK)","booking_id (FK -> bookings.id)","concession_id (FK -> concessions.id)","quantity (Số lượng mua)","unit_price (Đơn giá tại thời điểm mua)","subtotal (Thành tiền = số lượng x đơn giá)"]},{"id":14,"name":"concession_deliveries","vietnamese":"Dịch Vụ Giao Bắp Nước Tận Ghế","group":"concessions","groupName":"4. Bắp Nước & Giao Tận Ghế","groupColor":"bg-orange-500/10 border-orange-500/30 text-orange-400","badgeColor":"bg-orange-500/20 text-orange-300","icon":"🛵","brief":"Tính năng VIP tiện lợi: Khách lười đứng xếp hàng ở quầy đông đúc, chọn nhân viên mang combo bắp nước đến tận ghế ngồi F7 trước giờ chiếu phim.","example":"Ví dụ: Khách đặt trước, chọn nhận tận ghế F7 phòng 01 lúc 19:20. Nhân viên quầy bưng khay bắp nước đến tận nơi.","qaQuestion":"Các loại hình nhận bắp nước (delivery_type) gồm những gì?","qaAnswer":"Hệ thống hỗ trợ 3 hình thức (concession_delivery_type_enum): EXPRESS_COUNTER (Nhận tại quầy ưu tiên không chờ), AT_SEAT_DELIVERY (Giao trực tiếp đến vị trí ghế ngồi), TAKE_AWAY (Mang về).","keyColumns":["id (UUID PK)","booking_id (FK -> bookings.id)","delivery_type (Nhận tại quầy / Giao tận ghế)","seat_location (Vị trí ghế: ví dụ Ghế F7)","delivery_status (PREPARING, DELIVERED, PICKED_UP)","delivered_by_staff_id (Nhân viên giao)"]},{"id":15,"name":"payments","vietnamese":"Lịch Sử Giao Dịch Thanh Toán","group":"payments","groupName":"5. Thanh Toán & An Ninh","groupColor":"bg-rose-500/10 border-rose-500/30 text-rose-400","badgeColor":"bg-rose-500/20 text-rose-300","icon":"💳","brief":"Lưu vết dòng tiền chuyển khoản qua cổng MoMo, VNPay, ZaloPay, VietQR, lưu mã giao dịch ngân hàng và nội dung webhook để đối soát kế toán.","example":"Ví dụ: Giao dịch #VNP202610 thanh toán thành công 350.000đ qua ví điện tử VNPay lúc 19:31:05.","qaQuestion":"Tại sao không gộp thông tin thanh toán vào bảng bookings luôn mà phải tách riêng bảng payments?","qaAnswer":"Vì một đơn hàng khách có thể thử thanh toán nhiều lần: Lần 1 quét MoMo lỗi mạng thất bại, lần 2 khách đổi sang quét VNPay mới thành công. Bảng payments cho phép lưu toàn bộ lịch sử các lần thanh toán (kể cả thất bại) để phục vụ kiểm toán và khiếu nại ngân hàng.","keyColumns":["id (UUID PK)","booking_id (FK -> bookings.id)","gateway (MOMO, VNPAY, ZALOPAY, VIETQR)","gateway_transaction_id (Mã giao dịch ngân hàng)","amount (Số tiền thực tế)","status (SUCCESS, FAILED, PENDING)","webhook_payload (Dữ liệu JSON ngân hàng gửi về)"]},{"id":16,"name":"system_audit_logs","vietnamese":"Nhật Ký An Ninh & Kiểm Toán Hệ Thống","group":"payments","groupName":"5. Thanh Toán & An Ninh","groupColor":"bg-rose-500/10 border-rose-500/30 text-rose-400","badgeColor":"bg-rose-500/20 text-rose-300","icon":"🛡️","brief":"Chiếc \"Camera giám sát\" của phần mềm: Ghi lại mọi hành động nhạy cảm của nhân viên và quản trị viên (sửa giá vé, hủy vé, duyệt hoàn tiền, đổi suất chiếu) để chống gian lận.","example":"Ví dụ: Ghi log nhân viên Nguyễn Văn B vừa duyệt hoàn tiền đơn #BK123 lúc 14:15 từ địa chỉ IP 192.168.1.45.","qaQuestion":"Bảng system_audit_logs có cho phép thao tác UPDATE hoặc DELETE không?","qaAnswer":"Tuyệt đối KHÔNG (Append-Only Log). Nhật ký kiểm toán chỉ cho phép lệnh INSERT. Nếu ai đó có thể vào sửa hoặc xóa log thì tính năng an ninh và bằng chứng thanh tra sẽ mất hoàn toàn giá trị pháp lý.","keyColumns":["id (BIGSERIAL PK)","user_id (Người thực hiện)","action (Hành động: CREATE, UPDATE_PRICE, REFUND...)","resource_type, resource_id (Đối tượng bị tác động)","ip_address, user_agent (Địa chỉ mạng/Thiết bị)","metadata (Chi tiết trước và sau khi sửa JSONB)"]},{"id":17,"name":"refund_requests","vietnamese":"Yêu Cầu Hoàn Vé & Đổi Vé","group":"payments","groupName":"5. Thanh Toán & An Ninh","groupColor":"bg-rose-500/10 border-rose-500/30 text-rose-400","badgeColor":"bg-rose-500/20 text-rose-300","icon":"🔄","brief":"Cho phép khách gửi yêu cầu trả vé hoàn tiền khi có việc đột xuất trước giờ chiếu (chính sách rạp quy định hủy trước 60 phút, trừ phí phạt nhẹ).","example":"Ví dụ: Khách bận việc gia đình, xin hoàn vé 200.000đ trước giờ chiếu 2 tiếng, hệ thống trừ 10% phí hủy (20.000đ), chuyển trả lại 180.000đ về STK ngân hàng.","qaQuestion":"Quy trình xử lý hoàn vé diễn ra thế nào để tránh khách gian lận xem phim xong rồi đòi tiền?","qaAnswer":"Hệ thống ràng buộc chỉ cho phép gửi yêu cầu khi suất chiếu chưa diễn ra (tối thiểu trước 60 phút) và vé chưa được quét QR vào rạp (tickets.is_checked_in = FALSE). Sau khi Admin duyệt, ghế sẽ được mở lại thành AVAILABLE để khách khác kịp mua.","keyColumns":["id (UUID PK)","booking_id (FK -> bookings.id)","user_id (FK -> users.id)","reason (Lý do hoàn)","original_amount, refund_amount, penalty_fee (Số tiền hoàn và phí phạt)","status (PENDING, APPROVED, REJECTED, PROCESSED)","bank_account_info (Thông tin STK nhận tiền)"]},{"id":18,"name":"membership_tiers","vietnamese":"Hạng Thành Viên Thân Thiết","group":"loyalty","groupName":"6. Hội Viên, Tích Điểm & Khuyến Mãi","groupColor":"bg-purple-500/10 border-purple-500/30 text-purple-400","badgeColor":"bg-purple-500/20 text-purple-300","icon":"👑","brief":"Quản lý cấp bậc hội viên (Đồng, Bạc, Vàng, Kim Cương) để tính hệ số nhân điểm thưởng và đặc quyền giảm giá tặng quà cho khách hàng trung thành.","example":"Ví dụ: Hạng Vàng (tiêu tích lũy trên 2.000.000đ) được nhân 1.5 lần điểm thưởng khi mua vé và nhận voucher bắp sinh nhật miễn phí.","qaQuestion":"Hệ số point_multiplier dùng để làm gì?","qaAnswer":"Dùng để nhân điểm thưởng tự động: Khách hạng Đồng mua vé 100k được 10 điểm (hệ số 1.0), khách hạng Kim Cương mua 100k được 20 điểm (hệ số 2.0). Khuyến khích khách hàng gắn bó và xem phim nhiều hơn.","keyColumns":["id (UUID PK)","tier_name (Đồng, Bạc, Vàng, Bạch Kim, Kim Cương)","min_spending (Mức chi tiêu tối thiểu để lên hạng)","point_multiplier (Hệ số nhân điểm)","benefits (Danh sách đặc quyền JSONB)","badge_color (Mã màu huy hiệu)"]},{"id":19,"name":"user_loyalty_transactions","vietnamese":"Sổ Cái Điểm Thưởng Thành Viên","group":"loyalty","groupName":"6. Hội Viên, Tích Điểm & Khuyến Mãi","groupColor":"bg-purple-500/10 border-purple-500/30 text-purple-400","badgeColor":"bg-purple-500/20 text-purple-300","icon":"⭐","brief":"Sổ cái ghi chép từng lần cộng / trừ điểm thưởng như sao kê ngân hàng: Mua vé tích điểm, dùng điểm đổi voucher, trừ điểm hết hạn... minh bạch và chống hack điểm.","example":"Ví dụ: Giao dịch +50 điểm từ đơn vé #BK100; Giao dịch -100 điểm để đổi 1 ly nước ngọt miễn phí.","qaQuestion":"Tại sao không chỉ lưu 1 con số tổng loyalty_points ở bảng users mà lại cần thêm bảng lịch sử này?","qaAnswer":"Để minh bạch và kiểm soát gian lận: Nếu chỉ lưu 1 con số, hacker có thể can thiệp sửa trực tiếp thành 1.000.000 điểm mà không ai phát hiện được. Nhờ bảng sổ cái này, tổng điểm luôn có thể tính toán lại bằng tổng (SUM) các giao dịch lịch sử.","keyColumns":["id (UUID PK)","user_id (FK -> users.id)","booking_id (FK -> bookings.id)","points_delta (Số điểm cộng/trừ: dương là cộng, âm là trừ)","transaction_type (BOOKING_EARN, REDEEM_DISCOUNT, BIRTHDAY_GIFT)","description (Nội dung)"]},{"id":20,"name":"coupons","vietnamese":"Kho Mã Giảm Giá & Voucher","group":"loyalty","groupName":"6. Hội Viên, Tích Điểm & Khuyến Mãi","groupColor":"bg-purple-500/10 border-purple-500/30 text-purple-400","badgeColor":"bg-purple-500/20 text-purple-300","icon":"🎁","brief":"Quản lý các chương trình khuyến mãi (Ví dụ mã CINEMAX2026 giảm 20%), quy định thời hạn áp dụng, giá trị đơn tối thiểu và giới hạn số lượt dùng.","example":"Ví dụ: Mã GIAM30K giảm 30.000đ cho đơn từ 150.000đ trở lên, hạn dùng từ ngày 01/10 đến 31/10/2026.","qaQuestion":"Ràng buộc CHECK (valid_to > valid_from) bảo đảm điều gì?","qaAnswer":"Bảo đảm ngày kết thúc khuyến mãi luôn phải sau ngày bắt đầu, tránh lỗi logic do nhân viên nhập sai dữ liệu khiến voucher bị hết hạn ngay khi vừa tạo.","keyColumns":["id (UUID PK)","code (Mã voucher: CINEMAX2026)","discount_type (PERCENTAGE hoặc FIXED_AMOUNT)","discount_value (Mức giảm 20% hoặc 50.000đ)","min_order_amount, max_discount_amount (Điều kiện)","valid_from, valid_to (Hạn dùng)","total_usage_limit, per_user_limit (Giới hạn lượt dùng)"]},{"id":21,"name":"coupon_redemptions","vietnamese":"Lịch Sử Sử Dụng Voucher","group":"loyalty","groupName":"6. Hội Viên, Tích Điểm & Khuyến Mãi","groupColor":"bg-purple-500/10 border-purple-500/30 text-purple-400","badgeColor":"bg-purple-500/20 text-purple-300","icon":"📑","brief":"Lưu vết ai đã áp mã giảm giá nào vào đơn hàng nào, để hệ thống tự động kiểm tra và chặn ngay nếu một người cố tình dùng 1 voucher nhiều lần vượt quá quy định.","example":"Ví dụ: Khách hàng Dũng áp mã GIAM30K vào đơn #BK888 lúc 18:00 ngày 05/10/2026, được trừ 30.000đ.","qaQuestion":"Làm thế nào để hệ thống chặn khách dùng 1 mã 2 lần nếu mã đó quy định mỗi người chỉ được dùng 1 lần?","qaAnswer":"Khi khách áp mã, hệ thống chạy câu truy vấn COUNT(*) từ coupon_redemptions với coupon_id và user_id. Nếu số lần đã dùng >= per_user_limit thì báo lỗi từ chối ngay lập tức.","keyColumns":["id (UUID PK)","coupon_id (FK -> coupons.id)","user_id (FK -> users.id)","booking_id (FK -> bookings.id)","discount_applied (Số tiền thực tế đã giảm)","redeemed_at (Thời điểm sử dụng)"]},{"id":22,"name":"gift_cards","vietnamese":"Thẻ Quà Tặng Điện Tử (Ví Trả Trước)","group":"loyalty","groupName":"6. Hội Viên, Tích Điểm & Khuyến Mãi","groupColor":"bg-purple-500/10 border-purple-500/30 text-purple-400","badgeColor":"bg-purple-500/20 text-purple-300","icon":"💳","brief":"Thẻ quà tặng nạp sẵn tiền (ví dụ 500k) để gửi tặng sinh nhật người yêu, bạn bè qua email kèm lời chúc ý nghĩa và mã PIN bảo mật.","example":"Ví dụ: Bạn Nam mua thẻ quà tặng 500.000đ tặng bạn Mai với lời chúc: \"Chúc mừng sinh nhật, cùng đi xem phim nhé!\".","qaQuestion":"Tại sao thẻ quà tặng lại có pin_hash thay vì chỉ cần mỗi mã thẻ?","qaAnswer":"Để bảo vệ số dư của khách hàng: Nếu ai đó vô tình nhìn thấy mã thẻ in trên màn hình, họ vẫn không thể thanh toán được nếu không nhập đúng mã PIN bí mật 4-6 số đã được băm bảo mật.","keyColumns":["id (UUID PK)","card_code (Mã số thẻ quà tặng)","pin_hash (Mã PIN băm bảo mật)","initial_balance, current_balance (Số dư ban đầu và hiện tại)","recipient_email (Email người nhận)","greeting_message (Lời chúc)","expires_at (Hạn sử dụng)"]},{"id":23,"name":"gift_card_transactions","vietnamese":"Lịch Sử Trừ Tiền Thẻ Quà Tặng","group":"loyalty","groupName":"6. Hội Viên, Tích Điểm & Khuyến Mãi","groupColor":"bg-purple-500/10 border-purple-500/30 text-purple-400","badgeColor":"bg-purple-500/20 text-purple-300","icon":"📉","brief":"Ghi lại chi tiết từng lần quẹt thẻ quà tặng để thanh toán tiền vé và số dư còn lại sau mỗi lần trừ tiền.","example":"Ví dụ: Thẻ có 500.000đ, thanh toán vé phim 150.000đ, số dư còn lại là 350.000đ.","qaQuestion":"Bảng này hỗ trợ tính năng gì cho khách hàng?","qaAnswer":"Giúp khách xem lại lịch sử chi tiêu của thẻ quà tặng: Đã mua vé phim gì, vào ngày nào, bị trừ bao nhiêu tiền và hiện tại thẻ còn lại chính xác bao nhiêu tiền.","keyColumns":["id (UUID PK)","gift_card_id (FK -> gift_cards.id)","booking_id (FK -> bookings.id)","amount_deducted (Số tiền trừ)","remaining_balance (Số dư còn lại sau giao dịch)","created_at"]},{"id":24,"name":"movie_reviews","vietnamese":"Đánh Giá & Nhận Xét Phim","group":"community","groupName":"7. Cộng Đồng & Phòng Chờ","groupColor":"bg-cyan-500/10 border-cyan-500/30 text-cyan-400","badgeColor":"bg-cyan-500/20 text-cyan-300","icon":"✍️","brief":"Khán giả chấm điểm (1 - 10 sao) và viết bài cảm nhận về phim. Có nhãn Verified Buyer (Đã mua vé thật) như Rotten Tomatoes để chống nick ảo đánh giá bẩn.","example":"Ví dụ: Khán giả chấm 10/10 sao kèm nhận xét: \"Phim xuất sắc, âm thanh rạp IMAX quá đã!\", có huy hiệu Xác thực đã xem phim.","qaQuestion":"Làm sao hệ thống biết một bài đánh giá là của khách ĐÃ MUA VÉ THẬT (Verified Buyer)?","qaAnswer":"Thông qua cột booking_id liên kết tới bảng bookings. Khi khách gửi review, hệ thống kiểm tra xem tài khoản này đã từng có đơn đặt vé phim đó ở trạng thái PAID hay chưa. Nếu có thì gán is_verified_buyer = TRUE.","keyColumns":["id (UUID PK)","movie_id (FK -> movies.id)","user_id (FK -> users.id)","booking_id (FK -> bookings.id chứng thực mua vé)","rating_score (Điểm số 1-10)","title, content (Tiêu đề và nội dung)","is_verified_buyer (Tích xanh người đã mua vé)"]},{"id":25,"name":"review_likes","vietnamese":"Lượt Thích Bình Luận Phim","group":"community","groupName":"7. Cộng Đồng & Phòng Chờ","groupColor":"bg-cyan-500/10 border-cyan-500/30 text-cyan-400","badgeColor":"bg-cyan-500/20 text-cyan-300","icon":"❤️","brief":"Quản lý việc người xem bấm Thả Tim / Hữu Ích cho bài bình luận hay. Khóa chính phức hợp bảo đảm mỗi người chỉ được bấm like 1 lần.","example":"Ví dụ: Bạn Dũng bấm thích bài review của bạn Lan, số lượt like của bài viết tăng từ 14 lên 15.","qaQuestion":"Khóa chính PRIMARY KEY (review_id, user_id) giải quyết bài toán gì?","qaAnswer":"Ngăn chặn tình trạng một người dùng bấm like liên tục nhiều lần (Spam Like) để đẩy bài viết lên đầu, đảm bảo tính công bằng và khách quan của cộng đồng.","keyColumns":["review_id (FK -> movie_reviews.id)","user_id (FK -> users.id)","created_at","PRIMARY KEY (review_id, user_id)"]},{"id":26,"name":"movie_watchlists","vietnamese":"Theo Dõi Phim Sắp Ra Rạp","group":"community","groupName":"7. Cộng Đồng & Phòng Chờ","groupColor":"bg-cyan-500/10 border-cyan-500/30 text-cyan-400","badgeColor":"bg-cyan-500/20 text-cyan-300","icon":"🔔","brief":"Khán giả bấm chuông theo dõi phim bom tấn sắp chiếu (như Avatar 3, Avengers) để hệ thống tự động gửi email thông báo ngay khi rạp mở bán vé sớm (Presale Alert).","example":"Ví dụ: Khách bấm \"Nhận thông báo khi mở bán vé\" cho phim Deadpool 3. Ngay khi Admin tạo suất chiếu đầu tiên, hệ thống tự động bắn email báo tin.","qaQuestion":"Cột notify_on_presale và is_notified vận hành như thế nào?","qaAnswer":"Cột notify_on_presale ghi nhận mong muốn của khách. Một tiến trình nền (Background Worker / Cronjob) khi thấy rạp mở suất chiếu đầu tiên sẽ quét danh sách người dùng có is_notified = FALSE, gửi email báo tin rồi cập nhật is_notified = TRUE để tránh gửi lặp.","keyColumns":["id (UUID PK)","user_id (FK -> users.id)","movie_id (FK -> movies.id)","notify_on_presale (Muốn nhận thông báo vé sớm)","is_notified (Đã gửi thông báo chưa)","created_at"]},{"id":27,"name":"group_bookings","vietnamese":"Đặt Vé Theo Nhóm Bạn Bè","group":"community","groupName":"7. Cộng Đồng & Phòng Chờ","groupColor":"bg-cyan-500/10 border-cyan-500/30 text-cyan-400","badgeColor":"bg-cyan-500/20 text-cyan-300","icon":"👥","brief":"Tính năng rủ bạn bè đi xem phim: Trưởng nhóm tạo phòng, gửi link mời qua Zalo để bạn bè cùng tham gia tự chọn ghế ngồi cạnh nhau và tự chia tiền vé (Split Bill).","example":"Ví dụ: Bạn Dũng tạo phòng nhóm \"Hội Bạn Cấp 3 Đi Xem Phim\", gửi link Zalo cho 4 bạn cùng vào chọn ghế.","qaQuestion":"Lợi ích của tính năng Group Booking so với đặt vé truyền thống là gì?","qaAnswer":"Giải quyết nỗi đau \"người đặt hộ phải ứng tiền trước rồi đi đòi từng người\". Với Group Booking, ai cũng được tự chọn ghế theo sở thích và tự thanh toán phần tiền của mình, khi đủ nhóm vé sẽ tự động xuất ra.","keyColumns":["id (UUID PK)","leader_user_id (Trưởng nhóm tạo phòng)","showtime_id (Suất chiếu chung)","group_name (Tên nhóm)","invite_code (Mã lời mời link Zalo)","total_seats_target (Số người dự kiến)","status (ORGANIZING, COMPLETED, EXPIRED)","expires_at (Thời hạn phòng nhóm)"]},{"id":28,"name":"group_booking_members","vietnamese":"Thành Viên Trong Nhóm Xem Phim","group":"community","groupName":"7. Cộng Đồng & Phòng Chờ","groupColor":"bg-cyan-500/10 border-cyan-500/30 text-cyan-400","badgeColor":"bg-cyan-500/20 text-cyan-300","icon":"🙋","brief":"Danh sách chi tiết từng người bạn tham gia vào phòng nhóm xem phim, ghi nhận bạn nào đã chọn ghế nào và đã thanh toán tiền vé phần mình hay chưa.","example":"Ví dụ: Bạn Dũng chọn ghế F7 (Đã thanh toán), Bạn Hoàng chọn ghế F8 (Đã thanh toán), Bạn Trang chọn ghế F9 (Đang chờ thanh toán).","qaQuestion":"Điều gì xảy ra nếu có 1 bạn trong nhóm không chịu thanh toán trước khi phòng hết hạn (expires_at)?","qaAnswer":"Hệ thống tự động giải phóng chiếc ghế của người chưa thanh toán về trạng thái AVAILABLE để người khác mua, và hoàn tiền cho các thành viên đã trả tiền hoặc cho phép các bạn còn lại tiếp tục xem phim với số ghế đã thanh toán thành công.","keyColumns":["id (UUID PK)","group_booking_id (FK -> group_bookings.id)","user_id (FK -> users.id)","guest_name (Tên hiển thị)","showtime_seat_id (Ghế bạn đó đã chọn)","has_paid (Đã thanh toán phần của mình chưa)"]},{"id":29,"name":"waiting_room_sessions","vietnamese":"Phòng Chờ Ảo Chống Sập Web","group":"community","groupName":"7. Cộng Đồng & Phòng Chờ","groupColor":"bg-cyan-500/10 border-cyan-500/30 text-cyan-400","badgeColor":"bg-cyan-500/20 text-cyan-300","icon":"🚦","brief":"Hệ thống xếp hàng ảo (Virtual Waiting Room): Khi phim bom tấn mở bán có 100.000 người cùng ùa vào web 1 lúc, hệ thống xếp hàng từng đợt để máy chủ rạp phim không bao giờ bị nghẽn sập.","example":"Ví dụ: Khách vào trang thanh toán vé phim Taylor Swift, hệ thống hiển thị: \"Bạn đang ở vị trí số 150 trong hàng đợi, vui lòng chờ khoảng 1 phút để vào chọn ghế\".","qaQuestion":"Cơ chế hoạt động của phòng chờ ảo (Virtual Waiting Room) chống sập server như thế nào?","qaAnswer":"Thay vì để 100.000 kết nối đồng thời đâm thẳng vào CSDL làm chết kết nối (Database Connection Exhaustion), hệ thống giữ khách ở hàng đợi phía trước (Rate Limiting / Queue). Cứ mỗi 10 giây hệ thống chỉ cấp quyền (session_token với status = ADMITTED) cho 500 khách vào chọn ghế, luân phiên nhịp nhàng.","keyColumns":["id (UUID PK)","showtime_id (Suất chiếu đang quá tải)","user_ip (IP người dùng)","session_token (Mã phiên xếp hàng)","queue_number (Số thứ tự xếp hàng)","status (WAITING, ADMITTED, EXPIRED)","admitted_at, expires_at"]}];
+
+    function renderCards(filterGroup = 'all', keyword = '') {
+      const container = document.getElementById('cardsGrid');
+      container.innerHTML = '';
+
+      const kw = keyword.toLowerCase().trim();
+      const filtered = tables.filter(t => {
+        const matchGroup = filterGroup === 'all' || t.group === filterGroup;
+        const matchKeyword = !kw || 
+          t.name.toLowerCase().includes(kw) || 
+          t.vietnamese.toLowerCase().includes(kw) || 
+          t.brief.toLowerCase().includes(kw) ||
+          t.example.toLowerCase().includes(kw) ||
+          t.keyColumns.some(c => c.toLowerCase().includes(kw));
+        return matchGroup && matchKeyword;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full py-12 text-center text-gray-400">
+            <span class="text-4xl block mb-2">🔍</span>
+            <p class="text-sm font-medium">Không tìm thấy bảng nào khớp với từ khóa "${keyword}"</p>
+            <p class="text-xs text-gray-500 mt-1">Hãy thử tìm: vé, ghế, rạp, hoàn tiền, voucher...</p>
+          </div>
+        `;
+        return;
+      }
+
+      filtered.forEach(t => {
+        const card = document.createElement('div');
+        card.className = `print-card bg-gray-900/90 hover:bg-gray-850 border border-gray-800 hover:border-gray-700 rounded-xl p-5 transition-all shadow-md hover:shadow-xl flex flex-col justify-between cursor-pointer group`;
+        card.onclick = () => openModal(t.id);
+
+        card.innerHTML = `
+          <div>
+            <!-- Header Card -->
+            <div class="flex items-start justify-between gap-3 mb-3">
+              <div class="flex items-center gap-2.5">
+                <span class="text-2xl p-2 rounded-lg bg-gray-800/80 border border-gray-700/50 group-hover:scale-110 transition-transform">${t.icon}</span>
+                <div>
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-xs font-mono font-bold text-gray-400">#${t.id}</span>
+                    <h3 class="font-bold text-sm text-white group-hover:text-rose-400 transition font-mono">${t.name}</h3>
+                  </div>
+                  <p class="text-xs text-rose-300 font-medium">${t.vietnamese}</p>
+                </div>
+              </div>
+              <span class="print-badge px-2 py-0.5 rounded text-[10px] font-semibold uppercase ${t.badgeColor} border border-current/20 flex-shrink-0">
+                ${t.groupName.split('.')[1] || t.groupName}
+              </span>
+            </div>
+
+            <!-- Giải thích nhẹ -->
+            <div class="mb-3.5 bg-gray-950/60 p-3 rounded-lg border border-gray-800/60">
+              <p class="text-xs font-semibold text-amber-300 flex items-center gap-1 mb-1">
+                <span>💡</span>
+                <span>Giải thích nhẹ:</span>
+              </p>
+              <p class="text-xs text-gray-300 leading-relaxed">${t.brief}</p>
+            </div>
+
+            <!-- Ví dụ đời thực -->
+            <div class="mb-3 text-[11px] text-gray-400 bg-gray-800/30 p-2.5 rounded-lg border border-gray-800/40">
+              <span class="font-semibold text-gray-300">🎬 Đời thực:</span> ${t.example}
+            </div>
+          </div>
+
+          <!-- Footer Card: Cột then chốt & Nút xem -->
+          <div class="pt-3 border-t border-gray-800/60 flex items-center justify-between text-[11px]">
+            <span class="text-gray-400 flex items-center gap-1">
+              <span>🔑</span>
+              <span>${t.keyColumns.length} cột then chốt</span>
+            </span>
+            <span class="text-rose-400 group-hover:translate-x-0.5 transition font-medium flex items-center gap-1">
+              <span>Xem chi tiết & Vấn đáp</span>
+              <span>→</span>
+            </span>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function renderQA() {
+      const qaContainer = document.getElementById('qaAccordion');
+      qaContainer.innerHTML = '';
+
+      tables.forEach(t => {
+        const item = document.createElement('div');
+        item.className = 'bg-gray-900 border border-gray-800 rounded-xl p-4 transition';
+        item.innerHTML = `
+          <div class="flex items-start gap-3">
+            <span class="text-xl">${t.icon}</span>
+            <div class="flex-1">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-xs font-mono font-bold text-gray-400">Bảng ${t.id}: ${t.name}</span>
+                <span class="text-xs text-rose-400">(${t.vietnamese})</span>
+              </div>
+              <p class="text-xs sm:text-sm font-semibold text-amber-300 mb-2">
+                ❓ Thầy cô hỏi: "${t.qaQuestion}"
+              </p>
+              <div class="bg-gray-950/80 p-3 rounded-lg border border-gray-800 text-xs text-gray-300 leading-relaxed">
+                <span class="font-bold text-emerald-400 block mb-1">✅ Cách trả lời ghi điểm 10:</span>
+                ${t.qaAnswer}
+              </div>
+            </div>
+          </div>
+        `;
+        qaContainer.appendChild(item);
+      });
+    }
+
+    function openModal(tableId) {
+      const t = tables.find(item => item.id === tableId);
+      if (!t) return;
+
+      const modalContent = document.getElementById('modalContent');
+      modalContent.innerHTML = `
+        <div class="flex items-center gap-3 mb-4 border-b border-gray-800 pb-4">
+          <span class="text-3xl p-2.5 rounded-xl bg-gray-800 border border-gray-700">${t.icon}</span>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-mono text-gray-400 font-bold">BẢNG #${t.id}</span>
+              <h2 class="text-lg font-bold text-white font-mono">${t.name}</h2>
+            </div>
+            <p class="text-sm font-semibold text-rose-400">${t.vietnamese}</p>
+          </div>
+        </div>
+
+        <div class="space-y-4 text-xs">
+          <div>
+            <h4 class="font-bold text-amber-300 mb-1 flex items-center gap-1.5">
+              <span>💡</span>
+              <span>Bản chất đời sống (Giải thích nhẹ):</span>
+            </h4>
+            <p class="text-gray-300 bg-gray-950 p-3 rounded-lg border border-gray-800 leading-relaxed">
+              ${t.brief}
+            </p>
+          </div>
+
+          <div>
+            <h4 class="font-bold text-gray-300 mb-1 flex items-center gap-1.5">
+              <span>🎬</span>
+              <span>Ví dụ thực tế dễ hình dung:</span>
+            </h4>
+            <p class="text-gray-300 bg-gray-950 p-3 rounded-lg border border-gray-800 leading-relaxed">
+              ${t.example}
+            </p>
+          </div>
+
+          <div>
+            <h4 class="font-bold text-emerald-300 mb-1 flex items-center gap-1.5">
+              <span>🎯</span>
+              <span>Câu hỏi vấn đáp & Cách trả lời cho thầy cô:</span>
+            </h4>
+            <div class="bg-gray-950 p-3 rounded-lg border border-gray-800 space-y-2">
+              <p class="font-semibold text-amber-300">❓ "${t.qaQuestion}"</p>
+              <p class="text-gray-300 leading-relaxed pl-3 border-l-2 border-emerald-500">
+                ${t.qaAnswer}
+              </p>
+            </div>
+          </div>
+
+          <div>
+            <h4 class="font-bold text-indigo-300 mb-1.5 flex items-center gap-1.5">
+              <span>🔑</span>
+              <span>Các cột then chốt cần nhớ:</span>
+            </h4>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 bg-gray-950 p-3 rounded-lg border border-gray-800">
+              ${t.keyColumns.map(col => `
+                <div class="flex items-center gap-1.5 text-gray-300 font-mono text-[11px]">
+                  <span class="text-rose-500">•</span>
+                  <span>${col}</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('detailModal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('detailModal').classList.add('hidden');
+    }
+
+    function switchTab(tabId) {
+      document.getElementById('tabContent-explain').classList.add('hidden');
+      document.getElementById('tabContent-erd').classList.add('hidden');
+      document.getElementById('tabContent-qa').classList.add('hidden');
+
+      document.getElementById('tabBtn-explain').className = 'px-4 py-2 rounded-lg text-gray-400 hover:text-gray-200 hover:bg-gray-800 transition flex items-center gap-2';
+      document.getElementById('tabBtn-erd').className = 'px-4 py-2 rounded-lg text-gray-400 hover:text-gray-200 hover:bg-gray-800 transition flex items-center gap-2';
+      document.getElementById('tabBtn-qa').className = 'px-4 py-2 rounded-lg text-gray-400 hover:text-gray-200 hover:bg-gray-800 transition flex items-center gap-2';
+
+      if (tabId === 'explain') {
+        document.getElementById('tabContent-explain').classList.remove('hidden');
+        document.getElementById('tabBtn-explain').className = 'px-4 py-2 rounded-lg bg-rose-600 text-white transition flex items-center gap-2';
+      } else if (tabId === 'erd') {
+        document.getElementById('tabContent-erd').classList.remove('hidden');
+        document.getElementById('tabBtn-erd').className = 'px-4 py-2 rounded-lg bg-rose-600 text-white transition flex items-center gap-2';
+      } else if (tabId === 'qa') {
+        document.getElementById('tabContent-qa').classList.remove('hidden');
+        document.getElementById('tabBtn-qa').className = 'px-4 py-2 rounded-lg bg-rose-600 text-white transition flex items-center gap-2';
+      }
+    }
+
+    let currentGroup = 'all';
+    function filterGroup(group) {
+      currentGroup = group;
+      document.querySelectorAll('.group-filter-btn').forEach(btn => {
+        if (btn.getAttribute('data-group') === group) {
+          btn.className = 'group-filter-btn px-2.5 py-1 rounded-md text-xs font-medium bg-rose-600 text-white';
+        } else {
+          btn.className = 'group-filter-btn px-2.5 py-1 rounded-md text-xs font-medium bg-gray-800 text-gray-300 hover:bg-gray-700';
+        }
+      });
+      const kw = document.getElementById('searchInput').value;
+      renderCards(currentGroup, kw);
+    }
+
+    function handleSearch() {
+      const kw = document.getElementById('searchInput').value;
+      renderCards(currentGroup, kw);
+    }
+
+    async function copyDbml() {
+      try {
+        const res = await fetch('database_schema.dbml');
+        const text = await res.text();
+        await navigator.clipboard.writeText(text);
+        const btnText = document.getElementById('copyBtnText');
+        btnText.innerText = 'Đã sao chép DBML thành công! ✔️';
+        setTimeout(() => {
+          btnText.innerText = 'Copy DBML (cho dbdiagram.io)';
+        }, 3000);
+      } catch (err) {
+        alert('Không thể tự động đọc file DBML, bạn có thể mở trực tiếp file database_schema.dbml trong thư mục dự án.');
+      }
+    }
+
+    // Khởi chạy khi load trang
+    window.addEventListener('DOMContentLoaded', () => {
+      renderCards();
+      renderQA();
+      mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+    });
+
+    // Đóng modal khi bấm phím ESC hoặc bấm ra ngoài
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeModal();
+    });
+    document.getElementById('detailModal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('detailModal')) closeModal();
+    });
+  </script>
+</body>
+</html>
