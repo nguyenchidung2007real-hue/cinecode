@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Báo Cáo Khảo Sát 4 Website Rạp Phim & Bộ Câu Hỏi Khảo Sát Offline - CineMax</title>
+  <style>
+    :root {
+      --primary: #e50914;
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: #334155;
+      --accent: #38bdf8;
+      --accent-green: #22c55e;
+      --accent-orange: #f59e0b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 24px;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid var(--border);
+    }
+    h1 {
+      font-size: 26px;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      color: var(--accent);
+      font-size: 15px;
+    }
+    .nav-tabs {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 25px;
+      justify-content: center;
+    }
+    .tab-btn {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 10px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    .tab-btn:hover {
+      color: #fff;
+      border-color: var(--accent);
+    }
+    .tab-btn.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+    .tab-content {
+      display: none;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    h2 {
+      color: var(--accent);
+      font-size: 20px;
+      margin-top: 24px;
+      margin-bottom: 12px;
+      border-left: 4px solid var(--primary);
+      padding-left: 10px;
+    }
+    h3 {
+      font-size: 16px;
+      margin-top: 14px;
+      margin-bottom: 8px;
+      color: #e2e8f0;
+    }
+    p, li {
+      color: #cbd5e1;
+      font-size: 15px;
+      margin-bottom: 6px;
+    }
+    ul {
+      margin-left: 20px;
+      margin-bottom: 16px;
+    }
+    .website-link {
+      display: inline-block;
+      margin-bottom: 16px;
+      font-size: 15px;
+      color: var(--accent);
+      text-decoration: none;
+      background: rgba(56, 189, 248, 0.1);
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-right: 6px;
+    }
+    .badge-pros { background: rgba(34, 197, 94, 0.2); color: var(--accent-green); border: 1px solid rgba(34, 197, 94, 0.4); }
+    .badge-cons { background: rgba(244, 63, 94, 0.2); color: #f43f5e; border: 1px solid rgba(244, 63, 94, 0.4); }
+    .actions-bar {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .btn {
+      background: #334155;
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .btn:hover { background: #475569; }
+    .question-block {
+      background: rgba(15, 23, 42, 0.6);
+      border-left: 3px solid var(--accent);
+      padding: 12px 16px;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 14px;
+    }
+    .question-title {
+      font-weight: bold;
+      color: #fff;
+      font-size: 15px;
+      margin-bottom: 4px;
+    }
+    .question-hint {
+      color: var(--text-muted);
+      font-size: 13px;
+      font-style: italic;
+    }
+    @media print {
+      body { background: #fff; color: #000; padding: 0; }
+      .nav-tabs, .actions-bar { display: none; }
+      .tab-content { display: block !important; border: none; box-shadow: none; padding: 15px 0; page-break-after: always; }
+      h2 { color: #000; border-color: #000; }
+      p, li, .question-hint { color: #333; }
+      .website-link { color: #000; background: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>BÁO CÁO KHẢO SÁT 4 WEBSITE BÁN VÉ PHIM & BỘ CÂU HỎI OFFLINE</h1>
+      <div class="subtitle">Đúng 100% biểu mẫu Google Doc & Chuẩn hóa nghiệp vụ Rạp chiếu phim điện ảnh</div>
+    </header>
+
+    <div class="actions-bar">
+      <button class="btn" onclick="window.print()">🖨️ In ra giấy / Xuất PDF</button>
+    </div>
+
+    <div class="nav-tabs">
+      <button class="tab-btn active" onclick="switchTab('cgv')">1. CGV Cinemas</button>
+      <button class="tab-btn" onclick="switchTab('galaxy')">2. Galaxy Cinema</button>
+      <button class="tab-btn" onclick="switchTab('lotte')">3. Lotte Cinema</button>
+      <button class="tab-btn" onclick="switchTab('beta')">4. Beta Cinemas</button>
+      <button class="tab-btn" onclick="switchTab('survey')">📋 Bộ Câu Hỏi Khảo Sát Offline</button>
+    </div>
+
+    <!-- TAB 1: CGV -->
+    <div id="tab-cgv" class="tab-content active">
+      <a class="website-link" href="https://www.cgv.vn/" target="_blank">🔗 Website: https://www.cgv.vn/</a>
+      
+      <h2>1. Các sản phẩm mà website CGV Cinemas cung cấp</h2>
+      <ul>
+        <li><strong>Vé xem phim các định dạng công nghệ cao:</strong> 2D kỹ thuật số, 3D, IMAX Laser, 4DX, ScreenX, Starium.</li>
+        <li><strong>Các loại ghế chuyên biệt và cao cấp:</strong> Ghế Thường (Standard), Ghế VIP, Ghế đôi Sweetbox, Ghế giường nằm L'amour, Phòng chiếu thương gia Gold Class.</li>
+        <li><strong>Combo Bắp Nước & Đồ ăn nhanh:</strong> My Combo (1 bắp 1 nước), CGV Combo (1 bắp 2 nước), Snack Bar (xúc xích, khoai tây chiên, trà sữa).</li>
+        <li><strong>Movie Combo & Vật phẩm lưu niệm:</strong> Ly nhân vật bản quyền phim bom tấn (Marvel, DC, Anime, Disney), xô bắp tạo hình độc quyền theo phim.</li>
+        <li><strong>Thẻ quà tặng và Voucher vé:</strong> CGV E-Gift Card, thẻ quà tặng vật lý, phiếu đổi vé xem phim số lượng lớn cho khách hàng doanh nghiệp.</li>
+        <li><strong>Dịch vụ tổ chức sự kiện:</strong> Đặt thuê trọn phòng chiếu phục vụ hội thảo, sinh nhật, họp báo, fan meeting, cầu hôn.</li>
+      </ul>
+
+      <h2>2. Ưu điểm và nhược điểm của website CGV Cinemas</h2>
+      <h3><span class="badge badge-pros">ƯU ĐIỂM</span></h3>
+      <ul>
+        <li><strong>Đa dạng định dạng phòng chiếu cao cấp:</strong> Độc quyền nhiều công nghệ chiếu phim hiện đại hàng đầu Việt Nam như IMAX Laser, 4DX, ScreenX, Gold Class.</li>
+        <li><strong>Hệ thống rạp phủ sóng rộng khắp:</strong> Mạng lưới rạp trải dài toàn quốc, tọa lạc tại các trung tâm thương mại lớn (Vincom, Aeon Mall).</li>
+        <li><strong>Hệ thống thành viên chuyên nghiệp:</strong> Chính sách CGV Membership phân hạng rõ ràng (Member, VIP, VVIP) với quyền lợi tích lũy điểm và quà sinh nhật phong phú.</li>
+        <li><strong>Thông tin phim chi tiết:</strong> Cung cấp đầy đủ trailer chuẩn HD, đạo diễn, dàn diễn viên, tóm tắt cốt truyện và nhãn dán phân loại độ tuổi chính xác.</li>
+        <li><strong>Tích hợp thanh toán đa kênh:</strong> Hỗ trợ thẻ ATM nội địa, Visa/Mastercard/JCB, ví MoMo, ZaloPay, ShopeePay, Apple Pay.</li>
+      </ul>
+      <h3><span class="badge badge-cons">NHƯỢC ĐIỂM</span></h3>
+      <ul>
+        <li><strong>Tải trang chậm ở khung giờ cao điểm:</strong> Website dễ gặp tình trạng quá tải, nghẽn mạng khi mở bán vé sớm các phim bom tấn lớn.</li>
+        <li><strong>Giao diện nhiều banner và quảng cáo:</strong> Xuất hiện nhiều pop-up quảng cáo nhãn hàng đối tác khiến trải nghiệm thao tác bị gián đoạn.</li>
+        <li><strong>Chính sách hủy/đổi vé không linh hoạt:</strong> Hầu như không hỗ trợ hoàn tiền hoặc đổi suất chiếu trực tuyến sau khi đã thanh toán thành công.</li>
+        <li><strong>Thuật toán chặn "ghế mồ côi" quá khắt khe:</strong> Không cho phép khách hàng để trống 1 ghế đơn lẻ bên cạnh, gây khó khăn cho người xem phim một mình.</li>
+      </ul>
+
+      <h2>3. Trải nghiệm thích và chưa thích từ website CGV Cinemas</h2>
+      <h3><span class="badge badge-pros">TRẢI NGHIỆM THÍCH</span></h3>
+      <ul>
+        <li>Dễ dàng chọn các phòng chiếu công nghệ đặc biệt (IMAX, 4DX, Gold Class) với sơ đồ trực quan, phân màu rõ rệt giữa ghế VIP và Sweetbox.</li>
+        <li>Tính năng mua trước combo bắp nước và ly sưu tầm nhân vật trực tiếp trên web giúp tiết kiệm thời gian xếp hàng tại quầy.</li>
+        <li>Nhiều chương trình khuyến mãi liên kết ngân hàng và ví điện tử, mã giảm giá tự động cập nhật vào bước thanh toán.</li>
+      </ul>
+      <h3><span class="badge badge-cons">TRẢI NGHIỆM CHƯA THÍCH</span></h3>
+      <ul>
+        <li>Bắt buộc phải đăng nhập tài khoản thành viên mới được đặt vé, không hỗ trợ mua vé nhanh cho khách vãng lai (Guest Checkout).</li>
+        <li>Tình trạng bị giữ ghế ảo (ghế đã nhả nhưng hệ thống vẫn báo đỏ đang giữ) vào khung giờ đông đúc khiến người dùng phải đợi 10-15 phút.</li>
+        <li>Giá vé và bắp nước hiển thị chưa bao gồm một số phụ phí dịch vụ phòng đặc biệt, chỉ thấy tổng tiền chính xác ở bước cuối.</li>
+      </ul>
+    </div>
+
+    <!-- TAB 2: GALAXY -->
+    <div id="tab-galaxy" class="tab-content">
+      <a class="website-link" href="https://www.galaxycine.vn/" target="_blank">🔗 Website: https://www.galaxycine.vn/</a>
+      
+      <h2>1. Các sản phẩm mà website Galaxy Cinema cung cấp</h2>
+      <ul>
+        <li><strong>Vé xem phim các định dạng phổ biến:</strong> 2D kỹ thuật số tiêu chuẩn, 3D sống động, phòng chiếu cao cấp IMAX Laser.</li>
+        <li><strong>Các loại ghế rạp phong phú:</strong> Ghế Thường (Standard), Ghế VIP (tầm nhìn trung tâm), Ghế Đôi (Double Seat) vách ngăn êm ái.</li>
+        <li><strong>Combo Bắp Nước & Thức ăn nhanh:</strong> iCombo 1 người (bắp + nước), Friend Combo (2 nước + 1 bắp lớn), các vị bắp đặc trưng (Caramel, Phô mai, Cay Hàn Quốc), xúc xích, trà đào.</li>
+        <li><strong>Movie Merchandise & Ly nhân vật:</strong> Ly giữ nhiệt, xô bắp tạo hình mô hình nhân vật hoạt hình và bom tấn điện ảnh.</li>
+        <li><strong>Thẻ thành viên và Thẻ quà tặng:</strong> Galaxy Star Membership (tích lũy sao đổi vé), thẻ quà tặng điện tử Galaxy E-Voucher.</li>
+        <li><strong>Dịch vụ bao rạp & Vé số lượng lớn:</strong> Đặt trọn phòng chiếu cho các đoàn trường học, doanh nghiệp, hội thảo, chiếu phim nội bộ.</li>
+      </ul>
+
+      <h2>2. Ưu điểm và nhược điểm của website Galaxy Cinema</h2>
+      <h3><span class="badge badge-pros">ƯU ĐIỂM</span></h3>
+      <ul>
+        <li><strong>Giao diện hiện đại, trẻ trung:</strong> Tông màu cam đen năng động, bố cục sắp xếp phim đang chiếu và sắp chiếu trực quan, hấp dẫn giới trẻ và Gen Z.</li>
+        <li><strong>Tốc độ tải trang nhanh và mượt mà:</strong> Hệ thống tải dữ liệu nhẹ nhàng, ít bị nghẽn mạng hơn so với các đối thủ trong các khung giờ cao điểm.</li>
+        <li><strong>Thanh đặt vé nhanh (Quick Booking Bar):</strong> Thanh công cụ chọn nhanh "Phim - Rạp - Ngày - Suất" ngay đầu trang chủ giúp rút ngắn tối đa thời gian tìm kiếm.</li>
+        <li><strong>Mức giá cạnh tranh, nhiều ưu đãi học sinh - sinh viên:</strong> Chương trình giá vé U22, ngày Thứ Ba Vui Vẻ (Happy Day), vé đồng giá định kỳ rất dễ tiếp cận.</li>
+        <li><strong>Chuyên mục Tin Điện Ảnh chuyên sâu:</strong> Cung cấp bài viết review phim, góc phân tích diễn viên, tin hậu trường uy tín và cuốn hút.</li>
+      </ul>
+      <h3><span class="badge badge-cons">NHƯỢC ĐIỂM</span></h3>
+      <ul>
+        <li><strong>Số lượng phòng chiếu công nghệ cao còn ít:</strong> Rất ít phòng IMAX Laser so với CGV, chủ yếu vẫn là các phòng chiếu 2D tiêu chuẩn.</li>
+        <li><strong>Độ phủ sóng mạng lưới rạp:</strong> Tập trung chủ yếu tại TP.HCM và các thành phố lân cận, ít cụm rạp tại miền Bắc và các tỉnh vùng xa.</li>
+        <li><strong>Chưa có mô phỏng góc nhìn 3D từ ghế (View from Seat):</strong> Khách hàng mới khó hình dung khoảng cách từ hàng ghế đầu tới màn hình để chọn chỗ ngồi vừa mắt.</li>
+        <li><strong>Thiếu tính năng tương tác tự động AI:</strong> Chưa có trợ lý ảo hỗ trợ giải đáp nhanh các thắc mắc về thời lượng chiếu, độ tuổi hay quy định mang đồ ăn ngoài vào rạp.</li>
+      </ul>
+
+      <h2>3. Trải nghiệm thích và chưa thích từ website Galaxy Cinema</h2>
+      <h3><span class="badge badge-pros">TRẢI NGHIỆM THÍCH</span></h3>
+      <ul>
+        <li>Thao tác chọn phim và mua vé bằng thanh Quick Booking diễn ra cực kỳ nhanh chóng, chỉ mất chưa đầy 30 giây để đến bước chọn ghế.</li>
+        <li>Giá vé hiển thị rõ ràng, minh bạch từ đầu, không cộng thêm các khoản phụ phí bất ngờ ở bước xác nhận cuối cùng.</li>
+        <li>Cộng đồng đánh giá và bài viết góc điện ảnh phong phú, giúp nắm bắt được đánh giá phim trước khi chi tiền mua vé.</li>
+      </ul>
+      <h3><span class="badge badge-cons">TRẢI NGHIỆM CHƯA THÍCH</span></h3>
+      <ul>
+        <li>Sơ đồ chọn ghế trên trình duyệt di động đôi khi hiển thị kích thước các ô ghế khá nhỏ, dễ bấm nhầm giữa ghế thường và ghế VIP.</li>
+        <li>Thỉnh thoảng xuất hiện tình trạng trễ đồng bộ khi thanh toán qua ví điện tử, cần tải lại trang lịch sử giao dịch để kiểm tra mã vé.</li>
+        <li>Chính sách giữ chỗ khi gặp sự cố mạng đôi khi tự động hủy nhanh trước thời hạn 10 phút, khiến khách hàng phải chọn lại chỗ ngồi.</li>
+      </ul>
+    </div>
+
+    <!-- TAB 3: LOTTE -->
+    <div id="tab-lotte" class="tab-content">
+      <a class="website-link" href="https://www.lottecinemavn.com/" target="_blank">🔗 Website: https://www.lottecinemavn.com/</a>
+      
+      <h2>1. Các sản phẩm mà website Lotte Cinema cung cấp</h2>
+      <ul>
+        <li><strong>Vé xem phim các định dạng công nghệ:</strong> 2D kỹ thuật số sắc nét, 3D sống động, phòng chiếu Superplex (màn hình cong khổng lồ), phòng âm thanh Dolby Atmos.</li>
+        <li><strong>Các hạng ghế chuyên biệt:</strong> Ghế Thường (Standard), Ghế VIP, Ghế đôi Prestige, Ghế ngả Recliner tự động tại phòng chiếu cao cấp Cine Comfort.</li>
+        <li><strong>Menu Combo Bắp Nước & Đồ uống:</strong> Solo Combo (1 bắp 1 nước), Harmony Combo (1 bắp 2 nước), Couple Combo, bắp vị Caramel/Phô mai, nước ép, xúc xích nướng.</li>
+        <li><strong>Voucher và Thẻ thành viên L.Point:</strong> Vé xem phim quà tặng (Lotte Movie Gift Voucher), tích lũy và quy đổi điểm thưởng trong hệ sinh thái L.Point của tập đoàn Lotte.</li>
+        <li><strong>Dịch vụ thuê phòng chiếu & Hợp đồng sự kiện:</strong> Bao rạp chiếu phim riêng tư cho các cơ quan, đoàn trường, họp fan và sinh nhật.</li>
+      </ul>
+
+      <h2>2. Ưu điểm và nhược điểm của website Lotte Cinema</h2>
+      <h3><span class="badge badge-pros">ƯU ĐIỂM</span></h3>
+      <ul>
+        <li><strong>Mạng lưới rạp trải rộng nhiều tỉnh thành:</strong> Tọa lạc tại các trung tâm thương mại Lotte Mart và các khu đô thị sầm uất trên toàn quốc.</li>
+        <li><strong>Liên kết hệ sinh thái điểm thưởng L.Point tiện lợi:</strong> Khách hàng có thể dùng điểm tích lũy từ siêu thị Lotte Mart hoặc thức ăn nhanh Lotteria để đổi vé xem phim.</li>
+        <li><strong>Phòng chiếu Cine Comfort chất lượng cao:</strong> Hệ thống ghế bọc da ngả lưng êm ái, khoảng cách hàng ghế rộng rãi tạo cảm giác thoải mái tối đa cho người xem.</li>
+        <li><strong>Chính sách giá vé bình ổn:</strong> Giá vé ngày thường và các ngày lễ ít có sự chênh lệch đột biến, có ngày L.Day ưu đãi định kỳ hàng tháng.</li>
+      </ul>
+      <h3><span class="badge badge-cons">NHƯỢC ĐIỂM</span></h3>
+      <ul>
+        <li><strong>Giao diện website còn mang hơi hướng cũ:</strong> Bố cục thiết kế chưa thực sự hiện đại, các khối hình ảnh và biểu tượng còn khá thô, kém hấp dẫn so với các web rạp mới.</li>
+        <li><strong>Tốc độ tải trang và phản hồi chậm:</strong> Thời gian nạp dữ liệu lịch chiếu và sơ đồ ghế thường có độ trễ, dễ gặp trục trặc khi mạng yếu.</li>
+        <li><strong>Quy trình đặt vé còn nhiều bước trung gian:</strong> Khách hàng phải trải qua nhiều trang chuyển tiếp để hoàn tất thanh toán, làm tăng tỷ lệ bỏ dở đơn hàng.</li>
+        <li><strong>Chưa có trợ lý tìm kiếm thông minh:</strong> Khó tìm kiếm phim theo diễn viên hoặc đạo diễn, không có tính năng chatbot hỗ trợ tư vấn tức thời.</li>
+      </ul>
+
+      <h2>3. Trải nghiệm thích và chưa thích từ website Lotte Cinema</h2>
+      <h3><span class="badge badge-pros">TRẢI NGHIỆM THÍCH</span></h3>
+      <ul>
+        <li>Dễ dàng tích và trừ điểm thành viên L.Point trực tiếp ngay trên trang thanh toán mà không cần thao tác chuyển đổi phức tạp.</li>
+        <li>Thông tin về giá vé theo từng đối tượng (học sinh, sinh viên, người cao tuổi, trẻ em) được niêm yết rõ ràng ở trang chi tiết rạp.</li>
+        <li>Phòng chiếu Cine Comfort có chỗ ngồi vô cùng thoải mái, chất lượng âm thanh tại phòng Superplex rất sống động.</li>
+      </ul>
+      <h3><span class="badge badge-cons">TRẢI NGHIỆM CHƯA THÍCH</span></h3>
+      <ul>
+        <li>Giao diện chọn rạp và chọn suất chiếu chưa tối ưu, người dùng phải bấm chọn lại từ đầu nếu muốn đổi sang rạp lân cận.</li>
+        <li>Thường xuyên bị đăng xuất tài khoản tự động (Session Timeout) khi đang thao tác chọn ghế, phải đăng nhập lại mất thời gian.</li>
+        <li>Email gửi mã vé điện tử sau khi thanh toán thỉnh thoảng bị trễ hoặc rơi vào mục Spam, gây bất tiện khi phải đối soát vé tại quầy.</li>
+      </ul>
+    </div>
+
+    <!-- TAB 4: BETA -->
+    <div id="tab-beta" class="tab-content">
+      <a class="website-link" href="https://www.betacinemas.vn/" target="_blank">🔗 Website: https://www.betacinemas.vn/</a>
+      
+      <h2>1. Các sản phẩm mà website Beta Cinemas cung cấp</h2>
+      <ul>
+        <li><strong>Vé xem phim các định dạng tối ưu chi phí:</strong> 2D kỹ thuật số tiêu chuẩn sắc nét, 3D sống động, phòng chiếu âm thanh vòm Dolby Surround.</li>
+        <li><strong>Các loại ghế rạp:</strong> Ghế Thường (Standard), Ghế VIP (khu vực giữa phòng chiếu), Ghế Đôi Sweetbox cho các cặp đôi.</li>
+        <li><strong>Menu Bắp Nước & Đồ ăn vặt bình dân:</strong> Combo Solo (1 bắp + 1 nước ngọt giá chỉ từ 45.000đ - 55.000đ), Combo Couple (1 bắp lớn + 2 nước ngọt), bắp vị phô mai, caramel, nước ngọt có gas, xúc xích, snack.</li>
+        <li><strong>Thẻ hội viên Beta Member:</strong> Tích lũy điểm thưởng theo phần trăm chi tiêu, hưởng giá vé ưu đãi thành viên vào tất cả các ngày trong tuần.</li>
+        <li><strong>Vé đoàn & Hợp đồng trường học:</strong> Gói vé số lượng lớn trợ giá đặc biệt cho học sinh, sinh viên các trường đại học và cao đẳng.</li>
+        <li><strong>Chuyên mục Hợp tác Nhượng quyền (Franchise):</strong> Cung cấp thông tin mô hình kinh doanh nhượng quyền cụm rạp cho các nhà đầu tư.</li>
+      </ul>
+
+      <h2>2. Ưu điểm và nhược điểm của website Beta Cinemas</h2>
+      <h3><span class="badge badge-pros">ƯU ĐIỂM</span></h3>
+      <ul>
+        <li><strong>Mức giá vé siêu rẻ, dẫn đầu phân khúc bình dân:</strong> Giá vé chỉ dao động từ 45.000đ – 65.000đ, cực kỳ phù hợp với túi tiền của học sinh, sinh viên và người có thu nhập trung bình.</li>
+        <li><strong>Giao diện trẻ trung, phong cách tươi sáng:</strong> Gam màu xanh ngọc và hồng pastel đặc trưng mang lại cảm giác thân thiện, nhẹ nhàng và năng động.</li>
+        <li><strong>Mạng lưới rạp phủ sóng mạnh ở các tỉnh thành và vùng ven:</strong> Giúp khán giả ở các địa phương chưa có rạp lớn vẫn dễ dàng thưởng thức các bộ phim điện ảnh mới nhất.</li>
+        <li><strong>Bắp nước giá rất mềm:</strong> Giá các combo bắp nước chỉ bằng 1/2 so với các chuỗi rạp ngoại nhập, giúp người xem tiết kiệm đáng kể chi phí giải trí.</li>
+        <li><strong>Thao tác mua vé không rườm rà:</strong> Quy trình chọn rạp, chọn phim và giờ chiếu ngắn gọn, không bị chèn ép quá nhiều quảng cáo thương mại.</li>
+      </ul>
+      <h3><span class="badge badge-cons">NHƯỢC ĐIỂM</span></h3>
+      <ul>
+        <li><strong>Không có các định dạng công nghệ cao cấp:</strong> Chưa có phòng chiếu chuẩn IMAX, 4DX hay ScreenX phục vụ các tín đồ mê kỹ xảo đỉnh cao.</li>
+        <li><strong>Tính năng website còn ở mức cơ bản:</strong> Chưa tích hợp các tính năng công nghệ mới như trợ lý AI tư vấn phim, xem thử góc nhìn 3D từ ghế hay phòng chờ ảo.</li>
+        <li><strong>Độ ổn định hệ thống khi có phim hot:</strong> Website đôi khi bị nghẽn mạng hoặc lỗi kết nối cổng thanh toán khi có phim điện ảnh Việt Nam nổi bật ra mắt.</li>
+        <li><strong>Kênh chăm sóc khách hàng còn hạn chế:</strong> Chưa có chatbot trực tuyến phản hồi ngay, việc hỗ trợ xử lý khiếu nại qua hotline vào giờ cao điểm cuối tuần đôi khi phải chờ lâu.</li>
+      </ul>
+
+      <h2>3. Trải nghiệm thích và chưa thích từ website Beta Cinemas</h2>
+      <h3><span class="badge badge-pros">TRẢI NGHIỆM THÍCH</span></h3>
+      <ul>
+        <li>Mức giá vé và combo bắp nước rất rẻ, xem phim thả ga mà không phải đắn đo nhiều về chi phí.</li>
+        <li>Giao diện sạch sẽ, các bước từ chọn phim đến chọn ghế diễn ra mượt mà, không bị rối mắt bởi các pop-up quảng cáo.</li>
+        <li>Thường xuyên có các chương trình đồng giá vé 45k cho học sinh sinh viên vào các ngày trong tuần.</li>
+      </ul>
+      <h3><span class="badge badge-cons">TRẢI NGHIỆM CHƯA THÍCH</span></h3>
+      <ul>
+        <li>Sơ đồ ghế ngồi trên web đôi khi chưa thể hiện rõ độ dốc phòng chiếu, dễ chọn phải hàng ghế quá gần màn hình gây mỏi mắt.</li>
+        <li>Chính sách hủy đổi vé hoàn toàn không hỗ trợ trên website, nếu có việc đột xuất không đi xem được sẽ mất toàn bộ tiền vé.</li>
+        <li>Khi cổng thanh toán gặp sự cố trừ tiền chậm (chưa xuất vé ngay), việc kiểm tra và liên hệ nhân viên hỗ trợ mất thời gian chờ đợi.</li>
+      </ul>
+    </div>
+
+    <!-- TAB 5: OFFLINE SURVEY -->
+    <div id="tab-survey" class="tab-content">
+      <h2>BỘ CÂU HỎI KHẢO SÁT OFFLINE: NGÀNH RẠP CHIẾU PHIM</h2>
+      <p style="margin-bottom: 20px; color: var(--text-muted);">Khảo sát trực tiếp tại sảnh rạp đối với Khán giả xem phim (Nhóm I) và Ban Quản trị/Nhân viên rạp (Nhóm II - VI).</p>
+
+      <h3>I. CÂU HỎI VỀ TRẢI NGHIỆM KHÁCH HÀNG (Khán giả tại rạp)</h3>
+      <div class="question-block">
+        <div class="question-title">1. Bạn đã từng mua vé xem phim trực tuyến trên các trang web hoặc ứng dụng rạp chiếu phim khác (như CGV, Galaxy, Lotte, Beta, MoMo, ShopeePay...) chưa?</div>
+      </div>
+      <div class="question-block">
+        <div class="question-title">2. Nếu có, bạn có thể chia sẻ trải nghiệm của mình khi đặt vé trực tuyến không?</div>
+        <div class="question-hint">Về tốc độ tải web, độ dễ dàng khi chọn suất chiếu, chọn vị trí ghế ngồi và thanh toán.</div>
+      </div>
+      <div class="question-block">
+        <div class="question-title">3. Bạn từng gặp phải những khó khăn hoặc trải nghiệm khó chịu gì khi mua vé xem phim trực tuyến?</div>
+        <div class="question-hint">Lỗi nghẽn mạng lúc săn vé phim hot; bị giữ ghế ma; bị chặn lỗi "ghế mồ côi"; trừ tiền nhưng không nhận được vé; không thể hủy/đổi vé...</div>
+      </div>
+      <div class="question-block">
+        <div class="question-title">4. Bạn có thể đề xuất gì để cải thiện trải nghiệm mua vé xem phim trực tuyến tốt hơn?</div>
+        <div class="question-hint">Xem thử góc nhìn 3D từ ghế, Trợ lý AI gợi ý phim hợp tâm trạng, tính năng đặt vé nhóm tự chia tiền, giao bắp nước tận ghế...</div>
+      </div>
+
+      <h3>II. CÂU HỎI VỀ SẢN PHẨM VÀ DỊCH VỤ (Quản lý / Nhân viên rạp)</h3>
+      <div class="question-block">
+        <div class="question-title">1. Các sản phẩm và dịch vụ chính mà cụm rạp của anh/chị đang kinh doanh là gì?</div>
+        <div class="question-hint">Vé các định dạng 2D, 3D, IMAX, 4DX; các loại ghế VIP, Sweetbox; menu bắp nước F&B; combo ly nhân vật; dịch vụ cho thuê phòng chiếu sự kiện...</div>
+      </div>
+      <div class="question-block">
+        <div class="question-title">2. Cụm rạp của anh/chị có cung cấp chính sách dịch vụ hậu mãi và hỗ trợ khách hàng không?</div>
+        <div class="question-hint">Chính sách hoàn vé/đổi suất chiếu; xử lý khiếu nại khách để quên đồ; chính sách đền bù khi suất chiếu gặp sự cố kỹ thuật máy chiếu/âm thanh.</div>
+      </div>
+      <div class="question-block">
+        <div class="question-title">3. Sản phẩm hoặc dòng sản phẩm nào bán chạy nhất tại rạp của anh/chị?</div>
+        <div class="question-hint">Ghế VIP trung tâm, phòng chiếu IMAX, combo bắp nước đôi, hay các ly nhân vật hoạt hình/anime độc quyền?</div>
+      </div>
+
+      <h3>III. CÂU HỎI VỀ KHÁCH HÀNG VÀ THỊ TRƯỜNG</h3>
+      <div class="question-block">
+        <div class="question-title">1. Nhóm khách hàng chính của cụm rạp là ai?</div>
+        <div class="question-hint">Học sinh - sinh viên (Gen Z săn vé rẻ), các cặp đôi trẻ, gia đình có trẻ em, hay tín đồ cinephile mê công nghệ cao?</div>
+      </div>
+      <div class="question-block">
+        <div class="question-title">2. Anh/chị đánh giá thế nào về sự cạnh tranh trong thị trường rạp chiếu phim hiện nay giữa các chuỗi (CGV, Lotte, Galaxy, Beta, BHD)?</div>
+        <div class="question-hint">Cạnh tranh công nghệ phòng chiếu, cạnh tranh giá vé sinh viên, cạnh tranh vị trí trung tâm thương mại...</div>
+      </div>
+      <div class="question-block">
+        <div class="question-title">3. Làm thế nào để cụm rạp thu hút và giữ chân khách hàng trung thành?</div>
+        <div class="question-hint">Thẻ thành viên tích điểm, ngày hội giá vé rẻ trong tuần, nâng cấp máy chiếu Laser, thái độ phục vụ của nhân viên...</div>
+      </div>
+
+      <h3>IV. CÂU HỎI VỀ QUẢN LÝ VÀ VẬN HÀNH</h3>
+      <div class="question-block">
+        <div class="question-title">1. Quy trình làm việc 1 ngày của cụm rạp diễn ra như thế nào?</div>
+        <div class="question-hint">Khởi động máy chiếu ca sáng, kiểm tra âm thanh, chuẩn bị bắp bơ; điều phối khách và dọn rạp 15 phút giữa các suất; kiểm kê đóng ca đêm.</div>
+      </div>
+      <div class="question-block">
+        <div class="question-title">2. Cụm rạp hiện có bao nhiêu nhân viên? Anh/chị phân ca và quản lý nhân viên ra sao?</div>
+        <div class="question-hint">Phân chia 4 bộ phận: Quầy vé (Box Office), Quầy F&B (Concession), Soát vé (Usher), Kỹ thuật phòng chiếu (Projectionist).</div>
+      </div>
+      <div class="question-block">
+        <div class="question-title">3. Làm thế nào để anh/chị kiểm soát tồn kho và đảm bảo không bị thiếu hoặc dư hàng?</div>
+        <div class="question-hint">Kiểm soát vé ghế theo thời gian thực; định lượng nguyên liệu bắp, bơ, siro, ly cốc giấy nhập - xuất - tồn trong ngày.</div>
+      </div>
+      <div class="question-block">
+        <div class="question-title">4. Anh/chị có sử dụng phần mềm quản lý bán vé hay công cụ hỗ trợ nào không?</div>
+        <div class="question-hint">Hệ thống POS bán vé (Vista Cinema...), hệ thống quản lý rạp chiếu tập trung TMS, máy quét mã QR tự động...</div>
+      </div>
+
+      <h3>V. CÂU HỎI VỀ MARKETING VÀ QUẢNG BÁ</h3>
+      <div class="question-block">
+        <div class="question-title">1. Anh/chị có thực hiện các chiến dịch marketing hoặc quảng cáo cho các phim mới ra mắt không?</div>
+        <div class="question-hint">Sự kiện ra mắt phim (Premiere), mở bán vé sớm (Sneak Show), photobooth check-in tại sảnh, minigame tặng vé...</div>
+      </div>
+      <div class="question-block">
+        <div class="question-title">2. Những kênh nào mang lại hiệu quả quảng bá và thu hút khán giả mua vé tốt nhất?</div>
+        <div class="question-hint">Fanpage Facebook rạp, video TikTok review phim, trailer YouTube, thông báo trên ứng dụng di động, truyền miệng...</div>
+      </div>
+
+      <h3>VI. CÂU HỎI VỀ XU HƯỚNG VÀ CÔNG NGHỆ</h3>
+      <div class="question-block">
+        <div class="question-title">1. Anh/chị nghĩ gì về xu hướng khán giả chuyển từ mua vé tại quầy sang mua vé trực tuyến 100%? Kế hoạch triển khai Kiosk tự phục vụ?</div>
+        <div class="question-hint">Tỷ lệ mua vé online chiếm >75%; tối ưu trải nghiệm mua vé 1 chạm; lắp đặt Kiosk tự lấy vé và gọi bắp nước để giảm xếp hàng.</div>
+      </div>
+      <div class="question-block">
+        <div class="question-title">2. Công nghệ phòng chiếu hiện nay thay đổi rất nhanh (IMAX Laser, Dolby Atmos...). Làm sao để cụm rạp luôn cập nhật và giữ chân khán giả?</div>
+        <div class="question-hint">Đầu tư màn hình siêu lớn, âm thanh vòm sống động mang lại trải nghiệm cảm xúc vượt trội mà các nền tảng xem phim tại nhà (Netflix) không thể có.</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+      
+      const targetBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick').includes(tabId));
+      if (targetBtn) targetBtn.classList.add('active');
+      
+      const targetContent = document.getElementById('tab-' + tabId);
+      if (targetContent) targetContent.classList.add('active');
+    }
+  </script>
+</body>
+</html>
