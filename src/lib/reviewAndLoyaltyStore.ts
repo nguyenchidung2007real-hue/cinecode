@@ -14,6 +14,7 @@ export type OrderSource = "sample" | "real";
 
 /** Đơn hàng hiển thị cho Admin = BookingInfo + thông tin mở rộng */
 export type AdminOrder = BookingInfo & {
+  status: "valid" | "used" | "pending" | "void";
   combos: string[];
   paymentMethod: string;
   source: OrderSource;
