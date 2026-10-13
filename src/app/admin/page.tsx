@@ -25,7 +25,11 @@ import {
   PlusCircle,
   Trash2,
   LogOut,
+  Armchair,
+  Star,
 } from "lucide-react";
+import AdminSeatsMoviesAuditTab from "@/components/admin/AdminSeatsMoviesAuditTab";
+import AdminOrdersAndReviewsTab from "@/components/admin/AdminOrdersAndReviewsTab";
 import { MOCK_MOVIES, MOCK_SHOWTIMES, CONCESSION_COMBOS } from "@/lib/mockData";
 import { formatVND } from "@/lib/utils";
 import { checkShowtimeCollision, ShowtimeLike, CollisionResult, TRAILER_MINUTES, CLEANING_MINUTES } from "@/lib/showtimeCollision";
@@ -41,7 +45,9 @@ interface SyncStatus {
 }
 
 export default function AdminDashboardPage() {
-  const [activeTab, setActiveTab] = useState<"overview" | "showtimes" | "movies" | "tickets" | "pricing">("overview");
+  const [activeTab, setActiveTab] = useState<
+    "overview" | "showtimes" | "movies" | "tickets" | "pricing" | "seats" | "orders-reviews"
+  >("overview");
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -322,7 +328,9 @@ export default function AdminDashboardPage() {
           {[
             { id: "overview", label: "Tổng Quan Rạp", icon: Building2 },
             { id: "showtimes", label: "Lịch Chiếu Beta Xuân Thủy", icon: Calendar },
+            { id: "seats", label: "Sơ Đồ Ghế & Audit", icon: Armchair },
             { id: "movies", label: "Quản Lý Phim", icon: Film },
+            { id: "orders-reviews", label: "Đơn Vé & Đánh Giá", icon: Star },
             { id: "tickets", label: "Soát Vé & Check-in", icon: QrCode },
             { id: "pricing", label: "Bảng Giá Vé Sinh Viên", icon: Sliders },
           ].map((tab) => {
@@ -907,6 +915,20 @@ export default function AdminDashboardPage() {
                 ))}
               </div>
             </div>
+          </div>
+        )}
+
+        {/* TAB 6: SƠ ĐỒ GHẾ & NHẬT KÝ AN NINH (ĐĂNG - PROMPT 1) */}
+        {activeTab === "seats" && (
+          <div className="mt-4">
+            <AdminSeatsMoviesAuditTab />
+          </div>
+        )}
+
+        {/* TAB 7: ĐƠN VÉ, HOÀN TIỀN & ĐÁNH GIÁ (MINH - PROMPT 3) */}
+        {activeTab === "orders-reviews" && (
+          <div className="mt-4">
+            <AdminOrdersAndReviewsTab />
           </div>
         )}
       </div>
