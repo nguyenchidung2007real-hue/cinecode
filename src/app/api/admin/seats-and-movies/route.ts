@@ -279,11 +279,11 @@ function normalizeLiveSeat(raw: unknown): NormalizedLiveSeat {
 }
 
 async function readLiveStatuses(
-  showtimeId: string | undefined,
+  showtimeId: string | number | undefined,
   seatIds: string[]
 ): Promise<{ map: Record<string, NormalizedLiveSeat>; error: string | null }> {
   const map: Record<string, NormalizedLiveSeat> = {};
-  if (!showtimeId) return { map, error: null };
+  if (showtimeId === undefined || showtimeId === null || showtimeId === "") return { map, error: null };
   try {
     const raw = toStatusMap(await getLiveSeatStatuses(showtimeId, seatIds));
     for (const id of seatIds) {
