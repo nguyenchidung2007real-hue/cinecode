@@ -58,6 +58,56 @@ interface RecommendationPayload {
 
 type PickSource = "rag" | "mood";
 
+export interface BookingDraftPayload {
+  movieId?: string;
+  movieTitle: string;
+  cinemaName?: string;
+  showtimeId?: string;
+  showtimeLabel?: string;
+  format?: string;
+  seatType: "standard" | "vip" | "couple";
+  seatCount: number;
+  suggestedSeatIds: string[];
+  comboName?: string;
+  comboQuantity?: number;
+}
+
+const BOOKING_TOOLS: Groq.Chat.Completions.ChatCompletionTool[] = [
+  {
+    type: "function",
+    function: {
+      name: "prepare_booking_draft",
+      description:
+        "Chuẩn bị bản nháp đặt vé rạp và điền sẵn ghế/bắp nước vào BookingModal khi người dùng muốn đặt vé. Hàm này KHÔNG tạo vé đã thanh toán mà chỉ mở giao diện để giữ ghế trên Redis.",
+      parameters: {
+        type: "object",
+        properties: {
+          movieId: { type: "string", description: "ID của bộ phim" },
+          movieTitle: { type: "string", description: "Tên bộ phim khách muốn xem" },
+          cinemaName: { type: "string", description: "Tên rạp chiếu (VD: Beta Xuân Thủy, CGV Vincom)" },
+          showtimeId: { type: "string", description: "ID suất chiếu nếu có" },
+          showtimeLabel: { type: "string", description: "Giờ chiếu (VD: 19:30 - Hôm nay)" },
+          format: { type: "string", enum: ["2D", "IMAX Laser", "3D"], description: "Định dạng phòng chiếu" },
+          seatType: {
+            type: "string",
+            enum: ["standard", "vip", "couple"],
+            description: "Hạng ghế ('standard' | 'vip' | 'couple')",
+          },
+          seatCount: { type: "number", description: "Số lượng ghế muốn đặt (1-8)" },
+          suggestedSeatIds: {
+            type: "array",
+            items: { type: "string" },
+            description: "Mã ghế gợi ý theo hạng ghế (VD: ['F6', 'F7'] cho vip, ['D5', 'D6'] cho standard, ['K3'] cho couple)",
+          },
+          comboName: { type: "string", description: "Tên combo bắp nước nếu khách nhắc tới" },
+          comboQuantity: { type: "number", description: "Số lượng combo bắp nước" },
+        },
+        required: ["movieTitle", "seatType", "seatCount", "suggestedSeatIds"],
+      },
+    },
+  },
+];
+
 interface MoviePick {
   movie: Movie;
   source: PickSource;
@@ -289,6 +339,7 @@ function buildSystemPrompt(params: {
     "- Luôn trả lời bằng tiếng Việt, thân thiện, ngắn gọn (tối đa khoảng 120 từ), không dùng markdown nặng.",
     "- Chỉ gợi ý phim có trong danh mục CineMax bên dưới; ghi đúng tên phim.",
     "- Không bịa suất chiếu, giá vé hay thông tin không có trong dữ liệu.",
+    "- Khi người dùng thể hiện ý định đặt vé hoặc hỏi mua vé (ví dụ: 'Đặt 2 vé VIP...', 'Cho mình 2 ghế...'), hãy gọi tool prepare_booking_draft để hệ thống hiển thị bản nháp giữ ghế trên giao diện.",
     "- Khi gợi ý phim, nêu lý do ngắn gọn và mời người dùng bấm nút Đặt vé nhanh / chọn ghế.",
     "",
     "## Danh mục phim CineMax (tên | thể loại | điểm | thời lượng | trạng thái)",
@@ -446,6 +497,9 @@ export async function POST(request: NextRequest): Promise<Response> {
             "qwen/qwen3.8-27b",
           ].filter(Boolean) as string[];
 
+          let toolCallName = "";
+          let toolCallArgs = "";
+
           for (const modelName of modelsToTry) {
             try {
               const completion = await groq.chat.completions.create({
@@ -453,6 +507,8 @@ export async function POST(request: NextRequest): Promise<Response> {
                 messages: [{ role: "system", content: systemPrompt }, ...messages],
                 temperature: 0.6,
                 max_tokens: 700,
+                tools: BOOKING_TOOLS,
+                tool_choice: "auto",
                 stream: true,
               });
 
@@ -463,12 +519,31 @@ export async function POST(request: NextRequest): Promise<Response> {
                   send({ content: delta, text: delta });
                   produced = true;
                 }
+                const tc = chunk.choices[0]?.delta?.tool_calls?.[0];
+                if (tc?.function?.name) toolCallName = tc.function.name;
+                if (tc?.function?.arguments) {
+                  toolCallArgs += tc.function.arguments;
+                  produced = true;
+                }
               }
 
               if (produced) break;
             } catch (error) {
               console.warn(`[/api/chat] Groq lỗi với model ${modelName}, thử model tiếp theo:`, error);
               if (produced) break; // Đã gửi một phần phản hồi thì dừng lại, tránh lặp lại câu trả lời
+            }
+          }
+
+          if (toolCallName === "prepare_booking_draft" && toolCallArgs) {
+            try {
+              const draft = JSON.parse(toolCallArgs) as BookingDraftPayload;
+              send({
+                type: "booking_draft",
+                draft,
+                payload: draft,
+              });
+            } catch {
+              // Bỏ qua nếu parse JSON bị lỗi
             }
           }
         }

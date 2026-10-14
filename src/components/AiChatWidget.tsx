@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { Sparkles, Send, X, Bot, User, Trash2, Zap, Film, Armchair, Ticket, ArrowRight } from "lucide-react";
 import { ChatMessage, Movie } from "@/types";
 import { MOCK_MOVIES } from "@/lib/mockData";
+import { useBookingStore } from "@/store/useBookingStore";
 
 interface AiChatWidgetProps {
   isOpen: boolean;
@@ -122,6 +123,14 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
                 setMessages((prev) =>
                   prev.map((msg) =>
                     msg.id === botMsgId ? { ...msg, recommendation: rec } : msg
+                  )
+                );
+              }
+              const draft = parsed.draft || (parsed.type === "booking_draft" ? parsed.payload : null);
+              if (draft) {
+                setMessages((prev) =>
+                  prev.map((msg) =>
+                    msg.id === botMsgId ? { ...msg, bookingDraft: draft } : msg
                   )
                 );
               }
@@ -301,6 +310,68 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
                       <Ticket className="w-3.5 h-3.5" />
                       Đặt vé nhanh ngay
                       <ArrowRight className="w-3 h-3 ml-0.5" />
+                    </button>
+                  </div>
+                )}
+
+                {/* THẺ ĐỀ XUẤT ĐẶT VÉ TỰ ĐỘNG TỪ GROQ FUNCTION CALLING */}
+                {msg.role === "assistant" && msg.bookingDraft && (
+                  <div className="mt-2.5 ml-8 max-w-[85%] p-3.5 rounded-xl bg-gradient-to-br from-neutral-900/95 via-neutral-900/90 to-red-950/40 border border-accent-red/50 shadow-xl shadow-black/50 backdrop-blur-md space-y-2.5 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                    <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-accent-red font-bold">
+                      <Sparkles className="w-3 h-3 text-amber-400" />
+                      <span>Đề xuất đặt vé thông minh (Groq AI)</span>
+                    </div>
+
+                    <div>
+                      <h4 className="font-black text-sm text-white">{msg.bookingDraft.movieTitle}</h4>
+                      <p className="text-[10px] text-neutral-300 mt-0.5">
+                        📍 {msg.bookingDraft.cinemaName || "Beta Cinemas Xuân Thủy"} • 🕒 {msg.bookingDraft.showtimeLabel || "19:00"} ({msg.bookingDraft.format || "2D"})
+                      </p>
+                    </div>
+
+                    <div className="flex flex-wrap gap-1.5 text-[10px]">
+                      <span className="px-2 py-0.5 rounded bg-neutral-950 border border-neutral-800 text-amber-400 font-medium">
+                        Ghế ({msg.bookingDraft.seatType}): {msg.bookingDraft.suggestedSeatIds.join(", ")}
+                      </span>
+                      {msg.bookingDraft.comboName && (
+                        <span className="px-2 py-0.5 rounded bg-neutral-950 border border-neutral-800 text-emerald-400 font-medium">
+                          🍿 {msg.bookingDraft.comboQuantity || 1}x {msg.bookingDraft.comboName}
+                        </span>
+                      )}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const draft = msg.bookingDraft!;
+                        useBookingStore.getState().prefillFromAiTool({
+                          movieId: draft.movieId || "dune-2",
+                          movieTitle: draft.movieTitle,
+                          cinemaName: draft.cinemaName || "Beta Cinemas Xuân Thủy",
+                          showtimeId: draft.showtimeId || "st-beta-today-1",
+                          showtimeLabel: draft.showtimeLabel || "19:00",
+                          format: draft.format || "2D",
+                          suggestedSeats: draft.suggestedSeatIds.map((id) => ({
+                            id,
+                            type: draft.seatType,
+                          })),
+                          suggestedCombos: draft.comboName
+                            ? [{ id: "ai-combo", name: draft.comboName, quantity: draft.comboQuantity || 1 }]
+                            : [],
+                        });
+
+                        const foundMovie =
+                          movies.find((m) => m.title.toLowerCase().includes(draft.movieTitle.toLowerCase())) ||
+                          movies[0];
+
+                        if (onSelectMovieForBooking && foundMovie) {
+                          onSelectMovieForBooking(foundMovie, draft.suggestedSeatIds);
+                        }
+                      }}
+                      className="w-full py-2 px-3 rounded-lg bg-gradient-to-r from-accent-red to-orange-600 hover:from-accent-redHover hover:to-orange-500 text-white font-extrabold text-[11px] flex items-center justify-center gap-1.5 shadow-md shadow-accent-red/20 transition-all duration-200"
+                    >
+                      <Ticket className="w-3.5 h-3.5" />
+                      Giữ ghế trên Redis & Mở đặt vé →
                     </button>
                   </div>
                 )}

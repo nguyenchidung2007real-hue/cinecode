@@ -104,5 +104,18 @@ export interface ChatMessage {
     reason: string;
     suggestedSeats?: string[];
   };
+  bookingDraft?: {
+    movieId?: string;
+    movieTitle: string;
+    cinemaName?: string;
+    showtimeId?: string;
+    showtimeLabel?: string;
+    format?: string;
+    seatType: "standard" | "vip" | "couple";
+    seatCount: number;
+    suggestedSeatIds: string[];
+    comboName?: string;
+    comboQuantity?: number;
+  };
 }
 

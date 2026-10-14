@@ -14,6 +14,7 @@ import {
 import { formatVND } from "@/lib/utils";
 import { checkOrphanSeats } from "@/lib/orphanSeatRule";
 import { ViewFromSeatModal } from "./ViewFromSeatModal";
+import { getScreen3DStyle } from "@/lib/screen3D";
 import {
   X,
   Check,
@@ -929,8 +930,11 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               </div>
             )}
 
-            {/* Màn hình cong phát sáng nhẹ thanh lịch */}
-            <div className="flex flex-col items-center pt-2">
+            {/* Màn hình cong phát sáng nhẹ thanh lịch với góc nhìn 3D perspective theo ghế chọn */}
+            <div
+              className="flex flex-col items-center pt-2 origin-top"
+              style={getScreen3DStyle(selectedSeats[selectedSeats.length - 1]?.id)}
+            >
               <div className="w-3/4 h-2 bg-gradient-to-r from-transparent via-accent-cyan to-transparent rounded-full shadow-lg shadow-black/50" />
               <span className="text-[10px] uppercase tracking-widest text-[#8a99b5] font-extrabold mt-1.5 opacity-90">
                 MÀN HÌNH CHIẾU CONG (CINEMA SCREEN)
