@@ -554,6 +554,39 @@ export async function POST(request: NextRequest): Promise<Response> {
             send({ content: piece, text: piece });
             await sleep(18);
           }
+
+          // Smart Mock Agent Fallback: Nếu câu hỏi có ý định đặt vé, tự động sinh booking_draft
+          const lowerUser = stripDiacritics(userText);
+          const isBookingIntent =
+            lowerUser.includes("dat") ||
+            lowerUser.includes("mua") ||
+            lowerUser.includes("ve") ||
+            lowerUser.includes("ghe") ||
+            lowerUser.includes("book");
+
+          if (pick && isBookingIntent) {
+            const seats = suggestSeats(userText, mood);
+            const isCouple = seats.length > 0 && seats[0].startsWith("K");
+            const isVip =
+              seats.length > 0 &&
+              (seats[0].startsWith("E") || seats[0].startsWith("F") || seats[0].startsWith("G"));
+            const seatType = isCouple ? "couple" : isVip ? "vip" : "standard";
+            const draft: BookingDraftPayload = {
+              movieId: String(pick.movie.id),
+              movieTitle: pick.movie.title,
+              cinemaName: "Beta Cinemas Xuân Thủy",
+              showtimeLabel: "19:30 - Hôm nay",
+              format: "2D",
+              seatType,
+              seatCount: seats.length,
+              suggestedSeatIds: seats,
+            };
+            send({
+              type: "booking_draft",
+              draft,
+              payload: draft,
+            });
+          }
         }
 
         if (recommendation) {
