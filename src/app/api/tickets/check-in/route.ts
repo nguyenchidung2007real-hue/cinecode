@@ -5,8 +5,9 @@ import { verifyStaffCredentials } from "@/lib/staffAuth";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-function maskPhone(phone: string): string {
-  const clean = phone.trim();
+function maskPhone(phone?: string | null): string {
+  if (!phone) return "";
+  const clean = String(phone).trim();
   if (clean.length <= 6) return clean;
   return clean.slice(0, 3) + "****" + clean.slice(-3);
 }

@@ -1,6 +1,7 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import type { BookingInfo } from "@/types";
 import { getKvConfig, kvCommand, type KvConfig } from "@/lib/kvRest";
+import { DbRepository } from "@/lib/dbRepository";
 
 /**
  * CineMax AI - Ticket store & anti-fraud check-in (module chống gian lận vé kép)
@@ -318,6 +319,57 @@ class VercelKvTicketStore implements TicketStoreAdapter {
 /*  Chọn adapter                                                              */
 /* -------------------------------------------------------------------------- */
 
+class DatabaseSyncingTicketStore implements TicketStoreAdapter {
+  constructor(private readonly inner: TicketStoreAdapter) {}
+  get name() {
+    return this.inner.name;
+  }
+
+  async create(input: CreateTicketInput): Promise<CreateOutcome> {
+    const res = await this.inner.create(input);
+    if (res.outcome === "created") {
+      void DbRepository.syncTicketToDatabase(res.ticket).catch(() => {});
+    }
+    return res;
+  }
+
+  async createPending(input: CreateTicketInput): Promise<CreateOutcome> {
+    const res = await this.inner.createPending(input);
+    if (res.outcome === "created") {
+      void DbRepository.syncTicketToDatabase(res.ticket).catch(() => {});
+    }
+    return res;
+  }
+
+  async promotePendingToValid(bookingId: string, txnRef?: string): Promise<TicketRecord | null> {
+    const res = await this.inner.promotePendingToValid(bookingId, txnRef);
+    if (res) {
+      void DbRepository.syncTicketToDatabase(res).catch(() => {});
+    }
+    return res;
+  }
+
+  async voidTicket(bookingId: string, reason?: string): Promise<TicketRecord | null> {
+    const res = await this.inner.voidTicket(bookingId, reason);
+    if (res) {
+      void DbRepository.syncTicketToDatabase(res).catch(() => {});
+    }
+    return res;
+  }
+
+  async get(bookingId: string): Promise<TicketRecord | null> {
+    return this.inner.get(bookingId);
+  }
+
+  async markUsed(bookingId: string, scannedBy?: string): Promise<CheckInOutcome> {
+    const res = await this.inner.markUsed(bookingId, scannedBy);
+    if (res.outcome === "checked_in") {
+      void DbRepository.syncTicketToDatabase(res.ticket).catch(() => {});
+    }
+    return res;
+  }
+}
+
 let cachedStore: TicketStoreAdapter | null = null;
 let warnedMemoryInProduction = false;
 
@@ -325,21 +377,21 @@ export function getTicketStore(): TicketStoreAdapter {
   if (cachedStore) return cachedStore;
 
   const kvConfig = getKvConfig();
+  let baseStore: TicketStoreAdapter;
   if (kvConfig) {
-    cachedStore = new VercelKvTicketStore(kvConfig);
-    return cachedStore;
+    baseStore = new VercelKvTicketStore(kvConfig);
+  } else {
+    if (process.env.NODE_ENV === "production" && !warnedMemoryInProduction) {
+      warnedMemoryInProduction = true;
+      console.warn(
+        "[ticketStore] Không thấy KV_REST_API_URL/TOKEN (Vercel KV) hay " +
+          "UPSTASH_REDIS_REST_URL/TOKEN. Đang chạy chế độ in-memory.",
+      );
+    }
+    baseStore = new MemoryTicketStore();
   }
 
-  if (process.env.NODE_ENV === "production" && !warnedMemoryInProduction) {
-    warnedMemoryInProduction = true;
-    console.warn(
-      "[ticketStore] Không thấy KV_REST_API_URL/TOKEN (Vercel KV) hay " +
-        "UPSTASH_REDIS_REST_URL/TOKEN. Đang chạy chế độ in-memory: mỗi serverless " +
-        "instance có bộ nhớ RIÊNG và mất khi cold start, nên KHÔNG chống được vé " +
-        "dùng hai lần một cách đáng tin cậy trên production. Chỉ dùng cho dev/demo.",
-    );
-  }
-  cachedStore = new MemoryTicketStore();
+  cachedStore = new DatabaseSyncingTicketStore(baseStore);
   return cachedStore;
 }
 

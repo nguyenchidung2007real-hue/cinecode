@@ -442,10 +442,10 @@ export default function AdminDashboardPage() {
               </div>
 
               <Link
-                href="/scanner"
+                href="/staff/scanner"
                 className="w-full py-3 rounded-xl bg-gradient-to-r from-accent-red to-rose-600 hover:from-accent-red/90 hover:to-rose-600/90 text-white text-xs font-bold transition-all shadow-lg shadow-accent-red/20 flex items-center justify-center gap-2 group"
               >
-                <span>Mở Máy Quét Vé /scanner</span>
+                <span>Mở Máy Quét Vé /staff/scanner</span>
                 <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
               </Link>
             </div>
@@ -850,11 +850,11 @@ export default function AdminDashboardPage() {
 
             <div className="pt-3">
               <Link
-                href="/scanner"
+                href="/staff/scanner"
                 className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-accent-red hover:bg-accent-red/90 text-white text-xs font-bold transition-all shadow-xl shadow-accent-red/25 group"
               >
                 <QrCode className="w-4 h-4" />
-                <span>Truy Cập Ứng Dụng Soát Vé Chuyên Dụng (/scanner)</span>
+                <span>Truy Cập Ứng Dụng Soát Vé Chuyên Dụng (/staff/scanner)</span>
                 <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
               </Link>
             </div>
