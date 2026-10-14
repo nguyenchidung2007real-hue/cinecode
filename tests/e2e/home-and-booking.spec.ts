@@ -40,4 +40,10 @@ test.describe('Cinemax AI - Web Mua Vé Xem Phim E2E Tests', () => {
       await expect(modal.first()).toBeVisible({ timeout: 5000 });
     }
   });
+
+  test('Giao diện máy quét mã QR soát vé /scanner hoạt động', async ({ page }) => {
+    await page.goto('/scanner');
+    // Kiểm tra trang scanner render tiêu đề và khu vực camera / nhập mã
+    await expect(page.locator('text=/Cổng Soát Vé|Quét Mã|Mã Vé/i').first()).toBeVisible();
+  });
 });

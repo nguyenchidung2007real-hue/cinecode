@@ -20,6 +20,9 @@ export interface VietQRPaymentProps {
   qrImageUrl?: string;
   transferContent: string;
   allowMockPayment?: boolean;
+  customer?: { name?: string; phone?: string; email?: string };
+  concessions?: unknown[];
+  posterPath?: string;
   onPaymentVerified: (confirmedTicket: unknown) => void;
   onSwitchToVNPay?: () => void;
 }
@@ -32,6 +35,9 @@ export function VietQRPaymentModal({
   qrImageUrl,
   transferContent,
   allowMockPayment = false,
+  customer,
+  concessions,
+  posterPath,
   onPaymentVerified,
   onSwitchToVNPay,
 }: VietQRPaymentProps) {
@@ -86,7 +92,14 @@ export function VietQRPaymentModal({
       const res = await fetch("/api/payment/mock-confirm", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ bookingId, holdId, showtimeId }),
+        body: JSON.stringify({
+          bookingId,
+          holdId,
+          showtimeId,
+          customer,
+          concessions,
+          posterPath,
+        }),
       });
 
       const data = (await res.json()) as { error?: string; ticket?: unknown };

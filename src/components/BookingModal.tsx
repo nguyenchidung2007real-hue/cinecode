@@ -41,6 +41,8 @@ import {
 } from "lucide-react";
 import { useSeatHold, useSeatAvailability } from "@/hooks/useSeatHold";
 import { ApiError, describeError, submitBooking } from "@/lib/bookingClient";
+import VietQRPaymentModal from "./booking/VietQRPaymentModal";
+import { useBookingStore } from "@/store/useBookingStore";
 
 interface BookingModalProps {
   movie: Movie | null;
@@ -327,6 +329,25 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     refreshKey: h.seats.join(","),
   });
 
+  // Đồng bộ giỏ vé với Zustand Persist store (Hạng mục 1)
+  useEffect(() => {
+    if (h.status === "held" && h.holdId && selectedShowtimeId) {
+      useBookingStore.getState().syncHoldFromServer({
+        holdId: h.holdId,
+        showtimeId: selectedShowtimeId,
+        expiresAt: Date.now() + h.secondsLeft * 1000,
+        seats: selectedSeats.map((s) => ({ id: s.id, type: s.type })),
+      });
+    }
+  }, [h.status, h.holdId, h.secondsLeft, selectedShowtimeId, selectedSeats]);
+
+  useEffect(() => {
+    useBookingStore.getState().setStep(step);
+    if (step === 5) {
+      useBookingStore.getState().resetBooking();
+    }
+  }, [step]);
+
   const seatsMatrix: Seat[][] = useMemo(() => {
     return ROWS.map((row) => {
       const isCouple = row === "K";
@@ -417,6 +438,30 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     if (same) return;
     setSelectedSeats(seatsMatrix.flat().filter((s) => serverIds.has(s.id)));
   }, [h.busy, h.status, h.seats, seatsMatrix, selectedSeats]);
+
+  // Khôi phục combo từ useBookingStore nếu có draft của phim này
+  useEffect(() => {
+    if (!movie) return;
+    const storeState = useBookingStore.getState();
+    if (storeState.movieId === movie.id && storeState.selectedCombos.length > 0) {
+      const restoredCombos: Record<string, number> = {};
+      for (const item of storeState.selectedCombos) {
+        restoredCombos[item.id] = item.quantity;
+      }
+      setCombos((prev) => (Object.keys(prev).length === 0 ? restoredCombos : prev));
+    }
+  }, [movie]);
+
+  // Lưu trạng thái combo vào useBookingStore
+  useEffect(() => {
+    const selectedList = Object.entries(combos)
+      .filter(([_, qty]) => qty > 0)
+      .map(([id, quantity]) => {
+        const found = CONCESSION_COMBOS.find((c) => c.id === id);
+        return { id, name: found?.name || id, quantity };
+      });
+    useBookingStore.setState({ selectedCombos: selectedList });
+  }, [combos]);
 
   const applySelection = (next: Seat[]) => {
     setSelectedSeats(next);
@@ -1450,33 +1495,72 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                     </div>
                   </div>
                 </div>
+              ) : paymentMethod === "vietqr" ? (
+                /* Hạng mục 2: VietQR Payment Modal với âm thanh Ting-Ting & Mock Confirm gác cổng */
+                <VietQRPaymentModal
+                  bookingId={h.holdId ? `bk-${h.holdId.slice(0, 12)}` : "bk-demo"}
+                  holdId={h.holdId ?? ""}
+                  showtimeId={selectedShowtimeId ?? ""}
+                  amount={grandTotal}
+                  qrImageUrl={vietQrUrl}
+                  transferContent={`VECINEMAX ${selectedSeats.map((s) => s.id).join("")}`}
+                  allowMockPayment={process.env.NODE_ENV !== "production" || process.env.NEXT_PUBLIC_ALLOW_MOCK_PAYMENT === "true"}
+                  customer={{
+                    name: customerName.trim(),
+                    phone: customerPhone.trim(),
+                    email: customerEmail.trim() || undefined,
+                  }}
+                  concessions={selectedConcessions.map((c) => ({
+                    id: c.id,
+                    quantity: c.quantity,
+                    popcornFlavors: c.popcornFlavors,
+                    drinks: c.drinks,
+                  }))}
+                  posterPath={movie.posterPath}
+                  onPaymentVerified={(confirmedTicket) => {
+                    const newTicket = confirmedTicket as BookingInfo;
+                    h.markConfirmed();
+                    setCompletedBooking(newTicket);
+                    try {
+                      const existing = JSON.parse(localStorage.getItem("cinemax_tickets") || "[]");
+                      localStorage.setItem("cinemax_tickets", JSON.stringify([newTicket, ...existing]));
+                      if (customerPhone.trim()) {
+                        localStorage.setItem("cinemax_customer_phone", customerPhone.trim().replace(/[\s.\-()]/g, ""));
+                        localStorage.setItem("cinemax_customer_name", customerName.trim() || "Khách Hàng Beta");
+                      }
+                    } catch (err) {
+                      console.error("Lỗi lưu vé vào LocalStorage:", err);
+                    }
+                    if (onBookingSuccess) onBookingSuccess(newTicket);
+                    setStep(5);
+                  }}
+                  onSwitchToVNPay={() => setPaymentMethod("vnpay")}
+                />
               ) : (
-                /* Cột mã QR Chuyển khoản VietQR / MoMo */
+                /* Cột mã QR Chuyển khoản Ví MoMo */
                 <div className="flex flex-col items-center justify-center p-5 bg-white rounded-2xl shadow-xl text-black">
                   <div className="flex items-center justify-between w-full border-b pb-2 mb-3">
-                    <span className="font-extrabold text-xs text-blue-700">
-                      {paymentMethod === "vietqr" ? "NAPAS 247 | VIETQR" : "VÍ ĐIỆN TỬ MOMO"}
+                    <span className="font-extrabold text-xs text-purple-700">
+                      VÍ ĐIỆN TỬ MOMO
                     </span>
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
-                      paymentMethod === "vietqr" ? "bg-blue-100 text-blue-800" : "bg-purple-100 text-purple-900"
-                    }`}>
-                      {paymentMethod === "vietqr" ? "MB BANK" : "MOMO PAY"}
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-purple-100 text-purple-900">
+                      MOMO PAY
                     </span>
                   </div>
 
                   <img
-                    src={paymentMethod === "vietqr" ? vietQrUrl : `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(`2|99|0388899999|CINEMAX CINEMA VN||0|0|${grandTotal}|VECINEMAX ${selectedSeats.map(s => s.id).join("")}`)}`}
-                    alt="Mã QR Thanh Toán"
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(`2|99|0388899999|CINEMAX CINEMA VN||0|0|${grandTotal}|VECINEMAX ${selectedSeats.map(s => s.id).join("")}`)}`}
+                    alt="Mã QR Thanh Toán MoMo"
                     className="w-52 h-52 object-contain"
                   />
 
                   <div className="mt-3 w-full text-center space-y-1.5 border-t pt-2.5">
                     <div className="flex items-center justify-between text-xs px-2">
-                      <span className="text-neutral-500">Số tài khoản / SĐT:</span>
+                      <span className="text-neutral-500">Số điện thoại:</span>
                       <button
                         type="button"
                         onClick={() => handleCopy("0388899999", "account")}
-                        className="flex items-center gap-1 font-mono font-bold text-neutral-900 hover:text-blue-600 bg-neutral-100 px-1.5 py-0.5 rounded"
+                        className="flex items-center gap-1 font-mono font-bold text-neutral-900 hover:text-purple-600 bg-neutral-100 px-1.5 py-0.5 rounded"
                       >
                         <span>0388899999</span>
                         <Copy className="w-3 h-3 text-neutral-500" />
