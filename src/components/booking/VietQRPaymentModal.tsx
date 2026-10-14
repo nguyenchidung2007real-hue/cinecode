@@ -60,12 +60,16 @@ export function VietQRPaymentModal({
     };
   }, []);
 
-  // Sinh fallback VietQR URL nếu server chưa truyền qrImageUrl
+  // Sinh fallback VietQR URL nếu server chưa truyền qrImageUrl (ưu tiên đọc từ biến môi trường)
+  const defaultBankId = process.env.NEXT_PUBLIC_VIETQR_BANK_ID || "MB";
+  const defaultAccountNo = process.env.NEXT_PUBLIC_VIETQR_ACCOUNT_NO || "0388899999";
+  const defaultAccountName = process.env.NEXT_PUBLIC_VIETQR_ACCOUNT_NAME || "BETA CINEMAS XUAN THUY";
+
   const resolvedQrUrl =
     qrImageUrl ||
-    `https://img.vietqr.io/image/MB-0987654321-compact2.png?amount=${amount}&addInfo=${encodeURIComponent(
+    `https://img.vietqr.io/image/${defaultBankId}-${defaultAccountNo}-compact2.png?amount=${amount}&addInfo=${encodeURIComponent(
       transferContent
-    )}&accountName=${encodeURIComponent("CINEMAX AI")}`;
+    )}&accountName=${encodeURIComponent(defaultAccountName)}`;
 
   // Phát âm thanh "Ting-Ting!" máy POS bằng Web Audio API thuần (không tốn file MP3)
   const playTingTingSound = () => {

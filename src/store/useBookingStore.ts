@@ -199,6 +199,11 @@ export const useBookingStore = create<BookingState>()(
     {
       name: "cinemax-booking-storage",
       storage: createJSONStorage(() => localStorage),
+      // Chỉ lưu dữ liệu giỏ hàng, KHÔNG lưu cờ loading tạm thời xuống localStorage
+      partialize: (state) => {
+        const { isVerifyingHold, ...rest } = state;
+        return rest;
+      },
       // Khi vừa đọc từ localStorage lên sau khi khách F5, lập tức đối chiếu với Redis Server
       onRehydrateStorage: () => (state) => {
         if (state?.holdId) {

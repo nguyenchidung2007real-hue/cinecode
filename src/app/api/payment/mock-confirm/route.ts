@@ -120,6 +120,22 @@ export async function POST(request: NextRequest) {
 
     const commitOutcome = await seatStore.commit(hold, bookingId, soldTtlSeconds);
     if (commitOutcome.outcome === "lost") {
+      // 1. Kiểm tra nếu chính holdId này đã được chốt trên Redis cho bookingId này (xử lý cửa sổ mù vài ms khi 2 request chạy song song)
+      const committedId = await seatStore.getCommittedBookingId(showtimeId, holdId);
+      if (committedId === bookingId) {
+        // Đơn này đã được luồng song song chốt thành công trên Redis!
+        // Chờ nhẹ 60ms để luồng kia hoàn tất promotePendingToValid, rồi trả về vé hợp lệ
+        await new Promise((r) => setTimeout(r, 60));
+        const recheck = await ticketStore.get(bookingId);
+        if (recheck && (recheck.status === "valid" || recheck.status === "used")) {
+          return NextResponse.json({
+            success: true,
+            message: "Đơn vé đã được xác nhận trước đó.",
+            ticket: recheck,
+          });
+        }
+      }
+
       // Re-check: Nếu request song song trước đó đã duyệt thành công đơn vé này, trả về vé hợp lệ ngay
       const recheck = await ticketStore.get(bookingId);
       if (recheck && (recheck.status === "valid" || recheck.status === "used")) {
