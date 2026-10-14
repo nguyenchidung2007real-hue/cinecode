@@ -220,11 +220,11 @@ function ResultCard({ item, index, active, onHover, onSelect, onBook }: ResultCa
         if (!active) onHover();
       }}
       onClick={onSelect}
-      className="sp-card relative flex cursor-pointer gap-4 rounded-xl border border-white/10 bg-white/5 p-3 backdrop-blur-md"
+      className="sp-card relative flex cursor-pointer gap-4 rounded-xl border border-slate-200 bg-slate-50 p-3 shadow-sm transition-all"
     >
       {/* Poster 3D */}
       <div className="sp-stage shrink-0">
-        <div className="sp-poster h-[132px] w-[88px] overflow-hidden rounded-lg border border-white/15 bg-[#14151B]">
+        <div className="sp-poster h-[132px] w-[88px] overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
           <PosterImage src={movie.posterPath} title={movie.title} />
         </div>
       </div>
@@ -232,20 +232,20 @@ function ResultCard({ item, index, active, onHover, onSelect, onBook }: ResultCa
       {/* Nội dung */}
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="flex items-start justify-between gap-3">
-          <h3 className="truncate text-base font-semibold text-white">{movie.title}</h3>
+          <h3 className="truncate text-base font-bold text-slate-900">{movie.title}</h3>
           {matchPercent !== null && (
-            <span className="sp-match shrink-0 rounded-full border border-rose-400/30 bg-gradient-to-r from-fuchsia-500/25 to-rose-500/25 px-2.5 py-0.5 text-[11px] font-bold text-rose-100">
+            <span className="sp-match shrink-0 rounded-full border border-sky-300 bg-sky-50 px-2.5 py-0.5 text-[11px] font-bold text-sky-700">
               ✨ {matchPercent}% Match
             </span>
           )}
         </div>
 
-        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-white/55">
+        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-500">
           {rating && (
-            <span className="inline-flex items-center gap-1 rounded-md bg-[#FFD700]/10 px-1.5 py-0.5 font-bold text-[#FFD700]">
-              <Star className="h-3 w-3 fill-[#FFD700]" aria-hidden="true" />
+            <span className="inline-flex items-center gap-1 rounded-md bg-amber-50 border border-amber-200 px-1.5 py-0.5 font-bold text-amber-700">
+              <Star className="h-3 w-3 fill-amber-500 text-amber-500" aria-hidden="true" />
               {rating}
-              <span className="text-[9px] font-semibold tracking-wide text-[#FFD700]/70">IMDb</span>
+              <span className="text-[9px] font-semibold tracking-wide text-amber-600">IMDb</span>
             </span>
           )}
           {meta && <span>{meta}</span>}
@@ -256,7 +256,7 @@ function ResultCard({ item, index, active, onHover, onSelect, onBook }: ResultCa
             {genres.map((genre) => (
               <span
                 key={genre}
-                className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] text-white/65"
+                className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] text-slate-600 font-medium"
               >
                 {genre}
               </span>
@@ -264,10 +264,10 @@ function ResultCard({ item, index, active, onHover, onSelect, onBook }: ResultCa
           </div>
         )}
 
-        <div className="mt-2 flex gap-1.5 rounded-lg bg-white/[0.04] px-2.5 py-1.5 text-xs leading-relaxed text-white/70">
-          <Sparkles className="mt-0.5 h-3 w-3 shrink-0 text-[#FF2E4C]" aria-hidden="true" />
+        <div className="mt-2 flex gap-1.5 rounded-lg bg-white border border-slate-200 px-2.5 py-1.5 text-xs leading-relaxed text-slate-600">
+          <Sparkles className="mt-0.5 h-3 w-3 shrink-0 text-sky-600" aria-hidden="true" />
           <span className="sp-clamp2">
-            <span className="font-semibold text-white/85">AI chọn vì: </span>
+            <span className="font-semibold text-slate-800">AI chọn vì: </span>
             {reason ?? fallbackReason(movie)}
           </span>
         </div>
@@ -297,7 +297,7 @@ function ResultCard({ item, index, active, onHover, onSelect, onBook }: ResultCa
 
 function SkeletonCard() {
   return (
-    <li className="flex gap-4 rounded-xl border border-white/10 bg-white/5 p-3" aria-hidden="true">
+    <li className="flex gap-4 rounded-xl border border-slate-200 bg-slate-50 p-3" aria-hidden="true">
       <div className="sp-shimmer h-[132px] w-[88px] rounded-lg" />
       <div className="flex flex-1 flex-col gap-2">
         <div className="sp-shimmer h-4 w-2/3 rounded" />
@@ -311,7 +311,7 @@ function SkeletonCard() {
 
 function Kbd({ children }: { children: React.ReactNode }) {
   return (
-    <kbd className="inline-flex min-w-[20px] items-center justify-center rounded border border-white/15 bg-white/5 px-1.5 py-0.5 font-mono text-[10px] text-white/70">
+    <kbd className="inline-flex min-w-[20px] items-center justify-center rounded border border-slate-200 bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] text-slate-600">
       {children}
     </kbd>
   );
@@ -541,20 +541,20 @@ export default function SemanticSearchModal({
         className="sp-panel relative w-full max-w-2xl"
       >
         <div className="sp-neon rounded-2xl p-[1.5px]" data-loading={isLoading}>
-          <div className="overflow-hidden rounded-[15px] bg-[#0B0C10]/95 backdrop-blur-xl">
+          <div className="overflow-hidden rounded-[15px] bg-white border border-slate-200 shadow-2xl">
             {/* Ô nhập */}
-            <div className="flex items-center gap-3 border-b border-white/10 px-5 py-4">
+            <div className="flex items-center gap-3 border-b border-slate-200 px-5 py-4 bg-white">
               {isLoading ? (
-                <Loader2 className="h-5 w-5 shrink-0 animate-spin text-[#FF2E4C]" aria-hidden="true" />
+                <Loader2 className="h-5 w-5 shrink-0 animate-spin text-sky-600" aria-hidden="true" />
               ) : (
-                <Search className="h-5 w-5 shrink-0 text-white/50" aria-hidden="true" />
+                <Search className="h-5 w-5 shrink-0 text-slate-400" aria-hidden="true" />
               )}
 
               <div className="relative min-w-0 flex-1">
                 {!query && (
                   <span
                     key={placeholderIndex}
-                    className="sp-ph pointer-events-none absolute inset-y-0 left-0 flex items-center truncate text-lg font-light tracking-wide text-white/35 sm:text-xl"
+                    className="sp-ph pointer-events-none absolute inset-y-0 left-0 flex items-center truncate text-lg font-light tracking-wide text-slate-400 sm:text-xl"
                     aria-hidden="true"
                   >
                     {PLACEHOLDERS[placeholderIndex]}
@@ -574,7 +574,7 @@ export default function SemanticSearchModal({
                   autoComplete="off"
                   spellCheck={false}
                   maxLength={300}
-                  className="w-full bg-transparent text-lg font-light tracking-wide text-white caret-[#FF2E4C] outline-none sm:text-xl"
+                  className="w-full bg-transparent text-lg font-light tracking-wide text-slate-900 caret-sky-600 outline-none sm:text-xl"
                 />
               </div>
 
@@ -584,12 +584,12 @@ export default function SemanticSearchModal({
             {/* Thân */}
             {status === "idle" && (
               <div className="px-5 pb-5 pt-4">
-                <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/40">
+                <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
                   Bạn đang cảm thấy thế nào?
                 </p>
                 <MoodPills onPick={applyPrompt} />
-                <p className="mt-5 flex items-center gap-2 text-xs text-white/35">
-                  <Sparkles className="h-3.5 w-3.5 text-[#FF2E4C]" aria-hidden="true" />
+                <p className="mt-5 flex items-center gap-2 text-xs text-slate-500">
+                  <Sparkles className="h-3.5 w-3.5 text-sky-600" aria-hidden="true" />
                   Hãy mô tả nội dung, cảm xúc hay cốt truyện, AI sẽ hiểu ý bạn, không cần nhớ tên phim.
                 </p>
               </div>
@@ -604,12 +604,12 @@ export default function SemanticSearchModal({
 
             {status === "error" && (
               <div className="flex flex-col items-center gap-3 px-5 py-10 text-center">
-                <AlertTriangle className="h-8 w-8 text-[#FF2E4C]" aria-hidden="true" />
-                <p className="text-sm text-white/70">Chưa kết nối được tìm kiếm AI. Bạn kiểm tra mạng rồi thử lại nhé.</p>
+                <AlertTriangle className="h-8 w-8 text-red-500" aria-hidden="true" />
+                <p className="text-sm text-slate-600">Chưa kết nối được tìm kiếm AI. Bạn kiểm tra mạng rồi thử lại nhé.</p>
                 <button
                   type="button"
                   onClick={() => void runSearch(trimmed)}
-                  className="rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-white/10"
+                  className="rounded-full border border-slate-200 bg-slate-100 px-4 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-200"
                 >
                   Thử lại
                 </button>
@@ -618,8 +618,8 @@ export default function SemanticSearchModal({
 
             {status === "success" && results.length === 0 && (
               <div className="px-5 pb-5 pt-8 text-center">
-                <p className="text-sm text-white/70">Chưa tìm thấy phim khớp với mô tả này.</p>
-                <p className="mb-4 mt-1 text-xs text-white/40">Thử mô tả khác hoặc chọn một tâm trạng:</p>
+                <p className="text-sm text-slate-700">Chưa tìm thấy phim khớp với mô tả này.</p>
+                <p className="mb-4 mt-1 text-xs text-slate-400">Thử mô tả khác hoặc chọn một tâm trạng:</p>
                 <div className="flex justify-center">
                   <MoodPills onPick={applyPrompt} />
                 </div>
@@ -628,7 +628,7 @@ export default function SemanticSearchModal({
 
             {results.length > 0 && status !== "error" && (
               <>
-                <p className="px-5 pt-3 text-[11px] text-white/40" aria-live="polite">
+                <p className="px-5 pt-3 text-[11px] text-slate-500" aria-live="polite">
                   {isLoading ? "Đang cập nhật…" : `${results.length} phim phù hợp nhất với "${truncate(trimmed, 48)}"`}
                 </p>
                 <ul
@@ -656,7 +656,7 @@ export default function SemanticSearchModal({
             )}
 
             {/* Chân: phím tắt + chế độ */}
-            <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/10 bg-white/[0.02] px-5 py-2.5 text-[11px] text-white/45">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 bg-slate-50 px-5 py-2.5 text-[11px] text-slate-500">
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                 <span className="inline-flex items-center gap-1">
                   <Kbd>
@@ -683,10 +683,10 @@ export default function SemanticSearchModal({
               </div>
               {mode && (
                 <span
-                  className="inline-flex items-center gap-1 text-white/50"
+                  className="inline-flex items-center gap-1 text-slate-600"
                   title={fallbackNote ?? undefined}
                 >
-                  <Sparkles className="h-3 w-3 text-[#FF2E4C]" aria-hidden="true" />
+                  <Sparkles className="h-3 w-3 text-sky-600" aria-hidden="true" />
                   {isLexical ? "Từ khóa (dự phòng)" : "AI ngữ nghĩa"}
                 </span>
               )}
@@ -707,7 +707,7 @@ function MoodPills({ onPick }: { onPick: (prompt: string) => void }) {
           type="button"
           onClick={() => onPick(mood.prompt)}
           style={{ "--pill-h": mood.hue } as CSSProperties}
-          className="sp-pill rounded-full border border-white/10 bg-white/5 px-3.5 py-1.5 text-sm text-white/80"
+          className="sp-pill rounded-full border border-slate-200 bg-slate-50 px-3.5 py-1.5 text-sm text-slate-700"
         >
           <span className="mr-1.5" aria-hidden="true">
             {mood.emoji}
@@ -724,23 +724,16 @@ function MoodPills({ onPick }: { onPick: (prompt: string) => void }) {
 // ---------------------------------------------------------------------------
 
 const STYLES = `
-@property --sp-hue { syntax: "<number>"; inherits: true; initial-value: 350; }
+@property --sp-hue { syntax: "<number>"; inherits: true; initial-value: 200; }
 
 .sp-panel { transition: --sp-hue 0.6s ease; animation: sp-pop 0.22s cubic-bezier(0.2, 0.9, 0.3, 1.15) both; }
 .sp-backdrop { animation: sp-fade 0.2s ease both; }
 
 .sp-neon {
-  background: linear-gradient(115deg,
-    hsl(var(--sp-hue) 95% 55%),
-    hsl(calc(var(--sp-hue) + 70) 95% 60%),
-    hsl(calc(var(--sp-hue) + 150) 90% 55%),
-    hsl(var(--sp-hue) 95% 55%));
+  background: linear-gradient(115deg, #0284c7, #38bdf8, #0ea5e9, #0284c7);
   background-size: 200% 100%;
   animation: sp-flow 6s linear infinite;
-  box-shadow:
-    0 0 0 1px hsl(var(--sp-hue) 90% 60% / 0.25),
-    0 0 70px -12px hsl(var(--sp-hue) 95% 55% / 0.55),
-    0 30px 80px -20px rgba(0, 0, 0, 0.9);
+  box-shadow: 0 10px 30px -10px rgba(2, 132, 199, 0.25);
 }
 .sp-neon[data-loading="true"] { animation-duration: 1.6s; }
 
@@ -749,17 +742,18 @@ const STYLES = `
 .sp-pill { transition: box-shadow 0.2s ease, background 0.2s ease, transform 0.2s ease, color 0.2s ease; }
 .sp-pill:hover, .sp-pill:focus-visible {
   outline: none;
-  color: #fff;
-  background: hsl(var(--pill-h) 90% 60% / 0.14);
-  box-shadow: 0 0 0 1px hsl(var(--pill-h) 90% 65% / 0.7), 0 0 22px -2px hsl(var(--pill-h) 95% 60% / 0.55);
+  color: #0369a1;
+  background: #f0f9ff;
+  border-color: #7dd3fc;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.15);
   transform: translateY(-1px);
 }
 
 .sp-card { transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease; }
 .sp-card[data-active="true"] {
-  background: rgba(255, 255, 255, 0.09);
-  border-color: rgba(255, 46, 76, 0.55);
-  box-shadow: 0 0 0 1px rgba(255, 46, 76, 0.25), 0 10px 30px -12px rgba(229, 9, 20, 0.5);
+  background: #f0f9ff;
+  border-color: #0284c7;
+  box-shadow: 0 0 0 1px #0284c7, 0 8px 24px -8px rgba(2, 132, 199, 0.25);
   transform: translateX(2px);
 }
 
@@ -767,23 +761,23 @@ const STYLES = `
 .sp-poster {
   transform: rotateY(-12deg) rotateX(2deg);
   transform-origin: center;
-  box-shadow: 10px 14px 24px -6px rgba(0, 0, 0, 0.85), 0 0 0 rgba(229, 9, 20, 0);
+  box-shadow: 4px 8px 16px -4px rgba(0, 0, 0, 0.15);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 .sp-card[data-active="true"] .sp-poster {
   transform: rotateY(-4deg) rotateX(1deg) scale(1.05);
-  box-shadow: 12px 18px 30px -6px rgba(0, 0, 0, 0.9), 0 0 26px rgba(229, 9, 20, 0.4);
+  box-shadow: 6px 12px 20px -4px rgba(2, 132, 199, 0.2);
 }
 
 .sp-clamp2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.sp-match { box-shadow: 0 0 16px -4px rgba(255, 46, 76, 0.6); }
+.sp-match { box-shadow: 0 0 12px -2px rgba(2, 132, 199, 0.25); }
 
 .sp-ticket-wrap {
   display: inline-block;
-  filter: drop-shadow(0 6px 14px hsl(352 95% 45% / 0.45));
+  filter: drop-shadow(0 4px 10px rgba(2, 132, 199, 0.3));
   transition: filter 0.25s ease, transform 0.2s ease;
 }
-.sp-ticket-wrap:hover { filter: drop-shadow(0 8px 22px hsl(352 100% 55% / 0.8)); transform: translateY(-1px); }
+.sp-ticket-wrap:hover { filter: drop-shadow(0 6px 14px rgba(2, 132, 199, 0.45)); transform: translateY(-1px); }
 .sp-ticket-wrap:active { transform: translateY(0) scale(0.98); }
 .sp-ticket {
   position: relative;
@@ -796,7 +790,7 @@ const STYLES = `
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.02em;
-  background: linear-gradient(135deg, #E50914 0%, #FF2E4C 100%);
+  background: #0284c7;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
   border-radius: 8px;
   -webkit-mask:
@@ -806,7 +800,8 @@ const STYLES = `
     radial-gradient(circle at 0 50%, #0000 6px, #000 6.5px) left / 51% 100% no-repeat,
     radial-gradient(circle at 100% 50%, #0000 6px, #000 6.5px) right / 51% 100% no-repeat;
 }
-.sp-ticket:focus-visible { outline: 2px solid #FFD700; outline-offset: 2px; }
+.sp-ticket:hover { background: #0369a1; }
+.sp-ticket:focus-visible { outline: 2px solid #0284c7; outline-offset: 2px; }
 .sp-ticket-stub { display: flex; align-items: center; padding: 8px 10px 8px 16px; font-size: 15px; }
 .sp-ticket-label {
   display: flex;
@@ -826,12 +821,12 @@ const STYLES = `
 .sp-ticket:hover::after { left: 130%; }
 
 .sp-shimmer {
-  background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.05) 75%);
+  background: linear-gradient(90deg, rgba(0,0,0,0.04) 25%, rgba(0,0,0,0.08) 50%, rgba(0,0,0,0.04) 75%);
   background-size: 200% 100%;
   animation: sp-shimmer 1.4s linear infinite;
 }
 
-.sp-scroll { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.18) transparent; }
+.sp-scroll { scrollbar-width: thin; scrollbar-color: rgba(0,0,0,0.15) transparent; }
 
 @keyframes sp-flow { to { background-position: 200% 0; } }
 @keyframes sp-pop { from { opacity: 0; transform: translateY(-10px) scale(0.96); } to { opacity: 1; transform: none; } }

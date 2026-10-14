@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 :root {
-  --background: #070b14;
-  --foreground: #f1f4f9;
+  --background: #ffffff;
+  --foreground: #0f172a;
 }
 
 body {
@@ -14,38 +14,39 @@ body {
   overflow-x: hidden;
 }
 
-/* Custom scrollbar - Navy/Gold theme */
+/* Custom scrollbar - Clean White/Slate theme */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #070b14;
+  background: #f8fafc;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1c2a42;
+  background: #cbd5e1;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #2b3e5f;
+  background: #94a3b8;
 }
 
-/* Cinema screen glow effect - Soft silver/warm gold instead of harsh neon */
+/* Cinema screen glow effect - Sky Blue */
 .cinema-screen-glow {
-  box-shadow: 0 -10px 35px -5px rgba(138, 153, 181, 0.25);
+  box-shadow: 0 -10px 35px -5px rgba(2, 132, 199, 0.2);
 }
 
 .cinema-screen-glow-warm {
-  box-shadow: 0 -10px 35px -5px rgba(201, 162, 39, 0.25);
+  box-shadow: 0 -10px 35px -5px rgba(14, 165, 233, 0.2);
 }
 
-/* Glassmorphism styling - Navy & Border Navy */
+/* Glassmorphism styling - Light Clean Panel */
 .glass-panel {
-  background: rgba(15, 24, 38, 0.85);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid #25324a;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
 }

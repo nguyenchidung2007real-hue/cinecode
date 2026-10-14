@@ -9,33 +9,33 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Bảng màu Navy / Vàng đồng sang trọng
-        void: "#070b14",          // Nền tối sâu nhất thay đen thuần
-        surface: "#0f1826",       // Bề mặt card/modal navy đậm
-        panel: "#131f33",         // Panel phụ cho combo, thông tin vé
-        "border-navy": "#25324a", // Viền navy trầm thay neutral-700/800
-        borderNavy: "#25324a",
-        background: "#070b14",
-        surfaceBorder: "#25324a",
+        // Bảng màu Trắng chủ đạo & Xanh da trời (Sky Blue) tiêu chuẩn
+        void: "#ffffff",          // Nền trắng chủ đạo
+        surface: "#ffffff",       // Bề mặt card/modal trắng
+        panel: "#f8fafc",         // Panel phụ slate-50
+        "border-navy": "#e2e8f0", // Viền slate-200
+        borderNavy: "#e2e8f0",
+        background: "#ffffff",
+        surfaceBorder: "#e2e8f0",
         accent: {
-          red: "#c9a227",         // Vàng đồng quý phái (CTA chính, ghế chọn)
-          redHover: "#a8871f",    // Vàng đồng hover
-          gold: "#d9b95c",        // Chữ nổi bật/giá tiền
-          cyan: "#8a99b5",        // Xanh xám ánh bạc thanh lịch (không neon)
-          purple: "#8a5a8f",      // Sweetbox tím mận trầm
+          red: "#0284c7",         // Sky-600 chuẩn cho nút bấm hành động chính
+          redHover: "#0369a1",    // Sky-700 hover
+          gold: "#0284c7",        // Sky-600 điểm nhấn
+          cyan: "#0ea5e9",        // Sky-500
+          purple: "#818cf8",      // Sweetbox tím nhẹ
         },
-        "gold-text": "#d9b95c",
-        goldText: "#d9b95c",
-        sweetbox: "#8a5a8f",
-        // Giữ tương thích token Beta Cinemas
-        betaNavy: "#070b14",
-        betaBlue: "#0f1826",
-        betaBlueLight: "#131f33",
-        betaCyan: "#8a99b5",
-        betaOrange: "#c9a227",
-        betaPink: "#8a5a8f",
-        betaGray: "#131f33",
-        betaBorder: "#25324a",
+        "gold-text": "#0369a1",
+        goldText: "#0369a1",
+        sweetbox: "#ec4899",
+        // Token Beta Cinemas tương thích
+        betaNavy: "#ffffff",
+        betaBlue: "#ffffff",
+        betaBlueLight: "#f1f5f9",
+        betaCyan: "#0ea5e9",
+        betaOrange: "#0284c7",
+        betaPink: "#ec4899",
+        betaGray: "#f8fafc",
+        betaBorder: "#e2e8f0",
       },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",

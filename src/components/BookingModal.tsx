@@ -760,19 +760,19 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md overflow-y-auto animate-in fade-in duration-200">
-      <div className="relative w-full max-w-4xl bg-surface border border-neutral-700 rounded-2xl overflow-hidden shadow-2xl my-auto text-white">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-md overflow-y-auto animate-in fade-in duration-200">
+      <div className="relative w-full max-w-4xl bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-2xl my-auto text-slate-800">
         {/* Header Modal */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-800 bg-neutral-900/50">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-accent-red/20 text-accent-red border border-accent-red/30 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-lg bg-sky-50 text-sky-600 border border-sky-200 flex items-center justify-center">
               <Ticket className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-extrabold text-base sm:text-lg text-white line-clamp-1">
+              <h3 className="font-extrabold text-base sm:text-lg text-slate-900 line-clamp-1">
                 Đặt vé: {movie.title}
               </h3>
-              <p className="text-xs text-neutral-400">
+              <p className="text-xs text-slate-500">
                 {step === 1 && "Bước 1: Chọn rạp & Suất chiếu"}
                 {step === 2 && "Bước 2: Chọn ghế ngồi phòng chiếu"}
                 {step === 3 && "Bước 3: Combo bắp nước & Thông tin"}
@@ -784,7 +784,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-neutral-800 hover:bg-neutral-700 flex items-center justify-center text-neutral-400 hover:text-white transition-colors"
+            className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-800 transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -794,7 +794,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
         {step === 1 && (
           <div className="p-6 space-y-6">
             <div>
-              <label className="block text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2">
+              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
                 1. Chọn cụm rạp
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -808,19 +808,19 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                     }}
                     className={`p-3.5 rounded-xl border cursor-pointer transition-all ${
                       selectedCinemaId === cinema.id
-                        ? "border-accent-red bg-accent-red/10 ring-1 ring-accent-red"
-                        : "border-neutral-800 bg-neutral-900/40 hover:border-neutral-700"
+                        ? "border-sky-500 bg-sky-50/50 ring-1 ring-sky-500"
+                        : "border-slate-200 bg-slate-50/50 hover:border-slate-300"
                     }`}
                   >
-                    <h4 className="font-bold text-sm text-white">{cinema.name}</h4>
-                    <p className="text-xs text-neutral-400 mt-0.5">{cinema.address}</p>
+                    <h4 className="font-bold text-sm text-slate-900">{cinema.name}</h4>
+                    <p className="text-xs text-slate-500 mt-0.5">{cinema.address}</p>
                   </div>
                 ))}
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2">
+              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
                 2. Chọn ngày & Suất chiếu
               </label>
               <div className="flex gap-2 overflow-x-auto pb-2">
@@ -834,8 +834,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                     }}
                     className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
                       selectedDate === date
-                        ? "bg-white text-black shadow-md"
-                        : "bg-neutral-900 border border-neutral-800 text-neutral-300 hover:bg-neutral-800"
+                        ? "bg-sky-600 text-white shadow-md"
+                        : "bg-slate-100 border border-slate-200 text-slate-700 hover:bg-slate-200"
                     }`}
                   >
                     {dateLabel(date, i)}
@@ -844,8 +844,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               </div>
 
               {visibleShowtimes.length === 0 ? (
-                <div className="mt-4 p-4 rounded-xl bg-neutral-900/60 border border-neutral-800 text-center">
-                  <p className="text-xs text-neutral-300">
+                <div className="mt-4 p-4 rounded-xl bg-slate-50 border border-slate-200 text-center">
+                  <p className="text-xs text-slate-600">
                     Chưa có suất chiếu phim này tại rạp/ngày đã chọn.
                   </p>
                   <button
@@ -853,7 +853,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                     onClick={() => {
                       setSelectedDate(dateOptions[1]);
                     }}
-                    className="mt-2.5 px-4 py-1.5 rounded-lg bg-[#034EA2]/30 hover:bg-[#034EA2]/50 text-[#00B2FF] font-bold text-xs border border-[#00B2FF]/30 transition-all inline-flex items-center gap-1.5"
+                    className="mt-2.5 px-4 py-1.5 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-600 font-bold text-xs border border-sky-200 transition-all inline-flex items-center gap-1.5"
                   >
                     <span>Xem suất chiếu Ngày mai</span>
                     <ArrowRight className="w-3.5 h-3.5" />
@@ -877,15 +877,15 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                           }}
                           className={`p-3 rounded-xl border text-center transition-all ${
                             started
-                              ? "border-neutral-800 bg-neutral-900/20 opacity-40 cursor-not-allowed"
+                              ? "border-slate-200 bg-slate-100 opacity-40 cursor-not-allowed text-slate-400"
                               : selectedShowtimeId === st.id
-                              ? "border-accent-red bg-accent-red/10 ring-1 ring-accent-red"
-                              : "border-neutral-800 bg-neutral-900/40 hover:border-neutral-700"
+                              ? "border-sky-500 bg-sky-50 ring-1 ring-sky-500"
+                              : "border-slate-200 bg-slate-50 hover:border-sky-300"
                           }`}
                         >
-                          <span className="block font-black text-base text-white">{st.time}</span>
-                          <span className="text-[11px] text-accent-cyan font-semibold">{st.format}</span>
-                          <span className="block text-[10px] text-neutral-400 mt-1">
+                          <span className="block font-black text-base text-slate-900">{st.time}</span>
+                          <span className="text-[11px] text-sky-600 font-semibold">{st.format}</span>
+                          <span className="block text-[10px] text-slate-500 mt-1">
                             {started ? "Đã chiếu" : st.roomName}
                           </span>
                         </button>
@@ -894,12 +894,12 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   </div>
 
                   {visibleShowtimes.length > 0 && visibleShowtimes.every((st) => showtimeStartMs(st) <= Date.now()) && (
-                    <div className="mt-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between text-xs text-amber-200">
+                    <div className="mt-3 p-3 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-between text-xs text-amber-800">
                       <span>Tất cả suất chiếu hôm nay tại rạp này đã kết thúc.</span>
                       <button
                         type="button"
                         onClick={() => setSelectedDate(dateOptions[1])}
-                        className="px-3 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-white font-bold transition-all"
+                        className="px-3 py-1 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold transition-all"
                       >
                         Xem Ngày mai
                       </button>
@@ -909,11 +909,11 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               )}
             </div>
 
-            <div className="pt-4 border-t border-neutral-800 flex justify-end">
+            <div className="pt-4 border-t border-slate-200 flex justify-end">
               <button
                 disabled={!selectedShowtimeId || (selectedShowtime ? showtimeStartMs(selectedShowtime) <= Date.now() : false)}
                 onClick={() => setStep(2)}
-                className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-accent-red hover:bg-accent-redHover disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm transition-all shadow-lg shadow-accent-red/20"
+                className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm transition-all shadow-md shadow-sky-600/30"
               >
                 <span>Tiếp tục: Chọn ghế</span>
                 <ArrowRight className="w-4 h-4" />
@@ -929,15 +929,15 @@ export const BookingModal: React.FC<BookingModalProps> = ({
             {alertBanner}
 
             {/* Thanh công cụ: Chế độ xem góc nhìn 3D (View from seat) & Sweet Spot */}
-            <div className="flex flex-wrap items-center justify-between gap-2.5 p-3 rounded-xl bg-white/[0.03] border border-white/10">
+            <div className="flex flex-wrap items-center justify-between gap-2.5 p-3 rounded-xl bg-slate-50 border border-slate-200">
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => setViewSeatMode(!viewSeatMode)}
                   className={`px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 border transition-all ${
                     viewSeatMode
-                      ? "bg-[#8a99b5]/20 border-[#8a99b5]/50 text-[#c7d0de] shadow-md"
-                      : "bg-neutral-800 border-neutral-700 text-neutral-300 hover:text-white hover:bg-neutral-700"
+                      ? "bg-sky-50 border-sky-300 text-sky-700 shadow-sm"
+                      : "bg-white border-slate-200 text-slate-700 hover:text-slate-900 hover:bg-slate-100"
                   }`}
                 >
                   <Eye className="w-3.5 h-3.5" />
@@ -948,26 +948,26 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   <button
                     type="button"
                     onClick={() => setPreviewSeat(selectedSeats[0])}
-                    className="px-3 py-1.5 rounded-xl text-xs font-semibold text-[#d9b95c] bg-[#c9a227]/10 border border-[#c9a227]/30 hover:bg-[#c9a227]/20 flex items-center gap-1.5 transition-colors"
+                    className="px-3.5 py-1.5 rounded-xl text-xs font-semibold text-amber-800 bg-amber-50 border border-amber-200 hover:bg-amber-100 flex items-center gap-1.5 transition-colors"
                   >
-                    <Sparkles className="w-3.5 h-3.5 text-[#d9b95c]" />
+                    <Sparkles className="w-3.5 h-3.5 text-amber-600" />
                     <span>Góc nhìn ghế {selectedSeats[0].id}</span>
                   </button>
                 )}
               </div>
 
-              <div className="flex items-center gap-1.5 text-[11px] text-[#d9b95c]/90 font-medium">
-                <Sparkles className="w-3.5 h-3.5 text-[#d9b95c]" />
+              <div className="flex items-center gap-1.5 text-[11px] text-amber-700 font-medium">
+                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
                 <span>Hàng F - G: Vị trí vàng Sweet Spot (Dolby Atmos & THX)</span>
               </div>
             </div>
 
             {/* Cảnh báo Chống Ghế Mồ Côi (Orphan Seat Warning Banner) */}
             {orphanWarning && (
-              <div className="flex items-start gap-3 p-3.5 rounded-xl bg-red-600/20 border border-red-500/60 text-red-200 text-xs shadow-lg shadow-black/40">
-                <AlertTriangle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+              <div className="flex items-start gap-3 p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs shadow-sm">
+                <AlertTriangle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
                 <div>
-                  <span className="font-bold block text-red-300 uppercase tracking-wider text-[11px]">
+                  <span className="font-bold block text-red-800 uppercase tracking-wider text-[11px]">
                     Quy tắc Chống Ghế Mồ Côi (Orphan Seat Rule)
                   </span>
                   <span className="mt-0.5 block">{orphanWarning}</span>
@@ -980,8 +980,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               className="flex flex-col items-center pt-2 origin-top"
               style={getScreen3DStyle(selectedSeats[selectedSeats.length - 1]?.id)}
             >
-              <div className="w-3/4 h-2 bg-gradient-to-r from-transparent via-accent-cyan to-transparent rounded-full shadow-lg shadow-black/50" />
-              <span className="text-[10px] uppercase tracking-widest text-[#8a99b5] font-extrabold mt-1.5 opacity-90">
+              <div className="w-3/4 h-2 bg-gradient-to-r from-transparent via-sky-500 to-transparent rounded-full shadow-sm" />
+              <span className="text-[10px] uppercase tracking-widest text-slate-400 font-extrabold mt-1.5 opacity-90">
                 MÀN HÌNH CHIẾU CONG (CINEMA SCREEN)
               </span>
             </div>
@@ -995,7 +995,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   <div key={rIdx} className="flex items-center justify-center gap-1.5 min-w-[520px]">
                     <span
                       className={`w-6 text-xs font-bold text-center flex items-center justify-center gap-0.5 ${
-                        isSweetSpotRow ? "text-[#d9b95c] font-black" : "text-neutral-500"
+                        isSweetSpotRow ? "text-amber-600 font-black" : "text-slate-400"
                       }`}
                       title={isSweetSpotRow ? "Hàng ghế Sweet Spot - Vị trí vàng" : undefined}
                     >
@@ -1017,15 +1017,15 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                               className={`w-7 h-7 sm:w-8 sm:h-8 rounded-md text-[10px] sm:text-xs font-bold flex items-center justify-center transition-all ${
                                 isBooked
                                   ? heldByOther
-                                    ? "bg-amber-900/20 border border-dashed border-amber-700/50 text-amber-700/70 cursor-not-allowed"
-                                    : "bg-neutral-800/40 border border-neutral-800 text-neutral-600 cursor-not-allowed"
+                                    ? "bg-amber-50 border border-dashed border-amber-300 text-amber-500/80 cursor-not-allowed"
+                                    : "bg-slate-100 border border-slate-200 text-slate-300 cursor-not-allowed"
                                   : isSelected
-                                  ? "bg-accent-red text-black shadow-lg shadow-black/40 scale-105 ring-2 ring-white/60 font-black"
+                                  ? "bg-sky-600 text-white shadow-md shadow-sky-600/30 scale-105 ring-2 ring-sky-300 font-black"
                                   : seat.type === "vip"
-                                  ? "bg-amber-700/20 border border-amber-600/40 text-amber-200 hover:bg-amber-700/40 hover:scale-105"
+                                  ? "bg-amber-50 border border-amber-300 text-amber-800 hover:bg-amber-100 hover:scale-105"
                                   : seat.type === "couple"
-                                  ? "bg-[#8a5a8f]/20 border border-[#8a5a8f]/40 text-[#d9b95c] hover:bg-[#8a5a8f]/40 w-16 hover:scale-105"
-                                  : "bg-neutral-800 border border-neutral-700 text-neutral-300 hover:bg-neutral-700 hover:scale-105"
+                                  ? "bg-pink-50 border border-pink-300 text-pink-700 hover:bg-pink-100 w-16 hover:scale-105"
+                                  : "bg-slate-100 border border-slate-200 text-slate-700 hover:bg-slate-200 hover:scale-105"
                               }`}
                             >
                               {seat.id}
@@ -1040,7 +1040,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                                   setPreviewSeat(seat);
                                 }}
                                 title={`Xem góc nhìn từ ghế ${seat.id}`}
-                                className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-[#8a99b5] text-black hidden group-hover:flex items-center justify-center shadow-md scale-90 hover:scale-110 z-10"
+                                className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-sky-500 text-white hidden group-hover:flex items-center justify-center shadow-md scale-90 hover:scale-110 z-10"
                               >
                                 <Eye className="w-2.5 h-2.5" />
                               </button>
@@ -1055,40 +1055,40 @@ export const BookingModal: React.FC<BookingModalProps> = ({
             </div>
 
             {/* Chú thích loại ghế */}
-            <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-neutral-400 pt-2 border-t border-neutral-800">
+            <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-slate-600 pt-2 border-t border-slate-200">
               <div className="flex items-center gap-1.5">
-                <div className="w-4 h-4 rounded bg-neutral-800 border border-neutral-700" />
+                <div className="w-4 h-4 rounded bg-slate-100 border border-slate-300" />
                 <span>Thường (55k)</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <div className="w-4 h-4 rounded bg-amber-700/20 border border-amber-600/40" />
+                <div className="w-4 h-4 rounded bg-amber-50 border border-amber-300" />
                 <span>VIP (75k)</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <div className="w-4 h-4 rounded bg-[#8a5a8f]/20 border border-[#8a5a8f]/40" />
+                <div className="w-4 h-4 rounded bg-pink-50 border border-pink-300" />
                 <span>Sweetbox Đôi (130k)</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <div className="w-4 h-4 rounded bg-accent-red" />
-                <span className="text-white font-bold">Đang chọn</span>
+                <div className="w-4 h-4 rounded bg-sky-600" />
+                <span className="text-slate-900 font-bold">Đang chọn</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <div className="w-4 h-4 rounded bg-amber-900/20 border border-dashed border-amber-700/50" />
+                <div className="w-4 h-4 rounded bg-amber-50 border border-dashed border-amber-300" />
                 <span>Đang được giữ</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <div className="w-4 h-4 rounded bg-neutral-800/40 border border-neutral-800" />
+                <div className="w-4 h-4 rounded bg-slate-100 border border-slate-200" />
                 <span>Đã đặt</span>
               </div>
-              <div className="flex items-center gap-1.5 text-[#d9b95c] font-medium">
+              <div className="flex items-center gap-1.5 text-amber-600 font-medium">
                 <span>★ Sweet Spot</span>
               </div>
             </div>
 
-            <div className="flex items-center justify-between pt-4 border-t border-neutral-800">
+            <div className="flex items-center justify-between pt-4 border-t border-slate-200">
               <button
                 onClick={() => setStep(1)}
-                className="flex items-center gap-1.5 text-xs text-neutral-400 hover:text-white"
+                className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-800"
               >
                 <ArrowLeft className="w-4 h-4" />
                 <span>Quay lại</span>
@@ -1096,8 +1096,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
               <div className="flex items-center gap-4">
                 <div className="text-right">
-                  <span className="text-xs text-neutral-400">Đã chọn {selectedSeats.length} ghế: </span>
-                  <span className="text-sm font-bold text-accent-red">
+                  <span className="text-xs text-slate-500">Đã chọn {selectedSeats.length} ghế: </span>
+                  <span className="text-sm font-bold text-sky-600">
                     {formatVND(seatsTotal)}
                   </span>
                 </div>
@@ -1108,7 +1108,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                     h.hold(selectedSeats.map((s) => s.id));
                     setStep(3);
                   }}
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-accent-red hover:bg-accent-redHover disabled:opacity-50 text-white font-bold text-sm transition-all"
+                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 disabled:opacity-50 text-white font-bold text-sm shadow-md shadow-sky-600/30 transition-all"
                 >
                   <span>Tiếp tục: Bắp nước</span>
                   <ArrowRight className="w-4 h-4" />
@@ -1126,11 +1126,11 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
             <div>
               <div className="flex items-center justify-between mb-3">
-                <label className="block text-xs font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-1.5">
-                  <Utensils className="w-4 h-4 text-amber-400" />
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                  <Utensils className="w-4 h-4 text-amber-500" />
                   Combo Bắp & Nước Rạp Chiếu (Tùy Chọn Vị & Cỡ Ly)
                 </label>
-                <span className="text-[11px] text-accent-cyan font-medium">
+                <span className="text-[11px] text-sky-600 font-medium">
                   🍿 Tự do mix vị Phô mai / Caramel & Upsize ly 32oz
                 </span>
               </div>
@@ -1161,8 +1161,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                       key={combo.id}
                       className={`p-4 rounded-2xl border transition-all flex flex-col justify-between ${
                         qty > 0
-                          ? "bg-neutral-900 border-accent-gold/50 shadow-lg shadow-black/40"
-                          : "bg-neutral-900/40 border-neutral-800 hover:border-neutral-700"
+                          ? "bg-sky-50/50 border-sky-300 shadow-sm"
+                          : "bg-slate-50 border-slate-200 hover:border-slate-300"
                       }`}
                     >
                       <div>
@@ -1172,10 +1172,10 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                             <span className="text-2xl">{combo.icon}</span>
                             <div>
                               <div className="flex items-center gap-2">
-                                <h4 className="font-bold text-sm text-white">{combo.name}</h4>
+                                <h4 className="font-bold text-sm text-slate-900">{combo.name}</h4>
                               </div>
                               {combo.badge && (
-                                <span className="inline-block text-[9px] font-bold text-amber-400 bg-amber-400/10 px-1.5 py-0.2 rounded border border-amber-400/30 mt-0.5">
+                                <span className="inline-block text-[9px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.2 rounded border border-amber-200 mt-0.5">
                                   {combo.badge}
                                 </span>
                               )}
@@ -1183,16 +1183,16 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                           </div>
                         </div>
 
-                        <p className="text-xs text-neutral-400 mt-2 leading-relaxed">
+                        <p className="text-xs text-slate-500 mt-2 leading-relaxed">
                           {combo.description}
                         </p>
 
                         <div className="mt-2.5 flex items-baseline gap-2">
-                          <span className="text-sm font-black text-amber-400">
+                          <span className="text-sm font-black text-sky-600">
                             {formatVND(comboUnitPrice)}
                           </span>
                           {extraPerUnit > 0 && (
-                            <span className="text-[10px] text-neutral-400">
+                            <span className="text-[10px] text-slate-400">
                               (Gốc: {formatVND(combo.price)} + Phụ thu: {formatVND(extraPerUnit)})
                             </span>
                           )}
@@ -1200,16 +1200,16 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
                         {/* BẢNG TÙY BIẾN VỊ & NƯỚC KHI ĐÃ CHỌN QUANTITY > 0 */}
                         {qty > 0 && config && (
-                          <div className="mt-3.5 pt-3 border-t border-neutral-800 space-y-3 animate-in fade-in duration-200">
+                          <div className="mt-3.5 pt-3 border-t border-slate-200 space-y-3 animate-in fade-in duration-200">
                             {/* Chọn vị bắp */}
                             <div>
-                              <span className="text-[10px] font-bold text-neutral-300 uppercase tracking-wide block mb-1.5">
+                              <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wide block mb-1.5">
                                 🍿 Vị bắp ({combo.popcornSlots} phần):
                               </span>
                               {Array.from({ length: combo.popcornSlots }).map((_, slotIdx) => (
                                 <div key={slotIdx} className="space-y-1 mb-2">
                                   {combo.popcornSlots > 1 && (
-                                    <span className="text-[9px] text-neutral-400 block font-semibold">
+                                    <span className="text-[9px] text-slate-500 block font-semibold">
                                       Ngăn {slotIdx + 1}:
                                     </span>
                                   )}
@@ -1223,8 +1223,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                                           onClick={() => handleSetPopcornFlavor(combo.id, slotIdx, flavor.id as PopcornFlavor)}
                                           className={`px-2 py-1.5 rounded-lg text-[10px] font-semibold text-left transition-all border flex flex-col justify-between ${
                                             isSelected
-                                              ? "bg-amber-500/20 border-amber-500 text-amber-200 ring-1 ring-amber-500/50"
-                                              : "bg-neutral-950 border-neutral-800 text-neutral-400 hover:text-white"
+                                              ? "bg-amber-50 border-amber-400 text-amber-900 ring-1 ring-amber-400"
+                                              : "bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50"
                                           }`}
                                         >
                                           <span className="truncate">{flavor.name}</span>
@@ -1239,15 +1239,15 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
                             {/* Chọn nước & cỡ ly */}
                             <div>
-                              <span className="text-[10px] font-bold text-neutral-300 uppercase tracking-wide block mb-1.5">
+                              <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wide block mb-1.5">
                                 🥤 Nước ngọt & cỡ ly:
                               </span>
                               {Array.from({ length: combo.drinkSlots }).map((_, drinkIdx) => {
                                 const currentDrink = config.drinks[drinkIdx] || { type: "pepsi", size: "regular" };
                                 return (
-                                  <div key={drinkIdx} className="bg-neutral-950/80 p-2 rounded-xl border border-neutral-800 space-y-1.5 mb-2">
+                                  <div key={drinkIdx} className="bg-white p-2 rounded-xl border border-slate-200 space-y-1.5 mb-2">
                                     <div className="flex items-center justify-between text-[10px]">
-                                      <span className="font-semibold text-neutral-300">
+                                      <span className="font-semibold text-slate-700">
                                         Ly {drinkIdx + 1}:
                                       </span>
                                       {/* Nút toggle Upsize 32oz */}
@@ -1256,8 +1256,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                                         onClick={() => handleToggleDrinkSize(combo.id, drinkIdx)}
                                         className={`px-2 py-0.5 rounded-full text-[9px] font-bold transition-all border ${
                                           currentDrink.size === "large"
-                                            ? "bg-accent-cyan/20 border-accent-cyan text-accent-cyan"
-                                            : "bg-neutral-900 border-neutral-700 text-neutral-400 hover:text-white"
+                                            ? "bg-sky-50 border-sky-400 text-sky-700 font-bold"
+                                            : "bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200"
                                         }`}
                                       >
                                         {currentDrink.size === "large" ? "⚡ Ly Lớn 32oz (+12k)" : "22oz Tiêu Chuẩn"}
@@ -1275,8 +1275,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                                             onClick={() => handleSetDrinkType(combo.id, drinkIdx, drinkOpt.id as DrinkType)}
                                             className={`px-1.5 py-1 rounded text-[9px] font-medium text-left truncate transition-colors border ${
                                               isSelected
-                                                ? "bg-blue-600/30 border-blue-500 text-blue-200"
-                                                : "bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-white"
+                                                ? "bg-sky-600 text-white font-medium border-sky-600"
+                                                : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"
                                             }`}
                                           >
                                             {drinkOpt.name}
@@ -1293,21 +1293,21 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                       </div>
 
                       {/* Bộ điều khiển số lượng combo */}
-                      <div className="flex items-center justify-between mt-4 pt-3 border-t border-neutral-800">
-                        <span className="text-xs text-neutral-400 font-medium">Số lượng:</span>
+                      <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-200">
+                        <span className="text-xs text-slate-500 font-medium">Số lượng:</span>
                         <div className="flex items-center gap-2">
                           <button
                             type="button"
                             onClick={() => handleUpdateCombo(combo.id, -1)}
-                            className="w-7 h-7 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-white flex items-center justify-center text-sm font-bold transition-colors"
+                            className="w-7 h-7 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center text-sm font-bold transition-colors"
                           >
                             -
                           </button>
-                          <span className="text-sm font-bold w-5 text-center text-white">{qty}</span>
+                          <span className="text-sm font-bold w-5 text-center text-slate-900">{qty}</span>
                           <button
                             type="button"
                             onClick={() => handleUpdateCombo(combo.id, 1)}
-                            className="w-7 h-7 rounded-lg bg-accent-red hover:bg-accent-redHover text-white flex items-center justify-center text-sm font-bold shadow-md transition-colors"
+                            className="w-7 h-7 rounded-lg bg-sky-600 hover:bg-sky-700 text-white flex items-center justify-center text-sm font-bold shadow-sm transition-colors"
                           >
                             +
                           </button>
@@ -1320,20 +1320,20 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
               {/* Tóm tắt chi tiết bắp nước đã chọn */}
               {selectedConcessions.length > 0 && (
-                <div className="mt-4 p-3.5 bg-neutral-900/80 rounded-xl border border-neutral-800 space-y-2 text-xs">
-                  <span className="font-bold text-amber-400 uppercase tracking-wider block text-[10px]">
+                <div className="mt-4 p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-2 text-xs">
+                  <span className="font-bold text-sky-700 uppercase tracking-wider block text-[10px]">
                     🍿 Chi tiết combo bắp nước bạn đã chọn:
                   </span>
                   <div className="space-y-1.5">
                     {selectedConcessions.map((sc, i) => (
-                      <div key={i} className="flex items-center justify-between text-neutral-300">
+                      <div key={i} className="flex items-center justify-between text-slate-700">
                         <div>
-                          <span className="font-bold text-white">{sc.quantity}x {sc.name}</span>
-                          <span className="text-[10px] text-neutral-400 block">
+                          <span className="font-bold text-slate-900">{sc.quantity}x {sc.name}</span>
+                          <span className="text-[10px] text-slate-500 block">
                             Vị bắp: {sc.popcornFlavors.map(f => f === "cheese" ? "Phô mai" : f === "caramel" ? "Caramel" : f === "sweet" ? "Ngọt" : "Mặn").join(", ")} • Nước: {sc.drinks.map(d => `${d.type === "pepsi" ? "Pepsi" : d.type === "7up" ? "7Up" : d.type === "mirinda" ? "Mirinda" : "Trà đào"} (${d.size === "large" ? "32oz" : "22oz"})`).join(", ")}
                           </span>
                         </div>
-                        <span className="font-mono text-amber-400 font-bold">
+                        <span className="font-mono text-sky-600 font-bold">
                           {formatVND(sc.totalPrice)}
                         </span>
                       </div>
@@ -1345,23 +1345,23 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
             {/* Thông tin người nhận vé */}
             <div>
-              <label className="block text-xs font-bold text-neutral-400 uppercase tracking-wider mb-3">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">
                 Thông tin nhận vé điện tử
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs text-neutral-400 mb-1">Họ và tên *</label>
+                  <label className="block text-xs text-slate-500 mb-1">Họ và tên *</label>
                   <input
                     type="text"
                     required
                     value={customerName}
                     onChange={(e) => setCustomerName(e.target.value)}
                     placeholder="Nguyễn Văn A"
-                    className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-accent-cyan"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-sky-500 focus:bg-white transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-neutral-400 mb-1">Số điện thoại *</label>
+                  <label className="block text-xs text-slate-500 mb-1">Số điện thoại *</label>
                   <input
                     type="tel"
                     required
@@ -1369,41 +1369,41 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                     value={customerPhone}
                     onChange={(e) => setCustomerPhone(e.target.value)}
                     placeholder="0912 345 678"
-                    className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-accent-cyan"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-sky-500 focus:bg-white transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-neutral-400 mb-1">Email (tùy chọn)</label>
+                  <label className="block text-xs text-slate-500 mb-1">Email (tùy chọn)</label>
                   <input
                     type="email"
                     value={customerEmail}
                     onChange={(e) => setCustomerEmail(e.target.value)}
                     placeholder="email@example.com"
-                    className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-accent-cyan"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-sky-500 focus:bg-white transition-colors"
                   />
                 </div>
               </div>
             </div>
 
             {/* Tóm tắt thanh toán */}
-            <div className="p-4 rounded-xl bg-neutral-900/80 border border-neutral-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
               <div>
-                <span className="text-xs text-neutral-400">Rạp & Suất chiếu: </span>
-                <span className="text-xs font-bold text-white">{selectedCinema} - {selectedTime}</span>
-                <p className="text-xs text-neutral-400 mt-0.5">
-                  Ghế: <span className="text-white font-bold">{selectedSeats.map((s) => s.id).join(", ")}</span>
+                <span className="text-xs text-slate-500">Rạp & Suất chiếu: </span>
+                <span className="text-xs font-bold text-slate-900">{selectedCinema} - {selectedTime}</span>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Ghế: <span className="text-slate-900 font-bold">{selectedSeats.map((s) => s.id).join(", ")}</span>
                 </p>
               </div>
 
               <div className="flex items-center gap-4">
                 <div className="text-right">
-                  <p className="text-xs text-neutral-400">Tổng thanh toán</p>
-                  <p className="text-xl font-black text-accent-red">{formatVND(grandTotal)}</p>
+                  <p className="text-xs text-slate-500">Tổng thanh toán</p>
+                  <p className="text-xl font-black text-sky-600">{formatVND(grandTotal)}</p>
                 </div>
 
                 <button
                   type="submit"
-                  className="flex items-center gap-2 px-6 py-3 rounded-xl bg-accent-red hover:bg-accent-redHover text-white font-bold text-sm shadow-lg shadow-accent-red/30 transition-all"
+                  className="flex items-center gap-2 px-6 py-3 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-sm shadow-md shadow-sky-600/30 transition-all"
                 >
                   <span>Thanh Toán QR</span>
                   <ArrowRight className="w-4 h-4" />
@@ -1426,8 +1426,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 onClick={() => setPaymentMethod("vnpay")}
                 className={`py-2 px-2 rounded-xl text-xs font-bold transition-all border flex items-center justify-center gap-1.5 ${
                   paymentMethod === "vnpay"
-                    ? "bg-red-600/20 border-red-500 text-red-400 ring-1 ring-red-500"
-                    : "bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-white"
+                    ? "bg-red-50 border-red-400 text-red-600 ring-1 ring-red-400"
+                    : "bg-slate-50 border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-100"
                 }`}
               >
                 <div className="w-4 h-4 rounded bg-red-600 flex items-center justify-center text-[7px] text-white font-black">VN</div>
@@ -1439,8 +1439,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 onClick={() => setPaymentMethod("vietqr")}
                 className={`py-2 px-2 rounded-xl text-xs font-bold transition-all border flex items-center justify-center gap-1.5 ${
                   paymentMethod === "vietqr"
-                    ? "bg-blue-600/20 border-blue-500 text-blue-400 ring-1 ring-blue-500"
-                    : "bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-white"
+                    ? "bg-sky-50 border-sky-400 text-sky-600 ring-1 ring-sky-400"
+                    : "bg-slate-50 border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-100"
                 }`}
               >
                 <CreditCard className="w-3.5 h-3.5 shrink-0" />
@@ -1452,11 +1452,11 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 onClick={() => setPaymentMethod("momo")}
                 className={`py-2 px-2 rounded-xl text-xs font-bold transition-all border flex items-center justify-center gap-1.5 ${
                   paymentMethod === "momo"
-                    ? "bg-[#8a5a8f]/20 border-[#8a5a8f]/50 text-[#d9b95c] ring-1 ring-[#8a5a8f]"
-                    : "bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-white"
+                    ? "bg-pink-50 border-pink-400 text-pink-600 ring-1 ring-pink-400"
+                    : "bg-slate-50 border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-100"
                 }`}
               >
-                <div className="w-3.5 h-3.5 rounded-full bg-[#8a5a8f] flex items-center justify-center text-[8px] text-white font-black shrink-0">M</div>
+                <div className="w-3.5 h-3.5 rounded-full bg-pink-600 flex items-center justify-center text-[8px] text-white font-black shrink-0">M</div>
                 <span className="truncate">Ví MoMo</span>
               </button>
             </div>
@@ -1464,24 +1464,24 @@ export const BookingModal: React.FC<BookingModalProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
               {paymentMethod === "vnpay" ? (
                 /* Cột Cổng VNPay */
-                <div className="flex flex-col p-5 bg-gradient-to-b from-neutral-900 to-neutral-950 border border-neutral-800 rounded-2xl shadow-xl space-y-4">
-                  <div className="flex items-center justify-between border-b border-neutral-800 pb-3">
+                <div className="flex flex-col p-5 bg-slate-50 border border-slate-200 rounded-2xl shadow-sm space-y-4">
+                  <div className="flex items-center justify-between border-b border-slate-200 pb-3">
                     <div className="flex items-center gap-2">
                       <div className="w-6 h-6 rounded bg-red-600 flex items-center justify-center text-[9px] text-white font-black">VN</div>
-                      <span className="font-extrabold text-sm text-white">CỔNG THANH TOÁN VNPAY</span>
+                      <span className="font-extrabold text-sm text-slate-900">CỔNG THANH TOÁN VNPAY</span>
                     </div>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-red-500/15 text-red-400 border border-red-500/30">
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-red-50 text-red-600 border border-red-200">
                       Sandbox / Live
                     </span>
                   </div>
 
-                  <div className="space-y-2.5 text-xs text-neutral-300">
-                    <div className="p-3 bg-neutral-900/90 rounded-xl border border-neutral-800/80 space-y-1">
-                      <p className="font-semibold text-white flex items-center gap-1.5">
-                        <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                  <div className="space-y-2.5 text-xs text-slate-700">
+                    <div className="p-3 bg-white rounded-xl border border-slate-200 space-y-1">
+                      <p className="font-semibold text-slate-800 flex items-center gap-1.5">
+                        <Sparkles className="w-3.5 h-3.5 text-amber-500" />
                         <span>Phương thức hỗ trợ qua VNPay:</span>
                       </p>
-                      <ul className="list-disc list-inside text-neutral-400 space-y-0.5 text-[11px] pt-1">
+                      <ul className="list-disc list-inside text-slate-600 space-y-0.5 text-[11px] pt-1">
                         <li>Ứng dụng Ngân hàng quét mã <strong>VNPAY-QR</strong></li>
                         <li>Thẻ ATM nội địa (VCB, Techcombank, BIDV, NCB, MB...)</li>
                         <li>Thẻ quốc tế <strong>Visa, MasterCard, JCB</strong></li>
@@ -1489,8 +1489,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                       </ul>
                     </div>
 
-                    <div className="p-2.5 bg-blue-500/10 border border-blue-500/20 rounded-xl text-blue-300 text-[11px] flex items-start gap-2">
-                      <Info className="w-4 h-4 shrink-0 mt-0.5 text-blue-400" />
+                    <div className="p-2.5 bg-sky-50 border border-sky-200 rounded-xl text-sky-800 text-[11px] flex items-start gap-2">
+                      <Info className="w-4 h-4 shrink-0 mt-0.5 text-sky-600" />
                       <span>Sau khi nhấn thanh toán, bạn sẽ được chuyển hướng sang cổng bảo mật VNPay để hoàn tất giao dịch. Vé sẽ được kích hoạt tự động qua Webhook IPN.</span>
                     </div>
                   </div>
@@ -1538,12 +1538,12 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 />
               ) : (
                 /* Cột mã QR Chuyển khoản Ví MoMo */
-                <div className="flex flex-col items-center justify-center p-5 bg-white rounded-2xl shadow-xl text-black">
-                  <div className="flex items-center justify-between w-full border-b pb-2 mb-3">
-                    <span className="font-extrabold text-xs text-purple-700">
+                <div className="flex flex-col items-center justify-center p-5 bg-white border border-slate-200 rounded-2xl shadow-sm text-slate-800">
+                  <div className="flex items-center justify-between w-full border-b border-slate-200 pb-2 mb-3">
+                    <span className="font-extrabold text-xs text-pink-700">
                       VÍ ĐIỆN TỬ MOMO
                     </span>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-purple-100 text-purple-900">
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-pink-50 text-pink-700 border border-pink-200">
                       MOMO PAY
                     </span>
                   </div>
@@ -1554,42 +1554,42 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                     className="w-52 h-52 object-contain"
                   />
 
-                  <div className="mt-3 w-full text-center space-y-1.5 border-t pt-2.5">
+                  <div className="mt-3 w-full text-center space-y-1.5 border-t border-slate-200 pt-2.5">
                     <div className="flex items-center justify-between text-xs px-2">
-                      <span className="text-neutral-500">Số điện thoại:</span>
+                      <span className="text-slate-500">Số điện thoại:</span>
                       <button
                         type="button"
                         onClick={() => handleCopy("0388899999", "account")}
-                        className="flex items-center gap-1 font-mono font-bold text-neutral-900 hover:text-purple-600 bg-neutral-100 px-1.5 py-0.5 rounded"
+                        className="flex items-center gap-1 font-mono font-bold text-slate-900 hover:text-pink-600 bg-slate-100 px-1.5 py-0.5 rounded transition-colors"
                       >
                         <span>0388899999</span>
-                        <Copy className="w-3 h-3 text-neutral-500" />
+                        <Copy className="w-3 h-3 text-slate-400" />
                         {copiedField === "account" && <span className="text-[9px] text-emerald-600 font-sans">Đã chép!</span>}
                       </button>
                     </div>
 
                     <div className="flex items-center justify-between text-xs px-2">
-                      <span className="text-neutral-500">Số tiền:</span>
+                      <span className="text-slate-500">Số tiền:</span>
                       <button
                         type="button"
                         onClick={() => handleCopy(grandTotal.toString(), "amount")}
-                        className="flex items-center gap-1 font-black text-red-600 bg-red-50 px-1.5 py-0.5 rounded"
+                        className="flex items-center gap-1 font-black text-sky-600 bg-sky-50 px-1.5 py-0.5 rounded transition-colors"
                       >
                         <span>{formatVND(grandTotal)}</span>
-                        <Copy className="w-3 h-3 text-red-400" />
+                        <Copy className="w-3 h-3 text-sky-400" />
                         {copiedField === "amount" && <span className="text-[9px] text-emerald-600 font-sans">Đã chép!</span>}
                       </button>
                     </div>
 
                     <div className="flex items-center justify-between text-xs px-2">
-                      <span className="text-neutral-500">Nội dung:</span>
+                      <span className="text-slate-500">Nội dung:</span>
                       <button
                         type="button"
                         onClick={() => handleCopy(`VECINEMAX ${selectedSeats.map(s => s.id).join("")}`, "content")}
-                        className="flex items-center gap-1 font-mono text-[11px] font-semibold text-neutral-800 bg-neutral-100 px-1.5 py-0.5 rounded"
+                        className="flex items-center gap-1 font-mono text-[11px] font-semibold text-slate-800 bg-slate-100 px-1.5 py-0.5 rounded transition-colors"
                       >
                         <span>VECINEMAX {selectedSeats.map(s => s.id).join("")}</span>
-                        <Copy className="w-3 h-3 text-neutral-500" />
+                        <Copy className="w-3 h-3 text-slate-400" />
                         {copiedField === "content" && <span className="text-[9px] text-emerald-600 font-sans">Đã chép!</span>}
                       </button>
                     </div>
@@ -1599,34 +1599,34 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
               {/* Cột thông tin & nút xác nhận */}
               <div className="space-y-4">
-                <div className="bg-neutral-900/80 border border-neutral-800 rounded-xl p-4 space-y-2.5 text-xs">
-                  <h4 className="font-bold text-white text-sm border-b border-neutral-800 pb-2">
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2.5 text-xs text-slate-700">
+                  <h4 className="font-bold text-slate-900 text-sm border-b border-slate-200 pb-2">
                     Xác nhận đơn đặt vé
                   </h4>
                   <div className="flex justify-between">
-                    <span className="text-neutral-400">Phim:</span>
-                    <span className="font-bold text-white">{movie.title}</span>
+                    <span className="text-slate-500">Phim:</span>
+                    <span className="font-bold text-slate-900">{movie.title}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-neutral-400">Cụm rạp:</span>
-                    <span className="text-white">{selectedCinema}</span>
+                    <span className="text-slate-500">Cụm rạp:</span>
+                    <span className="text-slate-800">{selectedCinema}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-neutral-400">Suất chiếu:</span>
-                    <span className="text-white">{selectedDate} lúc {selectedTime}</span>
+                    <span className="text-slate-500">Suất chiếu:</span>
+                    <span className="text-slate-800">{selectedDate} lúc {selectedTime}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-neutral-400">Ghế đã chọn:</span>
-                    <span className="text-accent-cyan font-bold">{selectedSeats.map(s => s.id).join(", ")}</span>
+                    <span className="text-slate-500">Ghế đã chọn:</span>
+                    <span className="text-sky-600 font-bold">{selectedSeats.map(s => s.id).join(", ")}</span>
                   </div>
-                  <div className="flex justify-between border-t border-neutral-800 pt-2 font-bold">
-                    <span className="text-neutral-300">Tổng thanh toán:</span>
-                    <span className="text-accent-red text-sm">{formatVND(grandTotal)}</span>
+                  <div className="flex justify-between border-t border-slate-200 pt-2 font-bold">
+                    <span className="text-slate-700">Tổng thanh toán:</span>
+                    <span className="text-sky-600 text-base">{formatVND(grandTotal)}</span>
                   </div>
                 </div>
 
-                <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-300 text-xs flex items-center gap-2">
-                  <ShieldCheck className="w-5 h-5 flex-shrink-0" />
+                <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-xs flex items-center gap-2">
+                  <ShieldCheck className="w-5 h-5 flex-shrink-0 text-emerald-600" />
                   <span>
                     {paymentMethod === "vnpay"
                       ? "Bảo mật chuẩn PCI-DSS qua Cổng Thanh Toán VNPay."
@@ -1639,7 +1639,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                     <button
                       onClick={handlePayWithVnpay}
                       disabled={isRedirectingVnpay || h.status !== "held"}
-                      className="w-full py-3.5 rounded-xl bg-accent-red hover:bg-accent-redHover disabled:opacity-50 text-white font-extrabold text-sm shadow-lg shadow-accent-red/30 transition-all flex items-center justify-center gap-2"
+                      className="w-full py-3.5 rounded-xl bg-sky-600 hover:bg-sky-700 disabled:opacity-50 text-white font-extrabold text-sm shadow-md shadow-sky-600/30 transition-all flex items-center justify-center gap-2"
                     >
                       <ExternalLink className="w-4 h-4" />
                       <span>{isRedirectingVnpay ? "Đang kết nối cổng VNPay..." : `Thanh Toán Qua Cổng VNPay (${formatVND(grandTotal)})`}</span>
@@ -1648,7 +1648,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                     <button
                       onClick={handleConfirmPaid}
                       disabled={isSubmitting || h.status !== "held"}
-                      className="w-full py-3.5 rounded-xl bg-accent-red hover:bg-accent-redHover disabled:opacity-50 text-black font-extrabold text-sm shadow-lg shadow-black/40 transition-all flex items-center justify-center gap-2"
+                      className="w-full py-3.5 rounded-xl bg-sky-600 hover:bg-sky-700 disabled:opacity-50 text-white font-extrabold text-sm shadow-md shadow-sky-600/30 transition-all flex items-center justify-center gap-2"
                     >
                       <Check className="w-4 h-4" />
                       <span>{isSubmitting ? "Đang xác thực thanh toán..." : "Tôi Đã Chuyển Khoản Thành Công"}</span>
@@ -1657,7 +1657,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
                   <button
                     onClick={() => setStep(3)}
-                    className="w-full py-2 text-xs text-neutral-400 hover:text-white"
+                    className="w-full py-2 text-xs text-slate-500 hover:text-slate-800 transition-colors"
                   >
                     Quay lại chỉnh sửa thông tin
                   </button>
@@ -1670,63 +1670,63 @@ export const BookingModal: React.FC<BookingModalProps> = ({
         {/* BƯỚC 5: VÉ ĐIỆN TỬ VỚI MÃ QR CODE */}
         {step === 5 && completedBooking && (
           <div className="p-6 sm:p-8 flex flex-col items-center text-center space-y-6">
-            <div className="w-14 h-14 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center">
+            <div className="w-14 h-14 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center">
               <Check className="w-8 h-8" />
             </div>
 
             <div>
-              <h3 className="text-2xl font-black text-white">Đặt Vé Thành Công!</h3>
-              <p className="text-xs sm:text-sm text-neutral-400 mt-1">
+              <h3 className="text-2xl font-black text-slate-900">Đặt Vé Thành Công!</h3>
+              <p className="text-xs sm:text-sm text-slate-500 mt-1">
                 Vé điện tử đã được lưu vào <strong>Ví Vé Của Tôi</strong>. Vui lòng xuất trình mã QR này tại cổng rạp.
               </p>
             </div>
 
             {/* Thẻ Vé (Cinema Ticket Card) */}
-            <div className="relative w-full max-w-md bg-gradient-to-b from-neutral-900 to-neutral-950 border border-neutral-700/80 rounded-2xl p-6 shadow-2xl space-y-4 text-left">
-              <div className="flex items-center justify-between border-b border-neutral-800 pb-3">
+            <div className="relative w-full max-w-md bg-white border border-slate-200 rounded-2xl p-6 shadow-xl space-y-4 text-left text-slate-800">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div>
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-accent-red">VÉ ĐIỆN TỬ RẠP CHIẾU</span>
-                  <h4 className="text-base font-black text-white">{completedBooking.movieTitle}</h4>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-sky-600">VÉ ĐIỆN TỬ RẠP CHIẾU</span>
+                  <h4 className="text-base font-black text-slate-900">{completedBooking.movieTitle}</h4>
                 </div>
-                <span className="text-xs font-mono font-bold bg-neutral-800 px-2 py-1 rounded text-neutral-300">
+                <span className="text-xs font-mono font-bold bg-slate-100 px-2 py-1 rounded text-slate-700">
                   {completedBooking.bookingId}
                 </span>
               </div>
 
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div>
-                  <span className="text-neutral-500 block">Rạp:</span>
-                  <span className="font-semibold text-white">{completedBooking.cinemaName}</span>
+                  <span className="text-slate-500 block">Rạp:</span>
+                  <span className="font-semibold text-slate-800">{completedBooking.cinemaName}</span>
                 </div>
                 <div>
-                  <span className="text-neutral-500 block">Phòng:</span>
-                  <span className="font-semibold text-white">{completedBooking.roomName}</span>
+                  <span className="text-slate-500 block">Phòng:</span>
+                  <span className="font-semibold text-slate-800">{completedBooking.roomName}</span>
                 </div>
                 <div>
-                  <span className="text-neutral-500 block">Suất chiếu:</span>
-                  <span className="font-semibold text-white">{completedBooking.showDate} lúc {completedBooking.showTime}</span>
+                  <span className="text-slate-500 block">Suất chiếu:</span>
+                  <span className="font-semibold text-slate-800">{completedBooking.showDate} lúc {completedBooking.showTime}</span>
                 </div>
                 <div>
-                  <span className="text-neutral-500 block">Ghế ngồi:</span>
-                  <span className="font-extrabold text-accent-cyan text-sm">{completedBooking.seats.join(", ")}</span>
+                  <span className="text-slate-500 block">Ghế ngồi:</span>
+                  <span className="font-extrabold text-sky-600 text-sm">{completedBooking.seats.join(", ")}</span>
                 </div>
               </div>
 
               {/* Bắp & Nước đã đặt kèm */}
               {completedBooking.concessions && completedBooking.concessions.length > 0 && (
-                <div className="bg-neutral-950/80 rounded-xl p-3 border border-neutral-800 text-xs space-y-1.5">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400 block">
+                <div className="bg-slate-50 rounded-xl p-3 border border-slate-200 text-xs space-y-1.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700 block">
                     🍿 Bắp & Nước (Nhận tại quầy Concession):
                   </span>
                   {completedBooking.concessions.map((c, i) => (
-                    <div key={i} className="flex justify-between items-start text-neutral-300">
+                    <div key={i} className="flex justify-between items-start text-slate-700">
                       <div>
-                        <span className="font-semibold text-white">{c.quantity}x {c.name}</span>
-                        <span className="text-[10px] text-neutral-400 block">
+                        <span className="font-semibold text-slate-900">{c.quantity}x {c.name}</span>
+                        <span className="text-[10px] text-slate-500 block">
                           Vị: {c.popcornFlavors.map(f => f === "cheese" ? "Phô mai" : f === "caramel" ? "Caramel" : f === "sweet" ? "Ngọt" : "Mặn").join(", ")} • Nước: {c.drinks.map(d => `${d.type === "pepsi" ? "Pepsi" : d.type === "7up" ? "7Up" : d.type === "mirinda" ? "Mirinda" : "Trà đào"} (${d.size === "large" ? "32oz" : "22oz"})`).join(", ")}
                         </span>
                       </div>
-                      <span className="font-mono text-amber-400 font-bold">{formatVND(c.totalPrice)}</span>
+                      <span className="font-mono text-sky-600 font-bold">{formatVND(c.totalPrice)}</span>
                     </div>
                   ))}
                 </div>
@@ -1734,26 +1734,26 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
               {/* Mã QR Code */}
               {completedBooking.qrCodeUrl && (
-                <div className="flex flex-col items-center justify-center p-3 bg-white rounded-xl">
+                <div className="flex flex-col items-center justify-center p-3 bg-slate-50 rounded-xl border border-slate-200">
                   <img
                     src={completedBooking.qrCodeUrl}
                     alt="Mã QR Vé"
                     className="w-44 h-44 object-contain"
                   />
-                  <p className="text-[10px] text-neutral-600 font-mono mt-1 font-semibold">
+                  <p className="text-[10px] text-slate-500 font-mono mt-1 font-semibold">
                     Quét mã để Check-in tại cổng rạp
                   </p>
                 </div>
               )}
 
-              <div className="flex items-center justify-between border-t border-neutral-800 pt-3 text-xs">
+              <div className="flex items-center justify-between border-t border-slate-100 pt-3 text-xs">
                 <div>
-                  <span className="text-neutral-500 block">Khách hàng:</span>
-                  <span className="font-medium text-white">{completedBooking.customerName} - {completedBooking.customerPhone}</span>
+                  <span className="text-slate-500 block">Khách hàng:</span>
+                  <span className="font-medium text-slate-800">{completedBooking.customerName} - {completedBooking.customerPhone}</span>
                 </div>
                 <div className="text-right">
-                  <span className="text-neutral-500 block">Tổng tiền:</span>
-                  <span className="font-extrabold text-accent-red text-sm">{formatVND(completedBooking.totalAmount)}</span>
+                  <span className="text-slate-500 block">Tổng tiền:</span>
+                  <span className="font-extrabold text-sky-600 text-base">{formatVND(completedBooking.totalAmount)}</span>
                 </div>
               </div>
             </div>
@@ -1762,7 +1762,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
             <div className="flex items-center gap-3">
               <button
                 onClick={() => window.print()}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-white font-semibold text-xs border border-neutral-600 transition-colors"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs border border-slate-300 transition-colors"
               >
                 <Download className="w-4 h-4" />
                 <span>In / Lưu Vé PDF</span>
@@ -1770,7 +1770,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
               <button
                 onClick={onClose}
-                className="px-6 py-2.5 rounded-xl bg-accent-red hover:bg-accent-redHover text-white font-bold text-xs transition-colors"
+                className="px-6 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs shadow-md shadow-sky-600/30 transition-colors"
               >
                 Hoàn tất & Về Trang Chủ
               </button>

@@ -341,29 +341,29 @@ export default function StaffScannerPage() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-white flex flex-col font-sans">
+    <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans">
       {/* Top Header dành riêng cho nhân viên */}
-      <header className="sticky top-0 z-30 bg-neutral-900/90 backdrop-blur-md border-b border-neutral-800 px-4 py-3">
+      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 py-3">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <Link
               href="/"
-              className="w-8 h-8 rounded-lg bg-neutral-800 hover:bg-neutral-700 flex items-center justify-center text-neutral-300 transition-colors"
+              className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-700 transition-colors"
               title="Về Trang Chủ"
             >
               <ArrowLeft className="w-4 h-4" />
             </Link>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="font-extrabold text-sm sm:text-base tracking-tight text-white flex items-center gap-1.5">
-                  <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                <span className="font-extrabold text-sm sm:text-base tracking-tight text-slate-900 flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
                   CINEMAX STAFF • SOÁT VÉ
                 </span>
-                <span className="text-[10px] bg-accent-red/20 text-accent-red border border-accent-red/30 px-1.5 py-0.2 rounded font-bold">
+                <span className="text-[10px] bg-sky-100 text-sky-700 border border-sky-200 px-1.5 py-0.2 rounded font-bold">
                   BETA XUÂN THỦY
                 </span>
               </div>
-              <p className="text-[11px] text-neutral-400">
+              <p className="text-[11px] text-slate-500">
                 Xác thực mã QR chữ ký HMAC & chống dùng vé kép thời gian thực
               </p>
             </div>
@@ -379,8 +379,8 @@ export default function StaffScannerPage() {
               title={soundEnabled ? "Tắt âm thanh" : "Bật âm thanh"}
               className={`p-2 rounded-lg border transition-colors ${
                 soundEnabled
-                  ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
-                  : "bg-neutral-800 border-neutral-700 text-neutral-500"
+                  ? "bg-emerald-50 border-emerald-200 text-emerald-700"
+                  : "bg-slate-100 border-slate-200 text-slate-400"
               }`}
             >
               {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
@@ -389,9 +389,9 @@ export default function StaffScannerPage() {
             <button
               onClick={() => setShowConfigModal(true)}
               title="Cài đặt mã phân quyền nhân viên ca trực"
-              className="p-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 text-neutral-300 transition-colors flex items-center gap-1.5 text-xs font-medium"
+              className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 transition-colors flex items-center gap-1.5 text-xs font-medium"
             >
-              <Key className="w-4 h-4 text-amber-400" />
+              <Key className="w-4 h-4 text-amber-500" />
               <span>{staffId ? `NV: ${staffId}` : "Ca Trực"}</span>
             </button>
           </div>
@@ -403,12 +403,12 @@ export default function StaffScannerPage() {
         {/* Cột trái: Khung Camera & Quét mã (7 cols) */}
         <div className="lg:col-span-7 space-y-4">
           {/* Cụm chọn cổng soát vé */}
-          <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-3 flex items-center justify-between text-xs">
-            <span className="text-neutral-400 font-medium">Vị trí trực:</span>
+          <div className="bg-white border border-slate-200 rounded-xl p-3 flex items-center justify-between text-xs shadow-sm">
+            <span className="text-slate-600 font-medium">Vị trí trực:</span>
             <select
               value={selectedGate}
               onChange={(e) => setSelectedGate(e.target.value)}
-              className="bg-neutral-950 border border-neutral-700 text-white rounded-lg px-2.5 py-1 focus:outline-none focus:border-accent-cyan"
+              className="bg-slate-50 border border-slate-200 text-slate-800 rounded-lg px-2.5 py-1 focus:outline-none focus:border-sky-500"
             >
               <option value="Cổng 01 - Screen 1 (Beta Xuân Thủy)">Cổng 01 - Screen 1</option>
               <option value="Cổng 02 - Screen 2 (Beta Xuân Thủy)">Cổng 02 - Screen 2</option>
@@ -417,23 +417,23 @@ export default function StaffScannerPage() {
           </div>
 
           {/* KHUNG QUÉT CAMERA */}
-          <div className="relative bg-neutral-900 border-2 border-dashed border-neutral-700 rounded-2xl overflow-hidden shadow-2xl flex flex-col items-center justify-center min-h-[320px]">
+          <div className="relative bg-white border-2 border-dashed border-slate-300 rounded-2xl overflow-hidden shadow-sm flex flex-col items-center justify-center min-h-[320px]">
             <div id={html5QrCodeId} className="w-full h-full min-h-[300px]" />
 
             {!isScanning && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center space-y-3 bg-neutral-900/95">
-                <div className="w-16 h-16 rounded-2xl bg-neutral-800 flex items-center justify-center text-neutral-400 border border-neutral-700">
+              <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center space-y-3 bg-white/95">
+                <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 border border-slate-200">
                   <Camera className="w-8 h-8" />
                 </div>
                 <div>
-                  <h4 className="text-sm sm:text-base font-bold text-white">Camera Đang Tắt</h4>
-                  <p className="text-xs text-neutral-400 max-w-xs mt-1">
+                  <h4 className="text-sm sm:text-base font-bold text-slate-900">Camera Đang Tắt</h4>
+                  <p className="text-xs text-slate-500 max-w-xs mt-1">
                     Bật camera trên điện thoại hoặc máy tính bảng để quét mã QR vé khách hàng.
                   </p>
                 </div>
                 <button
                   onClick={startCamera}
-                  className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 flex items-center gap-2 transition-all"
+                  className="px-6 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs shadow-md shadow-sky-600/25 flex items-center gap-2 transition-all"
                 >
                   <Camera className="w-4 h-4" />
                   <span>Bật Camera Quét Mã</span>
@@ -445,7 +445,7 @@ export default function StaffScannerPage() {
               <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20">
                 <button
                   onClick={stopCamera}
-                  className="px-5 py-2 rounded-full bg-neutral-900/80 hover:bg-neutral-800 text-rose-400 border border-rose-500/40 text-xs font-semibold backdrop-blur-md flex items-center gap-1.5 shadow-lg"
+                  className="px-5 py-2 rounded-full bg-white/90 hover:bg-white text-rose-600 border border-rose-300 text-xs font-semibold backdrop-blur-md flex items-center gap-1.5 shadow-md"
                 >
                   <CameraOff className="w-4 h-4" />
                   <span>Dừng Camera</span>
@@ -455,15 +455,15 @@ export default function StaffScannerPage() {
           </div>
 
           {/* NHẬP MÃ THỦ CÔNG HOẶC TEST NHANH */}
-          <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-4 space-y-3">
+          <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-3 shadow-sm">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-neutral-400">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
                 Nhập Mã Token Thủ Công (Dự Phòng / Test)
               </span>
               {process.env.NODE_ENV !== "production" && (
                 <button
                   onClick={handleTestWithLatestLocalTicket}
-                  className="text-[11px] text-accent-cyan hover:underline flex items-center gap-1 font-semibold"
+                  className="text-[11px] text-sky-600 hover:underline flex items-center gap-1 font-semibold"
                 >
                   <Sparkles className="w-3 h-3" />
                   <span>Thử với vé vừa đặt trên máy (Dev)</span>
@@ -477,12 +477,12 @@ export default function StaffScannerPage() {
                 value={manualToken}
                 onChange={(e) => setManualToken(e.target.value)}
                 placeholder="Dán chuỗi token vé: TICKET-123456-ABC.3f7a..."
-                className="flex-1 bg-neutral-950 border border-neutral-700 rounded-xl px-3 py-2 text-xs font-mono text-white placeholder-neutral-500 focus:outline-none focus:border-accent-cyan"
+                className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono text-slate-800 placeholder-slate-400 focus:outline-none focus:border-sky-500"
               />
               <button
                 onClick={() => handleCheckInToken(manualToken)}
                 disabled={isProcessing || !manualToken.trim()}
-                className="px-4 py-2 rounded-xl bg-accent-cyan text-neutral-950 font-bold text-xs hover:bg-cyan-400 disabled:opacity-50 transition-colors flex items-center gap-1.5"
+                className="px-4 py-2 rounded-xl bg-sky-600 text-white font-bold text-xs hover:bg-sky-700 disabled:opacity-50 transition-colors flex items-center gap-1.5 shadow-sm"
               >
                 {isProcessing ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : "Kiểm tra"}
               </button>
@@ -494,31 +494,31 @@ export default function StaffScannerPage() {
         <div className="lg:col-span-5 space-y-4">
           {/* MÀN HÌNH KẾT QUẢ SOÁT VÉ HIỆN TẠI */}
           <div className="space-y-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-neutral-400">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
               Kết Quả Soát Vé Tức Thì
             </span>
 
             {scanResult ? (
               <div
-                className={`rounded-2xl border p-5 shadow-2xl transition-all ${
+                className={`rounded-2xl border p-5 shadow-sm transition-all ${
                   scanResult.status === "checked_in"
-                    ? "bg-emerald-950/40 border-emerald-500/60 text-emerald-200"
+                    ? "bg-emerald-50 border-emerald-300 text-emerald-900"
                     : scanResult.status === "already_used"
-                    ? "bg-rose-950/40 border-rose-500/60 text-rose-200 animate-pulse"
-                    : "bg-amber-950/40 border-amber-500/60 text-amber-200"
+                    ? "bg-rose-50 border-rose-300 text-rose-900 animate-pulse"
+                    : "bg-amber-50 border-amber-300 text-amber-900"
                 }`}
               >
                 <div className="flex items-center gap-3 mb-3">
                   {scanResult.status === "checked_in" ? (
-                    <div className="w-10 h-10 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center justify-center flex-shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 border border-emerald-300 flex items-center justify-center flex-shrink-0">
                       <CheckCircle2 className="w-6 h-6" />
                     </div>
                   ) : scanResult.status === "already_used" ? (
-                    <div className="w-10 h-10 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/40 flex items-center justify-center flex-shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-rose-100 text-rose-600 border border-rose-300 flex items-center justify-center flex-shrink-0">
                       <AlertTriangle className="w-6 h-6" />
                     </div>
                   ) : (
-                    <div className="w-10 h-10 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/40 flex items-center justify-center flex-shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-amber-100 text-amber-600 border border-amber-300 flex items-center justify-center flex-shrink-0">
                       <XCircle className="w-6 h-6" />
                     </div>
                   )}
@@ -527,11 +527,11 @@ export default function StaffScannerPage() {
                     <h3 className="font-black text-sm sm:text-base leading-tight">
                       {scanResult.message}
                     </h3>
-                    <p className="text-[10px] opacity-80 mt-0.5">
+                    <p className="text-[10px] opacity-75 mt-0.5">
                       Thời điểm quét: {scanResult.scannedAt || new Date().toLocaleTimeString("vi-VN")}
                     </p>
                     {scanResult.warning && (
-                      <p className="text-[11px] font-bold text-amber-300 bg-amber-950/60 border border-amber-500/40 rounded px-2 py-0.5 mt-1.5 inline-block">
+                      <p className="text-[11px] font-bold text-amber-800 bg-amber-100 border border-amber-300 rounded px-2 py-0.5 mt-1.5 inline-block">
                         ⚠️ {scanResult.warning}
                       </p>
                     )}
@@ -540,46 +540,46 @@ export default function StaffScannerPage() {
 
                 {/* Thông tin vé chi tiết */}
                 {scanResult.ticket && (
-                  <div className="bg-black/40 rounded-xl p-3 border border-white/10 space-y-2 text-xs text-white">
-                    <div className="flex items-center justify-between border-b border-white/10 pb-2">
-                      <span className="font-mono text-[10px] text-neutral-400">
+                  <div className="bg-white rounded-xl p-3 border border-slate-200 space-y-2 text-xs text-slate-800 shadow-sm">
+                    <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                      <span className="font-mono text-[10px] text-slate-500">
                         {scanResult.ticket.bookingId}
                       </span>
-                      <span className="font-extrabold text-amber-400">
+                      <span className="font-extrabold text-sky-600">
                         {scanResult.ticket.format}
                       </span>
                     </div>
 
-                    <div className="font-black text-sm text-white line-clamp-1">
+                    <div className="font-black text-sm text-slate-900 line-clamp-1">
                       {scanResult.ticket.movieTitle}
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2 text-[11px] text-neutral-300">
+                    <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-600">
                       <div>
-                        <span className="text-neutral-500 block text-[10px]">Phòng & Suất:</span>
+                        <span className="text-slate-400 block text-[10px]">Phòng & Suất:</span>
                         <span>{scanResult.ticket.roomName} • {scanResult.ticket.showTime}</span>
                       </div>
                       <div>
-                        <span className="text-neutral-500 block text-[10px]">Ghế khách ngồi:</span>
-                        <span className="font-extrabold text-accent-cyan text-sm">
+                        <span className="text-slate-400 block text-[10px]">Ghế khách ngồi:</span>
+                        <span className="font-extrabold text-sky-600 text-sm">
                           {scanResult.ticket.seats.join(", ")}
                         </span>
                       </div>
                       <div className="col-span-2">
-                        <span className="text-neutral-500 block text-[10px]">Khách hàng:</span>
+                        <span className="text-slate-400 block text-[10px]">Khách hàng:</span>
                         <span>{scanResult.ticket.customerName} - {scanResult.ticket.customerPhone}</span>
                       </div>
 
                       {/* Bắp & Nước giao tại quầy */}
                       {scanResult.ticket.concessions && scanResult.ticket.concessions.length > 0 && (
-                        <div className="col-span-2 pt-2 border-t border-white/10 space-y-1">
-                          <span className="text-[10px] font-bold text-amber-400 block uppercase tracking-wider">
+                        <div className="col-span-2 pt-2 border-t border-slate-100 space-y-1">
+                          <span className="text-[10px] font-bold text-slate-700 block uppercase tracking-wider">
                             🍿 Bắp Nước Nhận Tại Quầy:
                           </span>
                           {scanResult.ticket.concessions.map((c, i) => (
-                            <div key={i} className="text-[10px] text-neutral-200 bg-neutral-950/80 p-1.5 rounded-lg flex justify-between items-center border border-neutral-800">
+                            <div key={i} className="text-[10px] text-slate-700 bg-slate-50 p-1.5 rounded-lg flex justify-between items-center border border-slate-200">
                               <span>
-                                <strong className="text-white">{c.quantity}x {c.name}</strong> ({c.popcornFlavors.map(f => f === "cheese" ? "Phô mai" : f === "caramel" ? "Caramel" : f === "sweet" ? "Ngọt" : "Mặn").join("+")}, {c.drinks.map(d => `${d.type === "pepsi" ? "Pepsi" : d.type === "7up" ? "7Up" : d.type === "mirinda" ? "Mirinda" : "Trà đào"}${d.size === "large" ? " 32oz" : ""}`).join(", ")})
+                                <strong className="text-slate-900">{c.quantity}x {c.name}</strong> ({c.popcornFlavors.map(f => f === "cheese" ? "Phô mai" : f === "caramel" ? "Caramel" : f === "sweet" ? "Ngọt" : "Mặn").join("+")}, {c.drinks.map(d => `${d.type === "pepsi" ? "Pepsi" : d.type === "7up" ? "7Up" : d.type === "mirinda" ? "Mirinda" : "Trà đào"}${d.size === "large" ? " 32oz" : ""}`).join(", ")})
                               </span>
                             </div>
                           ))}
@@ -590,24 +590,24 @@ export default function StaffScannerPage() {
                 )}
               </div>
             ) : (
-              <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-8 text-center text-neutral-500 text-xs">
-                <QrCode className="w-10 h-10 mx-auto text-neutral-700 mb-2" />
+              <div className="bg-white border border-slate-200 rounded-2xl p-8 text-center text-slate-400 text-xs shadow-sm">
+                <QrCode className="w-10 h-10 mx-auto text-slate-300 mb-2" />
                 <p>Chưa có lượt quét nào. Hãy hướng camera vào mã QR vé của khách.</p>
               </div>
             )}
           </div>
 
           {/* NHẬT KÝ SOÁT VÉ GẦN ĐÂY */}
-          <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-4 space-y-3">
+          <div className="bg-white border border-slate-200 rounded-2xl p-4 space-y-3 shadow-sm">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-neutral-400 flex items-center gap-1.5">
-                <History className="w-3.5 h-3.5 text-accent-cyan" />
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
+                <History className="w-3.5 h-3.5 text-sky-600" />
                 Nhật Ký Ca Trực ({scanHistory.length})
               </span>
               {scanHistory.length > 0 && (
                 <button
                   onClick={() => setScanHistory([])}
-                  className="text-[10px] text-neutral-500 hover:text-neutral-300"
+                  className="text-[10px] text-slate-400 hover:text-slate-600"
                 >
                   Xóa lịch sử
                 </button>
@@ -616,20 +616,20 @@ export default function StaffScannerPage() {
 
             <div className="max-h-60 overflow-y-auto space-y-2 pr-1">
               {scanHistory.length === 0 ? (
-                <p className="text-[11px] text-neutral-600 text-center py-4">
+                <p className="text-[11px] text-slate-400 text-center py-4">
                   Chưa có lịch sử soát vé trong phiên làm việc này.
                 </p>
               ) : (
                 scanHistory.map((item) => (
                   <div
                     key={item.id}
-                    className="flex items-center justify-between text-xs p-2.5 rounded-lg bg-neutral-950/60 border border-neutral-800"
+                    className="flex items-center justify-between text-xs p-2.5 rounded-lg bg-slate-50 border border-slate-200"
                   >
                     <div>
-                      <div className="font-semibold text-white truncate max-w-[180px]">
+                      <div className="font-semibold text-slate-800 truncate max-w-[180px]">
                         {item.movieTitle || "Mã vé ngoài"}
                       </div>
-                      <div className="text-[10px] text-neutral-400">
+                      <div className="text-[10px] text-slate-500">
                         {item.seats ? `Ghế: ${item.seats.join(", ")}` : item.token.slice(0, 16) + "..."} • {item.timestamp}
                       </div>
                     </div>
@@ -637,8 +637,8 @@ export default function StaffScannerPage() {
                     <span
                       className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                         item.outcome === "checked_in"
-                          ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                          : "bg-rose-500/20 text-rose-400 border border-rose-500/30"
+                          ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                          : "bg-rose-50 text-rose-700 border border-rose-200"
                       }`}
                     >
                       {item.outcome === "checked_in" ? "HỢP LỆ" : "ĐÃ DÙNG"}
@@ -653,19 +653,19 @@ export default function StaffScannerPage() {
 
       {/* Modal Cài Đặt Thông Tin Nhân Viên Soát Vé */}
       {showConfigModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="bg-neutral-900 border border-neutral-700 rounded-2xl p-6 max-w-sm w-full space-y-4 text-white">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 max-w-sm w-full space-y-4 text-slate-800 shadow-xl">
             <div className="flex items-center gap-2">
-              <Key className="w-5 h-5 text-amber-400" />
-              <h3 className="font-bold text-base">Phân Quyền Nhân Viên Soát Vé</h3>
+              <Key className="w-5 h-5 text-amber-500" />
+              <h3 className="font-bold text-base text-slate-900">Phân Quyền Nhân Viên Soát Vé</h3>
             </div>
-            <p className="text-xs text-neutral-400">
+            <p className="text-xs text-slate-500">
               Nhập <strong>Mã nhân viên</strong> và <strong>Mật khẩu ca trực</strong> do rạp cấp. Khi soát vé, thông tin cá nhân sẽ được server xác thực và ghi vết chính xác vào vé.
             </p>
 
             <div className="space-y-3">
               <div>
-                <label className="block text-[11px] font-semibold text-neutral-400 uppercase mb-1">
+                <label className="block text-[11px] font-semibold text-slate-600 uppercase mb-1">
                   Mã nhân viên (Staff ID)
                 </label>
                 <input
@@ -673,12 +673,12 @@ export default function StaffScannerPage() {
                   defaultValue={staffId}
                   id="staff-id-input"
                   placeholder="Ví dụ: NV01"
-                  className="w-full bg-neutral-950 border border-neutral-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-accent-cyan"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-sky-500"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-neutral-400 uppercase mb-1">
+                <label className="block text-[11px] font-semibold text-slate-600 uppercase mb-1">
                   Mật khẩu ca trực (Passcode)
                 </label>
                 <input
@@ -686,7 +686,7 @@ export default function StaffScannerPage() {
                   defaultValue={staffPasscode}
                   id="staff-passcode-input"
                   placeholder="Nhập passcode ca trực"
-                  className="w-full bg-neutral-950 border border-neutral-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-accent-cyan"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-sky-500"
                 />
               </div>
             </div>
@@ -694,7 +694,7 @@ export default function StaffScannerPage() {
             <div className="flex justify-end gap-2 pt-2">
               <button
                 onClick={() => setShowConfigModal(false)}
-                className="px-4 py-2 rounded-xl bg-neutral-800 text-xs text-neutral-300 hover:bg-neutral-700"
+                className="px-4 py-2 rounded-xl bg-slate-100 text-xs text-slate-600 hover:bg-slate-200 font-medium"
               >
                 Hủy
               </button>
@@ -704,7 +704,7 @@ export default function StaffScannerPage() {
                   const passInput = document.getElementById("staff-passcode-input") as HTMLInputElement;
                   handleSaveStaff(idInput?.value || "", passInput?.value || "");
                 }}
-                className="px-4 py-2 rounded-xl bg-accent-red hover:bg-accent-redHover text-xs font-bold text-white"
+                className="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-xs font-bold text-white shadow-sm"
               >
                 Lưu vào máy
               </button>

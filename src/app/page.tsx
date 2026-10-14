@@ -245,14 +245,14 @@ export default function HomePage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
             <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h1 className="text-2xl font-black text-white flex items-center gap-2">
+                <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2">
                   {searchQuery ? (
-                    <>Kết quả tìm kiếm cho: <span className="text-accent-cyan">"{searchQuery}"</span></>
+                    <>Kết quả tìm kiếm cho: <span className="text-sky-600">"{searchQuery}"</span></>
                   ) : (
-                    <>Khám phá theo: <span className="text-accent-red">{MOOD_FILTERS.find(m => m.id === selectedMood)?.label || selectedGenre}</span></>
+                    <>Khám phá theo: <span className="text-sky-600">{MOOD_FILTERS.find(m => m.id === selectedMood)?.label || selectedGenre}</span></>
                   )}
                 </h1>
-                <p className="text-xs text-neutral-400 mt-1">
+                <p className="text-xs text-slate-500 mt-1">
                   Tìm thấy {filteredMovies.length} bộ phim phù hợp với sở thích của bạn
                 </p>
               </div>
@@ -263,7 +263,7 @@ export default function HomePage() {
                   setSelectedMood("all");
                   setSelectedGenre("Tất cả");
                 }}
-                className="text-xs text-accent-red hover:underline font-semibold self-start sm:self-auto"
+                className="text-xs text-sky-600 hover:underline font-semibold self-start sm:self-auto"
               >
                 Đặt lại tất cả bộ lọc
               </button>
@@ -282,14 +282,14 @@ export default function HomePage() {
               </div>
             ) : (
               <div className="py-20 text-center flex flex-col items-center justify-center space-y-3">
-                <SearchX className="w-12 h-12 text-neutral-600" />
-                <h3 className="text-lg font-bold text-neutral-300">Không tìm thấy bộ phim phù hợp</h3>
-                <p className="text-xs text-neutral-500 max-w-sm">
+                <SearchX className="w-12 h-12 text-slate-400" />
+                <h3 className="text-lg font-bold text-slate-800">Không tìm thấy bộ phim phù hợp</h3>
+                <p className="text-xs text-slate-500 max-w-sm">
                   Thử tìm kiếm với từ khóa khác hoặc bấm nút **"Hỏi AI"** để trợ lý gợi ý phim hợp ý bạn nhất!
                 </p>
                 <button
                   onClick={() => setIsAiChatOpen(true)}
-                  className="px-4 py-2 rounded-xl bg-accent-cyan/20 border border-accent-cyan/40 text-accent-cyan text-xs font-bold flex items-center gap-1.5 mt-2"
+                  className="px-4 py-2 rounded-xl bg-sky-50 border border-sky-200 text-sky-600 hover:bg-sky-100 text-xs font-bold flex items-center gap-1.5 mt-2 transition-colors"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
                   <span>Hỏi CineBot AI ngay</span>
@@ -320,18 +320,18 @@ export default function HomePage() {
 
             {/* 2. Thanh Chuyển Tab Phim Chuẩn Rạp Chiếu Thương Mại */}
             <div id="commercial-tabs" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 sm:mt-16 scroll-mt-24">
-              <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#034EA2]/30 pb-4">
+              <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-4">
                 <div className="flex items-center gap-4 sm:gap-8">
                   <button
                     onClick={() => setActiveCommercialTab("now_playing")}
                     className={`text-base sm:text-2xl font-black transition-all flex items-center gap-2 pb-3 -mb-4.5 border-b-2 ${
                       activeCommercialTab === "now_playing"
-                        ? "text-[#00B2FF] border-[#00B2FF] shadow-[0_2px_15px_rgba(0,178,255,0.4)]"
-                        : "text-slate-400 border-transparent hover:text-white"
+                        ? "text-sky-600 border-sky-600 shadow-[0_2px_10px_rgba(2,132,199,0.3)]"
+                        : "text-slate-500 border-transparent hover:text-slate-900"
                     }`}
                   >
                     <span>🎬 PHIM ĐANG CHIẾU</span>
-                    <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#034EA2]/40 text-[#00B2FF] font-black border border-[#00B2FF]/40">
+                    <span className="text-xs px-2.5 py-0.5 rounded-full bg-sky-50 text-sky-600 font-black border border-sky-200">
                       {nowPlayingMovies.length}
                     </span>
                   </button>
@@ -340,12 +340,12 @@ export default function HomePage() {
                     onClick={() => setActiveCommercialTab("upcoming")}
                     className={`text-base sm:text-2xl font-black transition-all flex items-center gap-2 pb-3 -mb-4.5 border-b-2 ${
                       activeCommercialTab === "upcoming"
-                        ? "text-[#00B2FF] border-[#00B2FF] shadow-[0_2px_15px_rgba(0,178,255,0.4)]"
-                        : "text-slate-400 border-transparent hover:text-white"
+                        ? "text-sky-600 border-sky-600 shadow-[0_2px_10px_rgba(2,132,199,0.3)]"
+                        : "text-slate-500 border-transparent hover:text-slate-900"
                     }`}
                   >
                     <span>⏳ PHIM SẮP CHIẾU</span>
-                    <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-600/20 text-blue-300 font-bold border border-blue-500/30">
+                    <span className="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 font-bold border border-slate-200">
                       {upcomingMovies.length}
                     </span>
                   </button>
@@ -354,19 +354,19 @@ export default function HomePage() {
                     onClick={() => setActiveCommercialTab("trending")}
                     className={`text-base sm:text-2xl font-black transition-all hidden sm:flex items-center gap-2 pb-3 -mb-4.5 border-b-2 ${
                       activeCommercialTab === "trending"
-                        ? "text-[#00B2FF] border-[#00B2FF] shadow-[0_2px_15px_rgba(0,178,255,0.4)]"
-                        : "text-slate-400 border-transparent hover:text-white"
+                        ? "text-sky-600 border-sky-600 shadow-[0_2px_10px_rgba(2,132,199,0.3)]"
+                        : "text-slate-500 border-transparent hover:text-slate-900"
                     }`}
                   >
                     <span>⭐ SUẤT CHIẾU ĐẶC BIỆT</span>
-                    <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#FF5722]/30 text-[#FF5722] font-black border border-[#FF5722]/40">
+                    <span className="text-xs px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-600 font-black border border-rose-200">
                       HOT
                     </span>
                   </button>
                 </div>
 
-                <div className="flex items-center gap-2 text-xs text-blue-200">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                <div className="flex items-center gap-2 text-xs text-slate-500">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
                   <span>Cập nhật lịch chiếu Beta Cinemas Xuân Thủy</span>
                 </div>
               </div>
@@ -403,12 +403,12 @@ export default function HomePage() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <Zap className="w-4 h-4 text-accent-cyan" />
-                  <h3 className="text-sm font-extrabold text-white tracking-wide">
+                  <Zap className="w-4 h-4 text-sky-600" />
+                  <h3 className="text-sm font-extrabold text-slate-900 tracking-wide">
                     Hôm nay tâm trạng bạn thế nào?
                   </h3>
                 </div>
-                <span className="text-[11px] text-neutral-400 font-mono">Gợi ý AI thông minh</span>
+                <span className="text-[11px] text-slate-500 font-mono">Gợi ý AI thông minh</span>
               </div>
 
               <div className="flex items-center gap-2.5 overflow-x-auto pb-2 scrollbar-none">
@@ -421,8 +421,8 @@ export default function HomePage() {
                       onClick={() => setSelectedMood(mood.id)}
                       className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all flex-shrink-0 border ${
                         isActive
-                          ? "bg-accent-red border-accent-red text-white shadow-lg shadow-accent-red/30 scale-105"
-                          : "bg-surface border-surfaceBorder text-neutral-300 hover:border-neutral-600 hover:text-white"
+                          ? "bg-sky-600 border-sky-600 text-white shadow-md shadow-sky-600/30 scale-105"
+                          : "bg-white border-slate-200 text-slate-700 hover:border-sky-400 hover:text-sky-600"
                       }`}
                     >
                       <Icon className="w-3.5 h-3.5" />
@@ -436,7 +436,7 @@ export default function HomePage() {
             {/* Thanh Tab bộ lọc thể loại nhanh */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
               <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-                <span className="text-xs font-bold text-neutral-500 uppercase tracking-wider mr-2 flex-shrink-0">
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider mr-2 flex-shrink-0">
                   Thể loại:
                 </span>
                 {GENRE_FILTERS.map((genre) => (
@@ -445,8 +445,8 @@ export default function HomePage() {
                     onClick={() => setSelectedGenre(genre)}
                     className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-all flex-shrink-0 ${
                       selectedGenre === genre
-                        ? "bg-white text-black shadow-md font-bold"
-                        : "bg-surface border border-surfaceBorder text-neutral-400 hover:text-white hover:border-neutral-700"
+                        ? "bg-sky-600 text-white shadow-md font-bold"
+                        : "bg-white border border-slate-200 text-slate-600 hover:text-slate-900 hover:border-slate-300"
                     }`}
                   >
                     {genre}
@@ -457,19 +457,19 @@ export default function HomePage() {
 
             {/* Banner quảng bá Trợ lý AI Groq */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
-              <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-accent-red/15 via-purple-950/20 to-accent-cyan/15 border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
+              <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-sky-50 via-blue-50 to-indigo-50 border border-sky-200 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-accent-red to-accent-cyan flex items-center justify-center text-white shadow-lg flex-shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-sky-600 flex items-center justify-center text-white shadow-md shadow-sky-600/30 flex-shrink-0">
                     <Sparkles className="w-5 h-5 animate-pulse" />
                   </div>
                   <div>
-                    <h3 className="font-extrabold text-sm sm:text-base text-white flex items-center gap-2">
+                    <h3 className="font-extrabold text-sm sm:text-base text-slate-900 flex items-center gap-2">
                       <span>Bạn chưa biết nên xem phim gì tối nay?</span>
-                      <span className="text-[10px] px-2 py-0.5 rounded font-bold bg-[#034EA2]/30 text-[#00B2FF] border border-[#00B2FF]/30">
+                      <span className="text-[10px] px-2 py-0.5 rounded font-bold bg-sky-100 text-sky-700 border border-sky-200">
                         Gợi Ý Thông Minh
                       </span>
                     </h3>
-                    <p className="text-xs text-neutral-400 mt-0.5">
+                    <p className="text-xs text-slate-600 mt-0.5">
                       Hỏi CineBot AI để được phân tích gu xem phim, tóm tắt đánh giá và tư vấn vị trí ghế ngồi đẹp nhất rạp chỉ trong 1 giây!
                     </p>
                   </div>
@@ -477,7 +477,7 @@ export default function HomePage() {
 
                 <button
                   onClick={() => setIsAiChatOpen(true)}
-                  className="px-5 py-2.5 rounded-xl bg-white text-black font-extrabold text-xs shadow-lg hover:bg-neutral-200 transition-all flex-shrink-0 transform hover:scale-105 active:scale-95"
+                  className="px-5 py-2.5 rounded-xl bg-sky-600 text-white font-extrabold text-xs shadow-md shadow-sky-600/30 hover:bg-sky-700 transition-all flex-shrink-0 transform hover:scale-105 active:scale-95"
                 >
                   Trò chuyện với AI ngay
                 </button>
@@ -488,66 +488,66 @@ export default function HomePage() {
             <section id="promo-section" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 scroll-mt-24">
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <span className="text-xs text-red-500 font-bold uppercase tracking-wider block">Ưu Đãi Rạp Chiếu</span>
-                  <h3 className="text-2xl font-black text-white tracking-tight flex items-center gap-2 mt-0.5">
+                  <span className="text-xs text-sky-600 font-bold uppercase tracking-wider block">Ưu Đãi Rạp Chiếu</span>
+                  <h3 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2 mt-0.5">
                     <span>KHUYẾN MÃI & SỰ KIỆN HOT</span>
-                    <Tag className="w-5 h-5 text-yellow-400" />
+                    <Tag className="w-5 h-5 text-amber-500" />
                   </h3>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-red-950/40 via-red-900/20 to-neutral-900 border border-red-500/30 p-5 flex flex-col justify-between group hover:border-red-500/60 transition-all hover:scale-[1.02]">
+                <div className="relative rounded-2xl overflow-hidden bg-white border border-slate-200 p-5 flex flex-col justify-between group hover:border-sky-400 hover:shadow-md transition-all hover:scale-[1.01]">
                   <div className="space-y-2">
-                    <span className="px-2.5 py-1 rounded-full text-[10px] font-black bg-red-600 text-white uppercase tracking-wider inline-block">
+                    <span className="px-2.5 py-1 rounded-full text-[10px] font-black bg-rose-50 text-rose-600 uppercase tracking-wider inline-block border border-rose-200">
                       Thứ 3 Vui Vẻ
                     </span>
-                    <h4 className="text-lg font-black text-white group-hover:text-red-400 transition-colors">
+                    <h4 className="text-lg font-black text-slate-900 group-hover:text-sky-600 transition-colors">
                       Đồng Giá Vé 45.000đ Mọi Suất Chiếu
                     </h4>
-                    <p className="text-xs text-gray-400 leading-relaxed">
+                    <p className="text-xs text-slate-600 leading-relaxed">
                       Áp dụng cho tất cả khách hàng vào thứ Ba hàng tuần tại mọi cụm rạp Beta Cinemas trên toàn quốc.
                     </p>
                   </div>
-                  <div className="pt-4 flex items-center justify-between text-xs text-gray-400 font-medium border-t border-white/10 mt-4">
+                  <div className="pt-4 flex items-center justify-between text-xs text-slate-500 font-medium border-t border-slate-100 mt-4">
                     <span>Hạn dùng: Đến hết 2026</span>
-                    <span className="text-red-400 font-bold flex items-center gap-1">Chi tiết →</span>
+                    <span className="text-sky-600 font-bold flex items-center gap-1">Chi tiết →</span>
                   </div>
                 </div>
 
-                <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-cyan-950/40 via-blue-900/20 to-neutral-900 border border-cyan-500/30 p-5 flex flex-col justify-between group hover:border-cyan-500/60 transition-all hover:scale-[1.02]">
+                <div className="relative rounded-2xl overflow-hidden bg-white border border-slate-200 p-5 flex flex-col justify-between group hover:border-sky-400 hover:shadow-md transition-all hover:scale-[1.01]">
                   <div className="space-y-2">
-                    <span className="px-2.5 py-1 rounded-full text-[10px] font-black bg-cyan-600 text-white uppercase tracking-wider inline-block">
+                    <span className="px-2.5 py-1 rounded-full text-[10px] font-black bg-sky-50 text-sky-600 uppercase tracking-wider inline-block border border-sky-200">
                       Beta Student Pass
                     </span>
-                    <h4 className="text-lg font-black text-white group-hover:text-cyan-400 transition-colors">
+                    <h4 className="text-lg font-black text-slate-900 group-hover:text-sky-600 transition-colors">
                       Ưu Đãi Học Sinh - Sinh Viên 45k - 50k
                     </h4>
-                    <p className="text-xs text-gray-400 leading-relaxed">
+                    <p className="text-xs text-slate-600 leading-relaxed">
                       Chỉ cần xuất trình thẻ học sinh, sinh viên tại quầy vé để nhận giá vé ưu đãi và giảm 20% combo bắp nước.
                     </p>
                   </div>
-                  <div className="pt-4 flex items-center justify-between text-xs text-gray-400 font-medium border-t border-white/10 mt-4">
+                  <div className="pt-4 flex items-center justify-between text-xs text-slate-500 font-medium border-t border-slate-100 mt-4">
                     <span>Áp dụng từ T2 đến T6</span>
-                    <span className="text-cyan-400 font-bold flex items-center gap-1">Chi tiết →</span>
+                    <span className="text-sky-600 font-bold flex items-center gap-1">Chi tiết →</span>
                   </div>
                 </div>
 
-                <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-amber-950/40 via-yellow-900/20 to-neutral-900 border border-yellow-500/30 p-5 flex flex-col justify-between group hover:border-yellow-500/60 transition-all hover:scale-[1.02]">
+                <div className="relative rounded-2xl overflow-hidden bg-white border border-slate-200 p-5 flex flex-col justify-between group hover:border-sky-400 hover:shadow-md transition-all hover:scale-[1.01]">
                   <div className="space-y-2">
-                    <span className="px-2.5 py-1 rounded-full text-[10px] font-black bg-amber-500 text-black uppercase tracking-wider inline-block">
+                    <span className="px-2.5 py-1 rounded-full text-[10px] font-black bg-amber-50 text-amber-600 uppercase tracking-wider inline-block border border-amber-200">
                       Sweetbox Couple Night
                     </span>
-                    <h4 className="text-lg font-black text-white group-hover:text-yellow-400 transition-colors">
+                    <h4 className="text-lg font-black text-slate-900 group-hover:text-sky-600 transition-colors">
                       Tặng Kèm Bắp Rang Bơ Khi Đặt Ghế Đôi
                     </h4>
-                    <p className="text-xs text-gray-400 leading-relaxed">
+                    <p className="text-xs text-slate-600 leading-relaxed">
                       Thưởng thức không gian ghế đôi nỉ nhung riêng tư và nhận ngay 1 bắp phô mai thơm giòn nóng hổi.
                     </p>
                   </div>
-                  <div className="pt-4 flex items-center justify-between text-xs text-gray-400 font-medium border-t border-white/10 mt-4">
+                  <div className="pt-4 flex items-center justify-between text-xs text-slate-500 font-medium border-t border-slate-100 mt-4">
                     <span>Khung giờ sau 20:00</span>
-                    <span className="text-yellow-400 font-bold flex items-center gap-1">Chi tiết →</span>
+                    <span className="text-sky-600 font-bold flex items-center gap-1">Chi tiết →</span>
                   </div>
                 </div>
               </div>

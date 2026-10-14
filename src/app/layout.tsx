@@ -11,8 +11,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="vi" className="dark">
-      <body className="bg-background text-neutral-100 min-h-screen antialiased selection:bg-accent-red selection:text-white">
+    <html lang="vi">
+      <body className="bg-white text-slate-800 min-h-screen antialiased selection:bg-sky-500 selection:text-white">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

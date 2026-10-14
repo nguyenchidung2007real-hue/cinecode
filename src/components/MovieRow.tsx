@@ -40,11 +40,11 @@ export const MovieRow: React.FC<MovieRowProps> = ({
       {/* Tiêu đề & Phụ đề */}
       <div className="flex items-end justify-between mb-4">
         <div>
-          <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight flex items-center gap-2">
+          <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
             {title}
           </h2>
           {subtitle && (
-            <p className="text-xs sm:text-sm text-neutral-400 mt-1">
+            <p className="text-xs sm:text-sm text-slate-500 mt-1">
               {subtitle}
             </p>
           )}
@@ -55,14 +55,14 @@ export const MovieRow: React.FC<MovieRowProps> = ({
           <button
             onClick={() => handleScroll("left")}
             aria-label="Cuộn trái"
-            className="w-8 h-8 rounded-full bg-neutral-900/80 hover:bg-neutral-800 border border-neutral-700/80 flex items-center justify-center text-white transition-colors"
+            className="w-8 h-8 rounded-full bg-white hover:bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-700 shadow-sm transition-colors"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
           <button
             onClick={() => handleScroll("right")}
             aria-label="Cuộn phải"
-            className="w-8 h-8 rounded-full bg-neutral-900/80 hover:bg-neutral-800 border border-neutral-700/80 flex items-center justify-center text-white transition-colors"
+            className="w-8 h-8 rounded-full bg-white hover:bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-700 shadow-sm transition-colors"
           >
             <ChevronRight className="w-4 h-4" />
           </button>

@@ -166,14 +166,14 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
         <button
           onClick={onToggle}
           aria-label="Mở Trợ lý AI"
-          className="fixed bottom-6 right-6 z-40 group flex items-center gap-2.5 p-3.5 sm:px-4 sm:py-3.5 rounded-full bg-gradient-to-r from-accent-red to-orange-600 text-white font-bold text-xs shadow-2xl shadow-accent-red/50 hover:shadow-accent-red/80 transition-all duration-300 transform hover:scale-105 active:scale-95"
+          className="fixed bottom-6 right-6 z-40 group flex items-center gap-2.5 p-3.5 sm:px-4 sm:py-3.5 rounded-full bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs shadow-xl shadow-sky-600/40 transition-all duration-300 transform hover:scale-105 active:scale-95"
         >
           <div className="relative">
             <Sparkles className="w-5 h-5 text-white animate-pulse" />
-            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-accent-cyan rounded-full animate-ping" />
+            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-sky-300 rounded-full animate-ping" />
           </div>
           <span className="hidden sm:inline">Hỏi Trợ Lý AI</span>
-          <span className="text-[10px] px-1.5 py-0.5 rounded bg-black/40 text-accent-cyan border border-accent-cyan/30 flex items-center gap-0.5">
+          <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/20 text-white border border-white/30 flex items-center gap-0.5">
             <Zap className="w-2.5 h-2.5" /> Siêu tốc
           </span>
         </button>
@@ -181,22 +181,22 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
 
       {/* Khung cửa sổ Chat */}
       {isOpen && (
-        <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 w-[95vw] sm:w-[430px] h-[580px] max-h-[85vh] glass-panel border border-neutral-700/80 rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 duration-200">
+        <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 w-[95vw] sm:w-[430px] h-[580px] max-h-[85vh] bg-white border border-slate-200 rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 duration-200 text-slate-800">
           {/* Header Cửa sổ Chat */}
-          <div className="px-4 py-3 bg-neutral-900/90 border-b border-neutral-800 flex items-center justify-between">
+          <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-accent-red to-accent-cyan flex items-center justify-center text-white shadow-md">
+              <div className="w-8 h-8 rounded-full bg-sky-600 flex items-center justify-center text-white shadow-sm">
                 <Bot className="w-4 h-4" />
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
-                  <h4 className="font-extrabold text-sm text-white">CineBot AI</h4>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded font-bold bg-[#034EA2]/30 text-[#00B2FF] border border-[#00B2FF]/40">
+                  <h4 className="font-extrabold text-sm text-slate-900">CineBot AI</h4>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded font-bold bg-sky-50 text-sky-700 border border-sky-200">
                     Trực Tuyến
                   </span>
                 </div>
-                <p className="text-[10px] text-emerald-400 flex items-center gap-1 font-medium">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <p className="text-[10px] text-emerald-600 flex items-center gap-1 font-medium">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   Gợi ý tâm trạng & Ghế chuẩn
                 </p>
               </div>
@@ -206,14 +206,14 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
               <button
                 onClick={handleClear}
                 title="Xóa lịch sử chat"
-                className="w-7 h-7 rounded-lg hover:bg-neutral-800 flex items-center justify-center text-neutral-400 hover:text-neutral-200 transition-colors"
+                className="w-7 h-7 rounded-lg hover:bg-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-700 transition-colors"
               >
                 <Trash2 className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={onToggle}
                 title="Đóng chat"
-                className="w-7 h-7 rounded-lg hover:bg-neutral-800 flex items-center justify-center text-neutral-400 hover:text-white transition-colors"
+                className="w-7 h-7 rounded-lg hover:bg-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-700 transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -229,7 +229,7 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
               >
                 <div className={`flex gap-2.5 max-w-[90%] ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}>
                   {msg.role === "assistant" && (
-                    <div className="w-6 h-6 rounded-full bg-accent-red/20 text-accent-red border border-accent-red/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <div className="w-6 h-6 rounded-full bg-sky-50 text-sky-600 border border-sky-200 flex items-center justify-center flex-shrink-0 mt-0.5">
                       <Bot className="w-3.5 h-3.5" />
                     </div>
                   )}
@@ -237,18 +237,18 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
                   <div
                     className={`rounded-2xl px-3.5 py-2.5 leading-relaxed shadow-sm ${
                       msg.role === "user"
-                        ? "bg-accent-red text-white font-medium rounded-tr-none"
-                        : "bg-neutral-900 border border-neutral-800 text-neutral-200 rounded-tl-none"
+                        ? "bg-sky-600 text-white font-medium rounded-tr-none"
+                        : "bg-slate-100 border border-slate-200 text-slate-800 rounded-tl-none"
                     }`}
                   >
                     <p className="whitespace-pre-wrap">{msg.content || "..."}</p>
-                    <span className="block text-[9px] text-neutral-400/80 text-right mt-1 font-mono">
+                    <span className="block text-[9px] text-slate-400 text-right mt-1 font-mono">
                       {msg.timestamp}
                     </span>
                   </div>
 
                   {msg.role === "user" && (
-                    <div className="w-6 h-6 rounded-full bg-neutral-800 text-neutral-300 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <div className="w-6 h-6 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center flex-shrink-0 mt-0.5">
                       <User className="w-3.5 h-3.5" />
                     </div>
                   )}
@@ -256,27 +256,27 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
 
                 {/* THẺ GỢI Ý ĐẶT VÉ NHANH (QUICK-BOOKING CARD) */}
                 {msg.role === "assistant" && msg.recommendation && (
-                  <div className="mt-2.5 ml-8 max-w-[85%] p-3 rounded-xl bg-gradient-to-br from-neutral-900/95 via-neutral-900/80 to-accent-red/10 border border-accent-red/40 shadow-xl shadow-black/50 backdrop-blur-md space-y-2.5 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                  <div className="mt-2.5 ml-8 max-w-[85%] p-3 rounded-xl bg-slate-50 border border-slate-200 shadow-sm space-y-2.5 animate-in fade-in slide-in-from-bottom-2 duration-300">
                     <div className="flex items-start gap-2.5">
                       {msg.recommendation.posterPath ? (
                         <img
                           src={msg.recommendation.posterPath}
                           alt={msg.recommendation.movieTitle}
-                          className="w-12 h-16 object-cover rounded-lg shadow-md border border-neutral-700/60 flex-shrink-0"
+                          className="w-12 h-16 object-cover rounded-lg shadow-sm border border-slate-200 flex-shrink-0"
                         />
                       ) : (
-                        <div className="w-12 h-16 bg-neutral-800 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <Film className="w-5 h-5 text-accent-red" />
+                        <div className="w-12 h-16 bg-slate-100 rounded-lg flex items-center justify-center flex-shrink-0 border border-slate-200">
+                          <Film className="w-5 h-5 text-sky-600" />
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
-                        <span className="inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded bg-accent-red/20 text-accent-red border border-accent-red/30">
+                        <span className="inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded bg-sky-50 text-sky-700 border border-sky-200">
                           <Sparkles className="w-2.5 h-2.5" /> Gợi ý chuẩn gu
                         </span>
-                        <h5 className="font-extrabold text-white text-xs mt-1 truncate">
+                        <h5 className="font-extrabold text-slate-900 text-xs mt-1 truncate">
                           {msg.recommendation.movieTitle}
                         </h5>
-                        <p className="text-[10px] text-neutral-400 line-clamp-2 mt-0.5 leading-relaxed">
+                        <p className="text-[10px] text-slate-500 line-clamp-2 mt-0.5 leading-relaxed">
                           {msg.recommendation.reason}
                         </p>
                       </div>
@@ -284,11 +284,11 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
 
                     {/* Vị trí ghế gợi ý */}
                     {msg.recommendation.suggestedSeats && msg.recommendation.suggestedSeats.length > 0 && (
-                      <div className="flex items-center justify-between text-[10px] px-2.5 py-1.5 rounded-lg bg-neutral-950/80 border border-neutral-800">
-                        <span className="text-neutral-400 flex items-center gap-1">
-                          <Armchair className="w-3 h-3 text-accent-cyan" /> Ghế Sweet Spot:
+                      <div className="flex items-center justify-between text-[10px] px-2.5 py-1.5 rounded-lg bg-white border border-slate-200">
+                        <span className="text-slate-500 flex items-center gap-1">
+                          <Armchair className="w-3 h-3 text-sky-600" /> Ghế Sweet Spot:
                         </span>
-                        <span className="font-mono font-bold text-accent-cyan tracking-wider">
+                        <span className="font-mono font-bold text-sky-600 tracking-wider">
                           {msg.recommendation.suggestedSeats.join(", ")}
                         </span>
                       </div>
@@ -305,7 +305,7 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
                           onSelectMovieForBooking(foundMovie, msg.recommendation?.suggestedSeats);
                         }
                       }}
-                      className="w-full py-2 px-3 rounded-lg bg-gradient-to-r from-accent-red to-orange-600 hover:from-accent-redHover hover:to-orange-500 text-white font-extrabold text-[11px] flex items-center justify-center gap-1.5 shadow-md shadow-accent-red/20 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
+                      className="w-full py-2 px-3 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-extrabold text-[11px] flex items-center justify-center gap-1.5 shadow-md shadow-sky-600/30 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
                     >
                       <Ticket className="w-3.5 h-3.5" />
                       Đặt vé nhanh ngay
@@ -316,25 +316,25 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
 
                 {/* THẺ ĐỀ XUẤT ĐẶT VÉ TỰ ĐỘNG TỪ GROQ FUNCTION CALLING */}
                 {msg.role === "assistant" && msg.bookingDraft && (
-                  <div className="mt-2.5 ml-8 max-w-[85%] p-3.5 rounded-xl bg-gradient-to-br from-neutral-900/95 via-neutral-900/90 to-red-950/40 border border-accent-red/50 shadow-xl shadow-black/50 backdrop-blur-md space-y-2.5 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                    <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-accent-red font-bold">
-                      <Sparkles className="w-3 h-3 text-amber-400" />
+                  <div className="mt-2.5 ml-8 max-w-[85%] p-3.5 rounded-xl bg-slate-50 border border-sky-200 shadow-sm space-y-2.5 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                    <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-sky-700 font-bold">
+                      <Sparkles className="w-3 h-3 text-amber-500" />
                       <span>Đề xuất đặt vé thông minh (Groq AI)</span>
                     </div>
 
                     <div>
-                      <h4 className="font-black text-sm text-white">{msg.bookingDraft.movieTitle}</h4>
-                      <p className="text-[10px] text-neutral-300 mt-0.5">
+                      <h4 className="font-black text-sm text-slate-900">{msg.bookingDraft.movieTitle}</h4>
+                      <p className="text-[10px] text-slate-500 mt-0.5">
                         📍 {msg.bookingDraft.cinemaName || "Beta Cinemas Xuân Thủy"} • 🕒 {msg.bookingDraft.showtimeLabel || "19:00"} ({msg.bookingDraft.format || "2D"})
                       </p>
                     </div>
 
                     <div className="flex flex-wrap gap-1.5 text-[10px]">
-                      <span className="px-2 py-0.5 rounded bg-neutral-950 border border-neutral-800 text-amber-400 font-medium">
+                      <span className="px-2 py-0.5 rounded bg-white border border-slate-200 text-slate-700 font-medium">
                         Ghế ({msg.bookingDraft.seatType}): {msg.bookingDraft.suggestedSeatIds.join(", ")}
                       </span>
                       {msg.bookingDraft.comboName && (
-                        <span className="px-2 py-0.5 rounded bg-neutral-950 border border-neutral-800 text-emerald-400 font-medium">
+                        <span className="px-2 py-0.5 rounded bg-white border border-slate-200 text-emerald-700 font-medium">
                           🍿 {msg.bookingDraft.comboQuantity || 1}x {msg.bookingDraft.comboName}
                         </span>
                       )}
@@ -368,7 +368,7 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
                           onSelectMovieForBooking(foundMovie, draft.suggestedSeatIds);
                         }
                       }}
-                      className="w-full py-2 px-3 rounded-lg bg-gradient-to-r from-accent-red to-orange-600 hover:from-accent-redHover hover:to-orange-500 text-white font-extrabold text-[11px] flex items-center justify-center gap-1.5 shadow-md shadow-accent-red/20 transition-all duration-200"
+                      className="w-full py-2 px-3 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-extrabold text-[11px] flex items-center justify-center gap-1.5 shadow-md shadow-sky-600/30 transition-all duration-200"
                     >
                       <Ticket className="w-3.5 h-3.5" />
                       Giữ ghế trên Redis & Mở đặt vé →
@@ -381,13 +381,13 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
             {/* Gợi ý câu hỏi nhanh theo tâm trạng */}
             {messages.length <= 2 && (
               <div className="pt-2">
-                <p className="text-[11px] font-semibold text-neutral-400 mb-2">Hỏi nhanh theo tâm trạng:</p>
+                <p className="text-[11px] font-semibold text-slate-500 mb-2">Hỏi nhanh theo tâm trạng:</p>
                 <div className="flex flex-col gap-1.5">
                   {SUGGESTIONS.map((item, idx) => (
                     <button
                       key={idx}
                       onClick={() => handleSend(item)}
-                      className="text-left text-[11px] px-3 py-1.5 rounded-xl bg-neutral-900/90 hover:bg-neutral-800 text-neutral-300 hover:text-white border border-neutral-800 transition-colors"
+                      className="text-left text-[11px] px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 transition-colors"
                     >
                       {item}
                     </button>
@@ -400,7 +400,7 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
           </div>
 
           {/* Ô nhập tin nhắn */}
-          <div className="p-3 bg-neutral-900/95 border-t border-neutral-800">
+          <div className="p-3 bg-slate-50 border-t border-slate-200">
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -414,12 +414,12 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Chia sẻ tâm trạng hoặc hỏi vị trí ghế..."
                 disabled={isStreaming}
-                className="flex-1 bg-neutral-950 text-xs text-white placeholder-neutral-500 px-3.5 py-2.5 rounded-xl border border-neutral-800 focus:outline-none focus:border-accent-cyan transition-colors"
+                className="flex-1 bg-white text-xs text-slate-900 placeholder-slate-400 px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-sky-500 transition-colors"
               />
               <button
                 type="submit"
                 disabled={!input.trim() || isStreaming}
-                className="w-9 h-9 rounded-xl bg-accent-red hover:bg-accent-redHover disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center text-white transition-all shadow-md flex-shrink-0"
+                className="w-9 h-9 rounded-xl bg-sky-600 hover:bg-sky-700 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center text-white transition-all shadow-md shadow-sky-600/30 flex-shrink-0"
               >
                 <Send className="w-4 h-4" />
               </button>

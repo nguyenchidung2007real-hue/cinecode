@@ -183,12 +183,12 @@ export function VietQRPaymentModal({
   };
 
   return (
-    <div className="bg-zinc-900/95 border border-zinc-800 rounded-2xl p-6 max-w-md mx-auto text-white shadow-2xl backdrop-blur-md">
+    <div className="bg-white border border-slate-200 rounded-2xl p-6 max-w-md mx-auto text-slate-800 shadow-xl">
       {/* Thanh tab lựa chọn phương thức thanh toán */}
-      <div className="grid grid-cols-2 gap-2 p-1 bg-zinc-950 rounded-xl mb-6 border border-zinc-800">
+      <div className="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-xl mb-6 border border-slate-200">
         <button
           type="button"
-          className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg bg-accent-red text-white font-medium text-sm shadow-lg"
+          className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg bg-sky-600 text-white font-medium text-sm shadow-md shadow-sky-600/30"
         >
           <QrCode className="w-4 h-4" />
           Chuyển khoản VietQR
@@ -197,10 +197,10 @@ export function VietQRPaymentModal({
           type="button"
           disabled={isRedirectingVNPay || isSimulating}
           onClick={() => void handleSwitchToVNPay()}
-          className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-zinc-400 hover:text-white text-sm transition disabled:opacity-50"
+          className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-200 text-sm transition disabled:opacity-50"
         >
           {isRedirectingVNPay ? (
-            <Loader2 className="w-4 h-4 animate-spin text-accent-red" />
+            <Loader2 className="w-4 h-4 animate-spin text-sky-600" />
           ) : (
             <CreditCard className="w-4 h-4" />
           )}
@@ -209,25 +209,25 @@ export function VietQRPaymentModal({
       </div>
 
       {errorMsg && (
-        <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/40 text-red-400 text-xs flex items-center gap-2">
-          <AlertCircle className="w-4 h-4 shrink-0" />
+        <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 shrink-0 text-red-500" />
           <span>{errorMsg}</span>
         </div>
       )}
 
       {isPaid ? (
         <div className="py-12 flex flex-col items-center justify-center text-center animate-in fade-in zoom-in duration-300">
-          <div className="w-16 h-16 rounded-full bg-emerald-500/20 border border-emerald-500 flex items-center justify-center mb-4">
-            <CheckCircle2 className="w-10 h-10 text-emerald-400" />
+          <div className="w-16 h-16 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center mb-4 text-emerald-600">
+            <CheckCircle2 className="w-10 h-10 text-emerald-600" />
           </div>
-          <h3 className="text-xl font-bold text-emerald-400">Thanh toán thành công!</h3>
-          <p className="text-zinc-400 text-sm mt-1">
+          <h3 className="text-xl font-bold text-emerald-700">Thanh toán thành công!</h3>
+          <p className="text-slate-500 text-sm mt-1">
             Máy chủ đã xác thực nhận {amount.toLocaleString("vi-VN")}đ. Đang xuất vé...
           </p>
         </div>
       ) : (
         <>
-          <div className="bg-white p-3 rounded-xl w-56 h-56 mx-auto mb-5 shadow-inner flex items-center justify-center">
+          <div className="bg-slate-50 p-3 rounded-xl w-56 h-56 mx-auto mb-5 border border-slate-200 shadow-inner flex items-center justify-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={resolvedQrUrl}
@@ -236,27 +236,27 @@ export function VietQRPaymentModal({
             />
           </div>
 
-          <div className="space-y-3 bg-zinc-950/70 p-4 rounded-xl border border-zinc-800/80 text-sm mb-6">
+          <div className="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200 text-sm mb-6">
             <div className="flex justify-between items-center">
-              <span className="text-zinc-400">Số tiền:</span>
-              <span className="font-bold text-lg text-amber-400">
+              <span className="text-slate-500">Số tiền:</span>
+              <span className="font-bold text-lg text-sky-600">
                 {amount.toLocaleString("vi-VN")} đ
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-zinc-400">Nội dung CK:</span>
+              <span className="text-slate-500">Nội dung CK:</span>
               <div className="flex items-center gap-2">
-                <code className="bg-zinc-800 px-2 py-0.5 rounded text-emerald-400 font-mono font-semibold">
+                <code className="bg-white border border-slate-200 px-2 py-0.5 rounded text-sky-700 font-mono font-semibold">
                   {transferContent}
                 </code>
                 <button
                   onClick={copyContent}
                   type="button"
-                  className="text-zinc-400 hover:text-white transition p-1"
+                  className="text-slate-400 hover:text-slate-700 transition p-1"
                   title="Sao chép nội dung"
                 >
                   {copied ? (
-                    <Check className="w-4 h-4 text-emerald-400" />
+                    <Check className="w-4 h-4 text-emerald-600" />
                   ) : (
                     <Copy className="w-4 h-4" />
                   )}
@@ -271,7 +271,7 @@ export function VietQRPaymentModal({
               type="button"
               disabled={isSimulating}
               onClick={() => void handleSimulateTransfer()}
-              className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/30 transition disabled:opacity-50"
+              className="w-full py-3 px-4 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-semibold flex items-center justify-center gap-2 shadow-md shadow-sky-600/30 transition disabled:opacity-50"
             >
               {isSimulating ? (
                 <>

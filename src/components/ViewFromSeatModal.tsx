@@ -64,27 +64,27 @@ export const ViewFromSeatModal: React.FC<ViewFromSeatModalProps> = ({
   const screenPerspectiveSkewY = (seat.number - 6.5) * -1.2; // Độ nghiêng nhẹ theo góc ngồi
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-fadeIn">
-      <div className="relative w-full max-w-2xl bg-gradient-to-b from-[#161822] via-[#0F1017] to-[#0A0B0E] border border-white/15 rounded-3xl overflow-hidden shadow-[0_0_50px_rgba(229,9,20,0.25)]">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-md animate-fadeIn">
+      <div className="relative w-full max-w-2xl bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-2xl text-slate-800">
         
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-white/[0.02]">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-600 to-red-800 flex items-center justify-center shadow-lg shadow-red-900/40">
-              <Eye className="w-5 h-5 text-white" />
+            <div className="w-10 h-10 rounded-xl bg-sky-600 flex items-center justify-center shadow-md shadow-sky-600/30 text-white">
+              <Eye className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-lg font-bold text-white tracking-wide">
-                  Góc Nhìn Từ Ghế <span className="text-yellow-400 font-extrabold">{seat.id}</span>
+                <h3 className="text-lg font-bold text-slate-900 tracking-wide">
+                  Góc Nhìn Từ Ghế <span className="text-sky-600 font-extrabold">{seat.id}</span>
                 </h3>
                 {data.isSweetSpot && (
-                  <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 flex items-center gap-1">
-                    <Sparkles className="w-3 h-3" /> Sweet Spot
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 flex items-center gap-1">
+                    <Sparkles className="w-3 h-3 text-amber-500" /> Sweet Spot
                   </span>
                 )}
               </div>
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-slate-500">
                 {cinemaName} • {roomName}
               </p>
             </div>
@@ -92,19 +92,19 @@ export const ViewFromSeatModal: React.FC<ViewFromSeatModalProps> = ({
 
           <button
             onClick={onClose}
-            className="p-2 rounded-full text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+            className="p-2 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Khung mô phỏng 3D góc nhìn ảo ra màn chiếu cong */}
-        <div className="relative h-64 sm:h-72 w-full bg-[#050608] flex items-center justify-center overflow-hidden border-b border-white/10">
+        <div className="relative h-64 sm:h-72 w-full bg-slate-950 flex items-center justify-center overflow-hidden border-b border-slate-200">
           {/* Ánh sáng hắt từ màn hình ra hàng ghế */}
           <div
             className="absolute inset-0 opacity-40 pointer-events-none"
             style={{
-              background: `radial-gradient(ellipse at 50% 15%, rgba(229, 9, 20, 0.45) 0%, rgba(255, 215, 0, 0.15) 35%, transparent 75%)`,
+              background: `radial-gradient(ellipse at 50% 15%, rgba(2, 132, 199, 0.45) 0%, rgba(255, 215, 0, 0.15) 35%, transparent 75%)`,
             }}
           />
 
@@ -120,10 +120,10 @@ export const ViewFromSeatModal: React.FC<ViewFromSeatModalProps> = ({
             }}
           >
             {/* Vòm sáng Neon màn hình cong */}
-            <div className="w-[380px] sm:w-[460px] h-4 bg-gradient-to-r from-transparent via-cyan-400/80 to-transparent rounded-full blur-[3px] -mb-1 shadow-[0_0_20px_#06b6d4]" />
+            <div className="w-[380px] sm:w-[460px] h-4 bg-gradient-to-r from-transparent via-sky-400/80 to-transparent rounded-full blur-[3px] -mb-1 shadow-[0_0_20px_#0284c7]" />
 
             {/* Khung màn hình cong IMAX / Cinema Screen */}
-            <div className="w-[380px] sm:w-[460px] h-36 sm:h-40 rounded-2xl overflow-hidden border-2 border-cyan-400/40 shadow-[0_10px_40px_rgba(0,0,0,0.9)] relative bg-[#090b10]">
+            <div className="w-[380px] sm:w-[460px] h-36 sm:h-40 rounded-2xl overflow-hidden border-2 border-sky-400/40 shadow-[0_10px_40px_rgba(0,0,0,0.9)] relative bg-[#090b10]">
               {movie?.backdropPath ? (
                 <img
                   src={movie.backdropPath}
@@ -149,53 +149,53 @@ export const ViewFromSeatModal: React.FC<ViewFromSeatModalProps> = ({
 
             {/* Màn hình cong đáy */}
             <div className="w-[360px] sm:w-[440px] h-1.5 bg-gradient-to-r from-transparent via-white/50 to-transparent rounded-full mt-1 opacity-70" />
-            <span className="text-[10px] text-cyan-400/90 font-medium tracking-widest uppercase mt-1">
+            <span className="text-[10px] text-sky-400 font-medium tracking-widest uppercase mt-1">
               MÀN HÌNH CHÍNH (SCREEN)
             </span>
           </div>
 
           {/* Vị trí đầu người xem ảo tượng trưng cho góc nhìn */}
           <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex flex-col items-center opacity-85">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-t from-gray-700 to-gray-500 border border-white/20 shadow-md flex items-center justify-center text-[10px] font-bold text-white">
+            <div className="w-8 h-8 rounded-full bg-slate-700 border border-white/20 shadow-md flex items-center justify-center text-[10px] font-bold text-white">
               {seat.id}
             </div>
-            <div className="w-12 h-3 bg-gray-800 rounded-t-lg -mt-0.5 border-t border-white/10" />
-            <span className="text-[9px] text-gray-400 mt-0.5 font-medium">Tầm mắt của bạn</span>
+            <div className="w-12 h-3 bg-slate-800 rounded-t-lg -mt-0.5 border-t border-white/10" />
+            <span className="text-[9px] text-slate-400 mt-0.5 font-medium">Tầm mắt của bạn</span>
           </div>
         </div>
 
         {/* Thông số kỹ thuật chuyên môn (Cinema Specs) */}
         <div className="p-6 space-y-4">
           <div className="grid grid-cols-3 gap-3">
-            <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-3 text-center">
-              <span className="text-[11px] text-gray-400 block mb-1">Khoảng cách</span>
-              <span className="text-base font-extrabold text-white">{data.distance} mét</span>
-              <span className="text-[10px] text-gray-500 block mt-0.5">Tới màn chiếu</span>
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3 text-center">
+              <span className="text-[11px] text-slate-500 block mb-1">Khoảng cách</span>
+              <span className="text-base font-extrabold text-slate-900">{data.distance} mét</span>
+              <span className="text-[10px] text-slate-400 block mt-0.5">Tới màn chiếu</span>
             </div>
 
-            <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-3 text-center">
-              <span className="text-[11px] text-gray-400 block mb-1">Góc mở tầm nhìn (FOV)</span>
-              <span className="text-base font-extrabold text-cyan-400">{data.fov}°</span>
-              <span className="text-[10px] text-cyan-500/70 block mt-0.5">{data.fov >= 36 ? "Chuẩn THX" : "Toàn cảnh"}</span>
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3 text-center">
+              <span className="text-[11px] text-slate-500 block mb-1">Góc mở tầm nhìn (FOV)</span>
+              <span className="text-base font-extrabold text-sky-600">{data.fov}°</span>
+              <span className="text-[10px] text-sky-500 block mt-0.5">{data.fov >= 36 ? "Chuẩn THX" : "Toàn cảnh"}</span>
             </div>
 
-            <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-3 text-center">
-              <span className="text-[11px] text-gray-400 block mb-1">Âm thanh vòm</span>
-              <span className="text-base font-extrabold text-yellow-400 flex items-center justify-center gap-1">
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3 text-center">
+              <span className="text-[11px] text-slate-500 block mb-1">Âm thanh vòm</span>
+              <span className="text-base font-extrabold text-amber-600 flex items-center justify-center gap-1">
                 <Volume2 className="w-4 h-4" /> {data.isSweetSpot ? "100%" : "88%"}
               </span>
-              <span className="text-[10px] text-gray-500 block mt-0.5">{data.centerRating}</span>
+              <span className="text-[10px] text-slate-400 block mt-0.5">{data.centerRating}</span>
             </div>
           </div>
 
           {/* Nhận xét chuyên gia rạp chiếu */}
-          <div className="bg-gradient-to-r from-white/[0.03] to-white/[0.01] border border-white/10 rounded-2xl p-3.5 flex items-start gap-3">
-            <ShieldCheck className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 flex items-start gap-3">
+            <ShieldCheck className="w-5 h-5 text-sky-600 shrink-0 mt-0.5" />
             <div>
-              <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-1">
+              <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-1">
                 {data.level}
               </h4>
-              <p className="text-xs text-gray-300 leading-relaxed">
+              <p className="text-xs text-slate-600 leading-relaxed">
                 {data.desc}
               </p>
             </div>
@@ -205,7 +205,7 @@ export const ViewFromSeatModal: React.FC<ViewFromSeatModalProps> = ({
           <div className="flex items-center justify-end gap-3 pt-2">
             <button
               onClick={onClose}
-              className="px-5 py-2.5 rounded-xl border border-white/15 text-sm font-semibold text-gray-300 hover:text-white hover:bg-white/5 transition-colors"
+              className="px-5 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
             >
               Đóng xem lại
             </button>
@@ -216,10 +216,10 @@ export const ViewFromSeatModal: React.FC<ViewFromSeatModalProps> = ({
                   onConfirmSelect(seat);
                   onClose();
                 }}
-                className={`px-6 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition-all shadow-lg ${
+                className={`px-6 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition-all shadow-md ${
                   isSelected
-                    ? "bg-red-600/30 text-red-400 border border-red-500/40 hover:bg-red-600/40"
-                    : "bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white shadow-red-900/40"
+                    ? "bg-red-50 text-red-600 border border-red-200 hover:bg-red-100"
+                    : "bg-sky-600 hover:bg-sky-700 text-white shadow-sky-600/30"
                 }`}
               >
                 {isSelected ? (
