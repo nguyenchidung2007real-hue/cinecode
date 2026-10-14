@@ -120,6 +120,16 @@ export async function POST(request: NextRequest) {
 
     const commitOutcome = await seatStore.commit(hold, bookingId, soldTtlSeconds);
     if (commitOutcome.outcome === "lost") {
+      // Re-check: Nếu request song song trước đó đã duyệt thành công đơn vé này, trả về vé hợp lệ ngay
+      const recheck = await ticketStore.get(bookingId);
+      if (recheck && (recheck.status === "valid" || recheck.status === "used")) {
+        return NextResponse.json({
+          success: true,
+          message: "Đơn vé đã được xác nhận trước đó.",
+          ticket: recheck,
+        });
+      }
+
       await ticketStore.voidTicket(bookingId, "Ghế bị tranh chấp khi xác nhận thanh toán.");
       return NextResponse.json(
         { error: "Ghế đã bị tranh chấp hoặc đã có người khác đặt thành công." },
@@ -132,6 +142,16 @@ export async function POST(request: NextRequest) {
     const confirmedTicket = await ticketStore.promotePendingToValid(bookingId, txnRef);
 
     if (!confirmedTicket) {
+      // Re-check xem vé đã hợp lệ chưa trước khi rollback
+      const recheck = await ticketStore.get(bookingId);
+      if (recheck && (recheck.status === "valid" || recheck.status === "used")) {
+        return NextResponse.json({
+          success: true,
+          message: "Đơn vé đã được xác nhận trước đó.",
+          ticket: recheck,
+        });
+      }
+
       await seatStore.rollbackCommit(hold, bookingId).catch(() => {});
       return NextResponse.json(
         { error: "Không thể cập nhật trạng thái vé sau khi khóa ghế." },

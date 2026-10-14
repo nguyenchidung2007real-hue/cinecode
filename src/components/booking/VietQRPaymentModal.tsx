@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   CheckCircle2,
   Copy,
@@ -47,6 +47,19 @@ export function VietQRPaymentModal({
   const [isPaid, setIsPaid] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+
+  // Dọn dẹp tài nguyên khi component unmount (chống memory leak & âm thanh phát ngầm)
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      if (audioCtxRef.current && audioCtxRef.current.state !== "closed") {
+        audioCtxRef.current.close().catch(() => {});
+      }
+    };
+  }, []);
+
   // Sinh fallback VietQR URL nếu server chưa truyền qrImageUrl
   const resolvedQrUrl =
     qrImageUrl ||
@@ -61,7 +74,13 @@ export function VietQRPaymentModal({
         window.AudioContext ||
         (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       if (!AudioCtx) return;
+
+      if (audioCtxRef.current && audioCtxRef.current.state !== "closed") {
+        audioCtxRef.current.close().catch(() => {});
+      }
+
       const ctx = new AudioCtx();
+      audioCtxRef.current = ctx;
 
       const playNote = (freq: number, startTime: number, duration: number) => {
         const osc = ctx.createOscillator();
@@ -79,6 +98,13 @@ export function VietQRPaymentModal({
       const now = ctx.currentTime;
       playNote(987.77, now, 0.18); // B5 (987.77 Hz)
       playNote(1318.51, now + 0.15, 0.5); // E6 (1318.51 Hz) -> "Ting-Ting!"
+
+      // Tự động đóng AudioContext sau khi âm thanh kết thúc (750ms)
+      setTimeout(() => {
+        if (ctx.state !== "closed") {
+          ctx.close().catch(() => {});
+        }
+      }, 750);
     } catch {
       // Bỏ qua nếu môi trường chặn autoplay audio
     }
@@ -110,7 +136,7 @@ export function VietQRPaymentModal({
       // Chỉ phát âm thanh Ting-Ting SAU KHI Server đã chốt ghế Redis và duyệt vé thành công
       playTingTingSound();
       setIsPaid(true);
-      setTimeout(() => {
+      timeoutRef.current = setTimeout(() => {
         onPaymentVerified(data.ticket);
       }, 1200);
     } catch (err: unknown) {

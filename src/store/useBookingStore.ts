@@ -141,7 +141,10 @@ export const useBookingStore = create<BookingState>()(
           });
 
           if (!res.ok) {
-            get().resetBooking();
+            const current = get();
+            if (current.holdId === holdId && current.showtimeId === showtimeId) {
+              get().resetBooking();
+            }
             return false;
           }
 
@@ -151,7 +154,11 @@ export const useBookingStore = create<BookingState>()(
           // Kiểm tra xem tất cả các ghế đã chọn có còn trạng thái "mine" (thuộc về holdId này) không
           const allStillMine = selectedSeats.every((s) => seatMap[s.id] === "mine");
           if (!allStillMine) {
-            get().resetBooking();
+            // Chống Race Condition: Chỉ reset nếu holdId và showtimeId không bị người dùng đổi mới trong lúc mạng đang gọi
+            const current = get();
+            if (current.holdId === holdId && current.showtimeId === showtimeId) {
+              get().resetBooking();
+            }
             return false;
           }
 
