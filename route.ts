@@ -1,305 +1,642 @@
+// src/app/api/admin/seats-and-movies/route.ts
+// -----------------------------------------------------------------------------
+// API Admin: sơ đồ ghế, phim, thùng rác phim, nhật ký an ninh.
+// Mọi method đều kiểm tra isAdminAuthorized(request).
+//
+// GET    ?resource=seatmap&showtimeId=..&roomId=..   Sơ đồ 102 ghế (statuses + blockedSeats + hạng ghế)
+//        ?resource=showtimes                          Danh sách suất chiếu (từ MOCK_SHOWTIMES)
+//        ?resource=blocked&showtimeId=..&roomId=..    Danh sách ghế đang khóa bảo trì
+//        ?resource=movies[&status=..&q=..]            Danh sách phim
+//        ?resource=trash                              Thùng rác phim
+//        ?resource=audit[&limit=..&action=..&targetType=..&targetId=..&actor=..]
+//
+// POST   action: block_seat | unblock_seat | force_release | change_tier |
+//                reset_tier | create_movie | restore_movie | trash_movie |
+//                delete_movie | empty_trash
+// PUT    action: update_movie | change_tier | reset_tier | restore_movie
+// DELETE action: trash_movie (mặc định khi có id) | delete_movie (permanent=true) |
+//                empty_trash | unblock_seat
+//        DELETE nhận tham số từ JSON body hoặc query string.
+//
+// Header tùy chọn "x-admin-user": tên Admin được ghi vào nhật ký.
+// -----------------------------------------------------------------------------
+
 import { NextRequest, NextResponse } from "next/server";
 import { isAdminAuthorized } from "@/lib/adminAuth";
 import { MOCK_SHOWTIMES } from "@/lib/mockData";
 import { allSeatIds, seatTier } from "@/lib/seatLayout";
-import * as store from "@/lib/adminSeatAndMovieStore";
-import type { AuditAction, AuditTargetType, SeatScope, SeatTier } from "@/lib/adminSeatAndMovieStore";
+import {
+  AdminStoreError,
+  MAINTENANCE_REASON_PRESETS,
+  SEAT_TIERS,
+  addMovie,
+  blockSeats,
+  emptyTrash,
+  forceReleaseSeat,
+  getAuditLogs,
+  getBlockedSeat,
+  getBlockedSeats,
+  getEffectiveSeatTier,
+  getLiveSeatStatuses,
+  isSeatTierCustomized,
+  listMovies,
+  listTrash,
+  permanentlyDeleteMovie,
+  resetSeatTiers,
+  restoreMovie,
+  setSeatTiers,
+  softDeleteMovie,
+  unblockSeats,
+  updateMovie,
+} from "@/lib/adminSeatAndMovieStore";
+import type {
+  AuditAction,
+  AuditTargetType,
+  CreateMovieInput,
+  SeatScope,
+  SeatTier,
+  UpdateMovieInput,
+} from "@/lib/adminSeatAndMovieStore";
 import type { Movie } from "@/types";
- 
+
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
- 
-type Method = "POST" | "PUT" | "DELETE";
-type Rec = Record<string, unknown>;
-type LiveStatus = "available" | "held" | "sold";
-interface Live { status: LiveStatus; holdId: string | null; expiresAt: string | null }
- 
-const ALLOWED: Record<Method, string[]> = {
-  POST: ["block_seat", "unblock_seat", "force_release", "change_tier", "reset_tier",
-    "create_movie", "restore_movie", "trash_movie", "delete_movie", "empty_trash"],
-  PUT: ["update_movie", "change_tier", "reset_tier", "restore_movie"],
-  DELETE: ["trash_movie", "delete_movie", "empty_trash", "unblock_seat"],
+
+// ============================== TYPES ========================================
+
+type HttpMethod = "POST" | "PUT" | "DELETE";
+
+type AdminAction =
+  | "block_seat"
+  | "unblock_seat"
+  | "force_release"
+  | "change_tier"
+  | "reset_tier"
+  | "create_movie"
+  | "update_movie"
+  | "trash_movie"
+  | "restore_movie"
+  | "delete_movie"
+  | "empty_trash";
+
+const ALLOWED_ACTIONS: Record<HttpMethod, ReadonlySet<AdminAction>> = {
+  POST: new Set<AdminAction>([
+    "block_seat",
+    "unblock_seat",
+    "force_release",
+    "change_tier",
+    "reset_tier",
+    "create_movie",
+    "restore_movie",
+    "trash_movie",
+    "delete_movie",
+    "empty_trash",
+  ]),
+  PUT: new Set<AdminAction>(["update_movie", "change_tier", "reset_tier", "restore_movie"]),
+  DELETE: new Set<AdminAction>(["trash_movie", "delete_movie", "empty_trash", "unblock_seat"]),
 };
- 
-// ------------------------------ Helpers --------------------------------------
- 
-const json = (body: unknown, status = 200) =>
-  NextResponse.json(body, { status, headers: { "Cache-Control": "no-store" } });
-const ok = (data: unknown, status = 200) => json({ ok: true, data }, status);
-const fail = (status: number, code: string, message: string) =>
-  json({ ok: false, error: { code, message } }, status);
- 
-const STORE_STATUS: Record<string, number> = {
-  INVALID_INPUT: 400, INVALID_SEAT: 400, INVALID_SCOPE: 400, NOT_FOUND: 404, CONFLICT: 409,
-};
- 
-function handleError(error: unknown) {
-  if (error instanceof store.AdminStoreError) {
-    return fail(STORE_STATUS[error.code] ?? 500, error.code, error.message);
+
+type LiveSeatStatus = "available" | "held" | "sold";
+
+interface NormalizedLiveSeat {
+  status: LiveSeatStatus;
+  holdId: string | null;
+  expiresAt: string | null;
+}
+
+interface ShowtimeDto {
+  id: string;
+  roomId: string;
+  movieId: string | null;
+  movieTitle: string | null;
+  startTime: string;
+  date: string;
+  label: string;
+}
+
+// ============================== HELPERS ======================================
+
+const NO_STORE = { "Cache-Control": "no-store" } as const;
+
+function ok<T>(data: T, status = 200): NextResponse {
+  return NextResponse.json({ ok: true, data }, { status, headers: NO_STORE });
+}
+
+function fail(status: number, code: string, message: string, extra?: Record<string, string>): NextResponse {
+  return NextResponse.json(
+    { ok: false, error: { code, message } },
+    { status, headers: { ...NO_STORE, ...(extra ?? {}) } }
+  );
+}
+
+function statusFromStoreError(code: AdminStoreError["code"]): number {
+  switch (code) {
+    case "INVALID_INPUT":
+    case "INVALID_SEAT":
+    case "INVALID_SCOPE":
+      return 400;
+    case "NOT_FOUND":
+      return 404;
+    case "CONFLICT":
+      return 409;
+    default:
+      return 500;
   }
-  console.error("[admin/seats-and-movies]", error);
+}
+
+function handleError(error: unknown): NextResponse {
+  if (error instanceof AdminStoreError) {
+    return fail(statusFromStoreError(error.code), error.code, error.message);
+  }
+  console.error("[admin/seats-and-movies] Unexpected error:", error);
   return fail(500, "INTERNAL", "Đã xảy ra lỗi không mong muốn phía máy chủ.");
 }
- 
-const isRec = (v: unknown): v is Rec => typeof v === "object" && v !== null && !Array.isArray(v);
- 
-function str(v: unknown): string | undefined {
-  if (typeof v === "string" && v.trim()) return v.trim();
-  if (typeof v === "number" && Number.isFinite(v)) return String(v);
+
+function getActor(request: NextRequest): string {
+  const header = request.headers.get("x-admin-user");
+  return header && header.trim().length > 0 ? header.trim().slice(0, 80) : "admin";
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function optionalString(value: unknown): string | undefined {
+  if (typeof value === "string" && value.trim() !== "") return value.trim();
+  if (typeof value === "number" && Number.isFinite(value)) return String(value);
   return undefined;
 }
- 
-const badInput = (msg: string) => new store.AdminStoreError("INVALID_INPUT", msg);
- 
-const scopeOf = (src: { get?: (k: string) => string | null } | Rec): SeatScope => {
-  const read = (k: string) => str("get" in src && typeof src.get === "function" ? src.get(k) : (src as Rec)[k]);
-  return { roomId: read("roomId"), showtimeId: read("showtimeId") };
-};
- 
-function seatIdsOf(body: Rec): string[] {
-  if (!Array.isArray(body.seatIds) || body.seatIds.length === 0) throw badInput("seatIds phải là mảng không rỗng.");
-  return body.seatIds.map((v) => String(v).trim().toUpperCase());
+
+function readScope(source: Record<string, unknown>): SeatScope {
+  return {
+    roomId: optionalString(source.roomId),
+    showtimeId: optionalString(source.showtimeId),
+  };
 }
- 
-function movieIdOf(body: Rec): string | number {
-  const id = body.id;
-  if ((typeof id === "string" && id.trim()) || typeof id === "number") return id;
-  throw badInput("id phim là bắt buộc.");
-}
- 
-function tierOf(v: unknown): SeatTier {
-  if (v === "sweetbox") return "couple";
-  if (v === "standard" || v === "vip" || v === "couple") return v;
-  throw badInput('Hạng ghế chỉ nhận: "standard", "vip", "couple" (hoặc "sweetbox").');
-}
- 
-// ------------------------- Trạng thái ghế realtime ---------------------------
- 
-function toStatusMap(v: unknown): Rec {
-  if (v instanceof Map) return Object.fromEntries(v.entries());
-  if (Array.isArray(v)) {
-    return Object.fromEntries(
-      v.filter(isRec).map((i) => [String(str(i.seatId ?? i.id) ?? "").toUpperCase(), i])
-    );
+
+function readSeatIds(source: Record<string, unknown>): string[] {
+  const value = source.seatIds;
+  if (!Array.isArray(value) || value.length === 0) {
+    throw new AdminStoreError("INVALID_INPUT", "seatIds phải là một mảng mã ghế (không rỗng).");
   }
-  return isRec(v) ? v : {};
+  return value.map((v) => (typeof v === "string" ? v.trim().toUpperCase() : String(v)));
 }
- 
-function toIso(v: unknown): string | null {
-  const t = typeof v === "number" ? v : typeof v === "string" ? Date.parse(v) : NaN;
-  return Number.isFinite(t) ? new Date(t).toISOString() : null;
+
+function readMovieId(source: Record<string, unknown>): string | number {
+  const id = source.id;
+  if ((typeof id === "string" && id.trim() !== "") || typeof id === "number") {
+    return id;
+  }
+  throw new AdminStoreError("INVALID_INPUT", "id phim là bắt buộc.");
 }
- 
-function normalizeLive(raw: unknown): Live {
-  const o = isRec(raw) ? raw : {};
-  const text = String(typeof raw === "string" ? raw : o.status ?? o.state ?? o.type ?? "").toLowerCase();
-  const holdId = str(o.holdId ?? o.hold_id ?? o.heldBy) ?? null;
-  const status: LiveStatus = /sold|booked|paid|confirm|taken|purchas|occupied/.test(text)
-    ? "sold"
-    : /held|hold|lock|reserv|pending|select/.test(text) || (holdId && !text)
-      ? "held"
-      : "available";
-  return { status, holdId, expiresAt: toIso(o.expiresAt ?? o.expiry ?? o.holdUntil ?? o.heldUntil) };
+
+/** Chấp nhận "sweetbox" như bí danh của hạng "couple". */
+function readTier(value: unknown): SeatTier {
+  if (value === "sweetbox") return "couple";
+  if (value === "standard" || value === "vip" || value === "couple") return value;
+  throw new AdminStoreError(
+    "INVALID_INPUT",
+    `Hạng ghế không hợp lệ. Chỉ chấp nhận: ${SEAT_TIERS.join(", ")} (hoặc "sweetbox").`
+  );
 }
- 
-async function liveStatuses(showtimeId: string | undefined, ids: string[]) {
-  const map: Record<string, Live> = {};
-  if (!showtimeId) return { map, error: null as string | null };
+
+const MOVIE_STATUSES: ReadonlyArray<Movie["status"]> = ["now_playing", "upcoming", "trending"];
+
+const AUDIT_ACTIONS: ReadonlyArray<AuditAction> = [
+  "SEAT_BLOCKED",
+  "SEAT_UNBLOCKED",
+  "SEAT_TIER_CHANGED",
+  "SEAT_TIER_RESET",
+  "SEAT_FORCE_RELEASED",
+  "MOVIE_CREATED",
+  "MOVIE_UPDATED",
+  "MOVIE_TRASHED",
+  "MOVIE_RESTORED",
+  "MOVIE_PERMANENTLY_DELETED",
+  "TRASH_EMPTIED",
+];
+
+const AUDIT_TARGETS: ReadonlyArray<AuditTargetType> = ["seat", "movie", "trash"];
+
+// ------------------------- Chuẩn hóa trạng thái ghế --------------------------
+
+/** Chuyển kết quả `statuses()` (Map | object | array) về Record<seatId, raw>. */
+function toStatusMap(value: unknown): Record<string, unknown> {
+  if (value instanceof Map) {
+    return Object.fromEntries(value.entries()) as Record<string, unknown>;
+  }
+  if (Array.isArray(value)) {
+    const result: Record<string, unknown> = {};
+    for (const item of value) {
+      if (isRecord(item)) {
+        const id = optionalString(item.seatId ?? item.id);
+        if (id) result[id.toUpperCase()] = item;
+      }
+    }
+    return result;
+  }
+  if (isRecord(value)) return value;
+  return {};
+}
+
+function toIsoOrNull(value: unknown): string | null {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return new Date(value).toISOString();
+  }
+  if (typeof value === "string" && value.trim() !== "") {
+    const time = Date.parse(value);
+    return Number.isNaN(time) ? null : new Date(time).toISOString();
+  }
+  return null;
+}
+
+/**
+ * Chuẩn hóa một phần tử trạng thái ghế về { status, holdId, expiresAt }.
+ * Chấp nhận chuỗi ("held", "sold"...) hoặc object { status, holdId, expiresAt }.
+ */
+function normalizeLiveSeat(raw: unknown): NormalizedLiveSeat {
+  let text = "";
+  let holdId: string | null = null;
+  let expiresAt: string | null = null;
+
+  if (typeof raw === "string") {
+    text = raw;
+  } else if (isRecord(raw)) {
+    text = String(raw.status ?? raw.state ?? raw.type ?? "");
+    holdId = optionalString(raw.holdId ?? raw.hold_id ?? raw.heldBy) ?? null;
+    expiresAt = toIsoOrNull(raw.expiresAt ?? raw.expiry ?? raw.holdUntil ?? raw.heldUntil);
+  }
+
+  const lower = text.toLowerCase();
+  let status: LiveSeatStatus = "available";
+  if (/sold|booked|paid|confirm|taken|purchas|occupied/.test(lower)) {
+    status = "sold";
+  } else if (/held|hold|lock|reserv|pending|select/.test(lower) || (holdId && lower === "")) {
+    status = "held";
+  }
+
+  return { status, holdId, expiresAt };
+}
+
+async function readLiveStatuses(
+  showtimeId: string | undefined,
+  seatIds: string[]
+): Promise<{ map: Record<string, NormalizedLiveSeat>; error: string | null }> {
+  const map: Record<string, NormalizedLiveSeat> = {};
+  if (!showtimeId) return { map, error: null };
   try {
-    const raw = toStatusMap(await store.getLiveSeatStatuses(showtimeId, ids));
-    for (const id of ids) map[id] = normalizeLive(raw[id]);
+    const raw = toStatusMap(await getLiveSeatStatuses(showtimeId, seatIds));
+    for (const id of seatIds) {
+      map[id] = normalizeLiveSeat(raw[id]);
+    }
     return { map, error: null };
-  } catch (e) {
-    return { map, error: e instanceof Error ? e.message : "Không đọc được trạng thái ghế." };
+  } catch (error) {
+    return {
+      map,
+      error: error instanceof Error ? error.message : "Không đọc được trạng thái ghế realtime.",
+    };
   }
 }
- 
-// ------------------------------ Suất chiếu -----------------------------------
- 
-function buildShowtimes() {
-  const titles = new Map(store.listMovies().map((m) => [String(m.id), m.title]));
-  const raw: unknown = MOCK_SHOWTIMES;
-  const items: unknown[] = Array.isArray(raw)
-    ? raw
-    : isRec(raw) ? Object.values(raw).flatMap((v) => (Array.isArray(v) ? v : [v])) : [];
- 
-  return items.filter(isRec).flatMap((s) => {
-    const id = str(s.id ?? s.showtimeId);
-    if (!id) return [];
-    const movieId = str(s.movieId ?? s.movie) ?? null;
+
+// ------------------------- Chuẩn hóa suất chiếu -------------------------------
+
+function flattenShowtimes(raw: unknown): unknown[] {
+  if (Array.isArray(raw)) return raw;
+  if (isRecord(raw)) {
+    return Object.values(raw).flatMap((v) => (Array.isArray(v) ? v : [v]));
+  }
+  return [];
+}
+
+function buildShowtimes(): ShowtimeDto[] {
+  const titles = new Map<string, string>(listMovies().map((m) => [String(m.id), m.title]));
+  const result: ShowtimeDto[] = [];
+
+  for (const item of flattenShowtimes(MOCK_SHOWTIMES as unknown)) {
+    if (!isRecord(item)) continue;
+    const id = optionalString(item.id ?? item.showtimeId);
+    if (!id) continue;
+
+    const roomId =
+      optionalString(
+        item.roomId ?? item.room ?? item.screenId ?? item.screen ?? item.auditorium ?? item.hall
+      ) ?? "room-1";
+    const movieId = optionalString(item.movieId ?? item.movie) ?? null;
     const movieTitle = movieId ? titles.get(movieId) ?? null : null;
-    const startTime = str(s.startTime ?? s.startsAt ?? s.start ?? s.datetime ?? s.dateTime ?? s.time) ?? "";
-    const date = str(s.date) ?? "";
-    const when = [date, startTime].filter(Boolean).join(" ");
-    return [{
+    const startTime =
+      optionalString(
+        item.startTime ?? item.startsAt ?? item.start ?? item.datetime ?? item.dateTime ?? item.time
+      ) ?? "";
+    const date = optionalString(item.date) ?? "";
+    const when = [date, startTime].filter((p) => p !== "").join(" ");
+
+    result.push({
       id,
-      roomId: str(s.roomId ?? s.room ?? s.screenId ?? s.screen ?? s.auditorium ?? s.hall) ?? "room-1",
-      movieId, movieTitle, startTime, date,
+      roomId,
+      movieId,
+      movieTitle,
+      startTime,
+      date,
       label: `${movieTitle ?? `Suất ${id}`}${when ? ` · ${when}` : ""}`,
-    }];
-  });
-}
- 
-/** Thử scope suất chiếu trước, phần còn lại thử tiếp scope phòng. */
-function cascade<T extends { [k: string]: string[] }>(
-  fn: (scope: SeatScope, ids: string[]) => T,
-  leftKey: keyof T & string,
-  scope: SeatScope,
-  ids: string[]
-): T {
-  const first = fn(scope, ids);
-  if (!scope.showtimeId || !scope.roomId || first[leftKey].length === 0) return first;
-  const second = fn({ roomId: scope.roomId }, first[leftKey]);
-  const merged: Record<string, string[]> = {};
-  for (const k of Object.keys(first)) merged[k] = k === leftKey ? second[k] : [...first[k], ...second[k]];
-  return merged as T;
-}
- 
-// ------------------------------- GET -----------------------------------------
- 
-export async function GET(request: NextRequest) {
-  if (!isAdminAuthorized(request)) return fail(401, "UNAUTHORIZED", "Bạn không có quyền truy cập khu vực Admin.");
- 
-  try {
-    const p = request.nextUrl.searchParams;
-    const resource = p.get("resource") ?? "seatmap";
- 
-    if (resource === "showtimes") return ok({ showtimes: buildShowtimes() });
-    if (resource === "movies") {
-      const movies = store.listMovies({ status: (p.get("status") as Movie["status"]) || undefined, q: p.get("q") ?? undefined });
-      return ok({ total: movies.length, movies });
-    }
-    if (resource === "trash") {
-      const trash = store.listTrash();
-      return ok({ total: trash.length, trash });
-    }
-    if (resource === "audit") {
-      const limit = p.get("limit") ? Number(p.get("limit")) : undefined;
-      const logs = store.getAuditLogs({
-        limit: Number.isFinite(limit) ? limit : undefined,
-        action: (p.get("action") as AuditAction) || undefined,
-        targetType: (p.get("targetType") as AuditTargetType) || undefined,
-        targetId: p.get("targetId") ?? undefined,
-        actor: p.get("actor") ?? undefined,
-      });
-      return ok({ total: logs.length, logs });
-    }
- 
-    if (resource === "seatmap" || resource === "blocked") {
-      const scope = scopeOf(p);
-      if (!scope.roomId && !scope.showtimeId) return fail(400, "INVALID_SCOPE", "Cần truyền showtimeId hoặc roomId.");
-      if (resource === "blocked") return ok({ scope, blockedSeats: store.getBlockedSeats(scope) });
- 
-      const ids = allSeatIds();
-      const live = await liveStatuses(scope.showtimeId, ids);
-      const seats = ids.map((seatId) => {
-        const b = store.getBlockedSeat(seatId, scope);
-        const l = live.map[seatId];
-        return {
-          seatId,
-          row: seatId.charAt(0),
-          number: Number(seatId.slice(1)),
-          tier: store.getEffectiveSeatTier(seatId, scope),
-          defaultTier: seatTier(seatId),
-          tierOverridden: store.isSeatTierCustomized(seatId, scope),
-          blocked: !!b,
-          blockReason: b?.reason ?? null,
-          blockedAt: b?.blockedAt ?? null,
-          blockedBy: b?.blockedBy ?? null,
-          liveStatus: l?.status ?? "available",
-          holdId: l?.holdId ?? null,
-          expiresAt: l?.expiresAt ?? null,
-        };
-      });
-      return ok({ scope, seats, liveStatusError: live.error });
-    }
- 
-    return fail(400, "INVALID_RESOURCE", "resource không hợp lệ.");
-  } catch (e) {
-    return handleError(e);
+    });
   }
+  return result;
 }
- 
-// ------------------------- POST / PUT / DELETE -------------------------------
- 
-async function readBody(request: NextRequest, method: Method): Promise<Rec> {
+
+// ------------------------- Cascade mở khóa / reset hạng ----------------------
+
+function unblockCascade(scope: SeatScope, ids: string[], actor: string) {
+  const first = unblockSeats(scope, ids, actor);
+  if (scope.showtimeId && scope.roomId && first.notBlocked.length > 0) {
+    const second = unblockSeats({ roomId: scope.roomId }, first.notBlocked, actor);
+    return {
+      unblocked: [...first.unblocked, ...second.unblocked],
+      notBlocked: second.notBlocked,
+    };
+  }
+  return first;
+}
+
+function resetTierCascade(scope: SeatScope, ids: string[], actor: string) {
+  const first = resetSeatTiers(scope, ids, actor);
+  if (scope.showtimeId && scope.roomId && first.notCustomized.length > 0) {
+    const second = resetSeatTiers({ roomId: scope.roomId }, first.notCustomized, actor);
+    return {
+      reset: [...first.reset, ...second.reset],
+      notCustomized: second.notCustomized,
+    };
+  }
+  return first;
+}
+
+// ------------------------- Đọc body -------------------------------------------
+
+async function readBody(request: NextRequest, method: HttpMethod): Promise<Record<string, unknown>> {
   const text = await request.text();
-  let body: Rec = {};
-  if (text.trim()) {
+  let body: Record<string, unknown> = {};
+
+  if (text.trim() !== "") {
+    let parsed: unknown;
     try {
-      const parsed: unknown = JSON.parse(text);
-      if (!isRec(parsed)) throw new Error();
-      body = parsed;
+      parsed = JSON.parse(text);
     } catch {
-      throw badInput("Body phải là JSON object hợp lệ.");
+      throw new AdminStoreError("INVALID_INPUT", "Body request không phải JSON hợp lệ.");
     }
+    if (!isRecord(parsed)) {
+      throw new AdminStoreError("INVALID_INPUT", "Body request phải là một JSON object.");
+    }
+    body = parsed;
   }
+
   if (method === "DELETE") {
-    request.nextUrl.searchParams.forEach((v, k) => { if (!(k in body)) body[k] = v; });
+    for (const [key, value] of request.nextUrl.searchParams.entries()) {
+      if (!(key in body)) body[key] = value;
+    }
     if (typeof body.action !== "string" && body.id !== undefined) {
       body.action = String(body.permanent) === "true" ? "delete_movie" : "trash_movie";
     }
   }
+
   return body;
 }
- 
-async function dispatch(request: NextRequest, method: Method) {
-  if (!isAdminAuthorized(request)) return fail(401, "UNAUTHORIZED", "Bạn không có quyền truy cập khu vực Admin.");
- 
+
+// ============================== GET ==========================================
+
+export async function GET(request: NextRequest): Promise<NextResponse> {
+  if (!isAdminAuthorized(request)) {
+    return fail(401, "UNAUTHORIZED", "Bạn không có quyền truy cập khu vực Admin.");
+  }
+
+  try {
+    const params = request.nextUrl.searchParams;
+    const resource = params.get("resource") ?? "seatmap";
+
+    switch (resource) {
+      case "seatmap": {
+        const scope: SeatScope = {
+          roomId: optionalString(params.get("roomId")),
+          showtimeId: optionalString(params.get("showtimeId")),
+        };
+        if (!scope.roomId && !scope.showtimeId) {
+          return fail(400, "INVALID_SCOPE", "Cần truyền showtimeId hoặc roomId.");
+        }
+
+        const seatIds = allSeatIds();
+        const live = await readLiveStatuses(scope.showtimeId, seatIds);
+
+        const seats = seatIds.map((seatId) => {
+          const blocked = getBlockedSeat(seatId, scope);
+          const liveSeat = live.map[seatId];
+          return {
+            seatId,
+            row: seatId.charAt(0),
+            number: Number(seatId.slice(1)),
+            tier: getEffectiveSeatTier(seatId, scope),
+            defaultTier: seatTier(seatId),
+            tierOverridden: isSeatTierCustomized(seatId, scope),
+            blocked: blocked !== undefined,
+            blockReason: blocked?.reason ?? null,
+            blockedAt: blocked?.blockedAt ?? null,
+            blockedBy: blocked?.blockedBy ?? null,
+            liveStatus: liveSeat?.status ?? "available",
+            holdId: liveSeat?.holdId ?? null,
+            expiresAt: liveSeat?.expiresAt ?? null,
+          };
+        });
+
+        return ok({
+          scope,
+          seats,
+          liveStatusError: live.error,
+          tiers: SEAT_TIERS,
+          reasonPresets: MAINTENANCE_REASON_PRESETS,
+        });
+      }
+
+      case "showtimes": {
+        return ok({ showtimes: buildShowtimes() });
+      }
+
+      case "blocked": {
+        const scope: SeatScope = {
+          roomId: optionalString(params.get("roomId")),
+          showtimeId: optionalString(params.get("showtimeId")),
+        };
+        if (!scope.roomId && !scope.showtimeId) {
+          return fail(400, "INVALID_SCOPE", "Cần truyền showtimeId hoặc roomId.");
+        }
+        return ok({ scope, blockedSeats: getBlockedSeats(scope) });
+      }
+
+      case "movies": {
+        const statusParam = params.get("status");
+        if (statusParam && !MOVIE_STATUSES.includes(statusParam as Movie["status"])) {
+          return fail(
+            400,
+            "INVALID_INPUT",
+            `status không hợp lệ. Chỉ nhận: ${MOVIE_STATUSES.join(", ")}.`
+          );
+        }
+        const movies = listMovies({
+          status: (statusParam as Movie["status"] | null) ?? undefined,
+          q: params.get("q") ?? undefined,
+        });
+        return ok({ total: movies.length, movies });
+      }
+
+      case "trash": {
+        const trash = listTrash();
+        return ok({ total: trash.length, trash });
+      }
+
+      case "audit": {
+        const actionParam = params.get("action");
+        if (actionParam && !AUDIT_ACTIONS.includes(actionParam as AuditAction)) {
+          return fail(400, "INVALID_INPUT", `action không hợp lệ: ${actionParam}`);
+        }
+        const targetTypeParam = params.get("targetType");
+        if (targetTypeParam && !AUDIT_TARGETS.includes(targetTypeParam as AuditTargetType)) {
+          return fail(400, "INVALID_INPUT", `targetType không hợp lệ: ${targetTypeParam}`);
+        }
+        const limitParam = params.get("limit");
+        const limit = limitParam ? Number(limitParam) : undefined;
+        if (limitParam && (limit === undefined || !Number.isFinite(limit))) {
+          return fail(400, "INVALID_INPUT", "limit phải là số.");
+        }
+
+        const logs = getAuditLogs({
+          limit,
+          action: (actionParam as AuditAction | null) ?? undefined,
+          targetType: (targetTypeParam as AuditTargetType | null) ?? undefined,
+          targetId: params.get("targetId") ?? undefined,
+          actor: params.get("actor") ?? undefined,
+        });
+        return ok({ total: logs.length, logs });
+      }
+
+      default:
+        return fail(
+          400,
+          "INVALID_RESOURCE",
+          'resource không hợp lệ. Chỉ nhận: "seatmap", "showtimes", "blocked", "movies", "trash", "audit".'
+        );
+    }
+  } catch (error) {
+    return handleError(error);
+  }
+}
+
+// ============================== POST / PUT / DELETE ==========================
+
+async function dispatch(request: NextRequest, method: HttpMethod): Promise<NextResponse> {
+  if (!isAdminAuthorized(request)) {
+    return fail(401, "UNAUTHORIZED", "Bạn không có quyền truy cập khu vực Admin.");
+  }
+
   try {
     const body = await readBody(request, method);
     const action = typeof body.action === "string" ? body.action : "";
-    if (!action) return fail(400, "INVALID_INPUT", 'Thiếu trường "action".');
-    if (!ALLOWED[method].includes(action)) {
-      return fail(405, "ACTION_NOT_ALLOWED", `Action "${action}" không hỗ trợ với method ${method}.`);
+
+    if (!action) {
+      return fail(400, "INVALID_INPUT", 'Thiếu trường "action".');
     }
- 
-    const actor = request.headers.get("x-admin-user")?.trim().slice(0, 80) || "admin";
- 
-    switch (action) {
+    if (!ALLOWED_ACTIONS[method].has(action as AdminAction)) {
+      return fail(
+        405,
+        "ACTION_NOT_ALLOWED",
+        `Action "${action}" không được hỗ trợ với method ${method}.`,
+        { Allow: "GET, POST, PUT, DELETE" }
+      );
+    }
+
+    const actor = getActor(request);
+
+    switch (action as AdminAction) {
+      // ------------------------------ GHẾ ------------------------------------
       case "block_seat": {
-        const scope = scopeOf(body);
-        const ids = seatIdsOf(body);
-        const live = await liveStatuses(scope.showtimeId, ids);
+        const scope = readScope(body);
+        const ids = readSeatIds(body);
+        const live = await readLiveStatuses(scope.showtimeId, ids);
         const sold = ids.filter((id) => live.map[id]?.status === "sold");
-        if (sold.length) throw new store.AdminStoreError("CONFLICT", `Không thể khóa ghế đã bán: ${sold.join(", ")}.`);
-        return ok(store.blockSeats(scope, ids, typeof body.reason === "string" ? body.reason : "", actor));
+        if (sold.length > 0) {
+          throw new AdminStoreError(
+            "CONFLICT",
+            `Không thể khóa bảo trì ghế đã bán: ${sold.join(", ")}.`
+          );
+        }
+        const reason = typeof body.reason === "string" ? body.reason : "";
+        return ok(blockSeats(scope, ids, reason, actor));
       }
-      case "unblock_seat":
-        return ok(cascade((s, i) => store.unblockSeats(s, i, actor), "notBlocked", scopeOf(body), seatIdsOf(body)));
+
+      case "unblock_seat": {
+        return ok(unblockCascade(readScope(body), readSeatIds(body), actor));
+      }
+
       case "force_release": {
-        const showtimeId = str(body.showtimeId);
-        const holdId = str(body.holdId);
-        if (!showtimeId || !holdId) throw badInput("showtimeId và holdId là bắt buộc.");
-        return ok(await store.forceReleaseSeat(showtimeId, holdId, actor, str(body.seatId)));
+        const showtimeId = optionalString(body.showtimeId);
+        const holdId = optionalString(body.holdId);
+        if (!showtimeId || !holdId) {
+          throw new AdminStoreError("INVALID_INPUT", "showtimeId và holdId là bắt buộc.");
+        }
+        return ok(await forceReleaseSeat(showtimeId, holdId, actor, optionalString(body.seatId)));
       }
-      case "change_tier":
-        return ok(store.setSeatTiers(scopeOf(body), seatIdsOf(body), tierOf(body.tier), actor));
-      case "reset_tier":
-        return ok(cascade((s, i) => store.resetSeatTiers(s, i, actor), "notCustomized", scopeOf(body), seatIdsOf(body)));
- 
-      case "create_movie":
-        if (!isRec(body.movie)) throw badInput("Thiếu object movie.");
-        return ok(store.addMovie(body.movie as unknown as store.CreateMovieInput, actor), 201);
-      case "update_movie":
-        if (!isRec(body.patch)) throw badInput("Thiếu object patch.");
-        return ok(store.updateMovie(movieIdOf(body), body.patch as store.UpdateMovieInput, actor));
-      case "trash_movie":
-        return ok(store.softDeleteMovie(movieIdOf(body), actor));
-      case "restore_movie":
-        return ok(store.restoreMovie(movieIdOf(body), actor));
-      case "delete_movie":
-        return ok(store.permanentlyDeleteMovie(movieIdOf(body), actor));
-      case "empty_trash":
-        return ok(store.emptyTrash(actor));
+
+      case "change_tier": {
+        const tier = readTier(body.tier);
+        return ok(setSeatTiers(readScope(body), readSeatIds(body), tier, actor));
+      }
+
+      case "reset_tier": {
+        return ok(resetTierCascade(readScope(body), readSeatIds(body), actor));
+      }
+
+      // ------------------------------ PHIM -----------------------------------
+      case "create_movie": {
+        if (!isRecord(body.movie)) {
+          throw new AdminStoreError("INVALID_INPUT", "Thiếu object movie.");
+        }
+        return ok(addMovie(body.movie as unknown as CreateMovieInput, actor), 201);
+      }
+
+      case "update_movie": {
+        if (!isRecord(body.patch)) {
+          throw new AdminStoreError("INVALID_INPUT", "Thiếu object patch.");
+        }
+        return ok(updateMovie(readMovieId(body), body.patch as UpdateMovieInput, actor));
+      }
+
+      case "trash_movie": {
+        return ok(softDeleteMovie(readMovieId(body), actor));
+      }
+
+      case "restore_movie": {
+        return ok(restoreMovie(readMovieId(body), actor));
+      }
+
+      case "delete_movie": {
+        return ok(permanentlyDeleteMovie(readMovieId(body), actor));
+      }
+
+      case "empty_trash": {
+        return ok(emptyTrash(actor));
+      }
+
       default:
-        return fail(400, "INVALID_ACTION", `action không hợp lệ: ${action}`);
+        return fail(400, "INVALID_ACTION", `action không được hỗ trợ: ${action}`);
     }
-  } catch (e) {
-    return handleError(e);
+  } catch (error) {
+    return handleError(error);
   }
 }
- 
-export const POST = (request: NextRequest) => dispatch(request, "POST");
-export const PUT = (request: NextRequest) => dispatch(request, "PUT");
-export const DELETE = (request: NextRequest) => dispatch(request, "DELETE");
+
+export async function POST(request: NextRequest): Promise<NextResponse> {
+  return dispatch(request, "POST");
+}
+
+export async function PUT(request: NextRequest): Promise<NextResponse> {
+  return dispatch(request, "PUT");
+}
+
+export async function DELETE(request: NextRequest): Promise<NextResponse> {
+  return dispatch(request, "DELETE");
+}
