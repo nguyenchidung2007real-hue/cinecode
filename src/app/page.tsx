@@ -590,11 +590,17 @@ export default function HomePage() {
         isOpen={isAiChatOpen}
         onToggle={() => setIsAiChatOpen(!isAiChatOpen)}
         movies={movies}
-        onSelectMovieForBooking={(movie, seats) => {
+        onSelectMovieForBooking={(movie, seats, showtimeId) => {
+          if (showtimeId) {
+            setBookingInitialShowtimeId(showtimeId);
+          }
           setActiveBookingMovie(movie);
           setBookingInitialSeats(seats || []);
           setIsAiChatOpen(false);
         }}
+        onOpenMyTickets={() => setIsMyTicketsOpen(true)}
+        onOpenSearch={() => setIsSearchOpen(true)}
+        onSelectMood={(moodId) => setSelectedMood(moodId)}
       />
 
       {/* Modal Tìm Kiếm AI Spotlight (Goal 5 - Hugging Face RAG) */}

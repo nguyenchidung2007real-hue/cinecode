@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { Sparkles, Send, X, Bot, User, Trash2, Zap, Film, Armchair, Ticket, ArrowRight } from "lucide-react";
+import { Sparkles, Send, X, Bot, User, Trash2, Zap, Film, Armchair, Ticket, ArrowRight, Compass } from "lucide-react";
 import { ChatMessage, Movie } from "@/types";
 import { MOCK_MOVIES } from "@/lib/mockData";
 import { useBookingStore } from "@/store/useBookingStore";
@@ -9,24 +9,27 @@ import { useBookingStore } from "@/store/useBookingStore";
 interface AiChatWidgetProps {
   isOpen: boolean;
   onToggle: () => void;
-  onSelectMovieForBooking?: (movie: Movie, suggestedSeats?: string[]) => void;
+  onSelectMovieForBooking?: (movie: Movie, suggestedSeats?: string[], showtimeId?: string) => void;
   movies?: Movie[];
+  onOpenMyTickets?: () => void;
+  onOpenSearch?: () => void;
+  onSelectMood?: (moodId: string) => void;
 }
 
 const INITIAL_MESSAGES: ChatMessage[] = [
   {
     id: "welcome-1",
     role: "assistant",
-    content: "Chào bạn! Tôi là **CineBot AI** 🤖🎬. Kể cho mình nghe tâm trạng hôm nay của bạn (áp lực, buồn, muốn cảm giác mạnh, hẹn hò...) hoặc số người đi xem, mình sẽ gợi ý phim hợp gu và chọn sẵn ghế đẹp nhất nhé!",
+    content: "Chào bạn! Tôi là **CineBot AI Agent** 🤖🎬.\nTôi có thể **trực tiếp điều khiển trang web** và **đặt vé hộ bạn**: Hãy thử bảo tôi: *\"Đặt hộ tôi 2 vé phim Dune tối nay\"*, *\"Xem lịch chiếu rạp Beta\"*, hoặc *\"Mở ví vé của tôi\"*!",
     timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
   },
 ];
 
 const SUGGESTIONS = [
+  "🎟️ Đặt hộ tôi 2 vé phim Dune tối nay",
+  "📅 Cuộn xuống xem lịch chiếu rạp Beta hôm nay",
+  "🎫 Mở ví vé của tôi",
   "🔥 Mình đang stress quá, cần phim xả hơi",
-  "🍿 Tư vấn vị trí ghế đẹp nhất phòng IMAX",
-  "👻 Thích cảm giác mạnh, rùng rợn giật gân",
-  "💕 Đi xem phim với người yêu thì ngồi đâu?",
 ];
 
 export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
@@ -34,10 +37,14 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
   onToggle,
   onSelectMovieForBooking,
   movies = MOCK_MOVIES,
+  onOpenMyTickets,
+  onOpenSearch,
+  onSelectMood,
 }) => {
   const [messages, setMessages] = useState<ChatMessage[]>(INITIAL_MESSAGES);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
+  const [activeActionBanner, setActiveActionBanner] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -49,6 +56,92 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
       scrollToBottom();
     }
   }, [messages, isOpen]);
+
+  // Bộ điều khiển Web-Action: AI Agent chủ động điều khiển trang web
+  const executeWebAction = (actionObj: any) => {
+    const actType = actionObj.action;
+    const bannerMsg = actionObj.message || "🤖 AI Agent đang điều khiển trang web...";
+    setActiveActionBanner(bannerMsg);
+
+    if (actType === "auto_book") {
+      const draft = actionObj.data || actionObj.draft;
+      if (draft) {
+        useBookingStore.getState().prefillFromAiTool({
+          movieId: draft.movieId || "dune-2",
+          movieTitle: draft.movieTitle,
+          cinemaName: draft.cinemaName || "Beta Cinemas Xuân Thủy",
+          showtimeId: draft.showtimeId || "st-beta-today-1",
+          showtimeLabel: draft.showtimeLabel || "19:00",
+          format: draft.format || "2D",
+          suggestedSeats: draft.suggestedSeatIds.map((id: string) => ({
+            id,
+            type: draft.seatType,
+          })),
+          suggestedCombos: draft.comboName
+            ? [{ id: "ai-combo", name: draft.comboName, quantity: draft.comboQuantity || 1 }]
+            : [],
+        });
+
+        const foundMovie =
+          movies.find((m) => m.title.toLowerCase().includes(draft.movieTitle.toLowerCase())) ||
+          movies[0];
+
+        setTimeout(() => {
+          if (onSelectMovieForBooking && foundMovie) {
+            onSelectMovieForBooking(foundMovie, draft.suggestedSeatIds, draft.showtimeId);
+          }
+          setActiveActionBanner(null);
+          onToggle(); // Tự động đóng chat để người dùng nhìn thấy BookingModal mở ra
+        }, 800);
+      }
+    } else if (actType === "scroll_to_showtimes") {
+      setTimeout(() => {
+        onToggle();
+        setActiveActionBanner(null);
+        setTimeout(() => {
+          document.getElementById("matrix-section")?.scrollIntoView({ behavior: "smooth" });
+        }, 200);
+      }, 700);
+    } else if (actType === "scroll_to_movies") {
+      setTimeout(() => {
+        onToggle();
+        setActiveActionBanner(null);
+        setTimeout(() => {
+          document.getElementById("commercial-tabs")?.scrollIntoView({ behavior: "smooth" });
+        }, 200);
+      }, 700);
+    } else if (actType === "open_my_tickets") {
+      setTimeout(() => {
+        onToggle();
+        setActiveActionBanner(null);
+        onOpenMyTickets?.();
+      }, 700);
+    } else if (actType === "open_search") {
+      setTimeout(() => {
+        onToggle();
+        setActiveActionBanner(null);
+        onOpenSearch?.();
+      }, 700);
+    } else if (actType === "filter_mood") {
+      setTimeout(() => {
+        if (actionObj.moodId) {
+          onSelectMood?.(actionObj.moodId);
+        }
+        onToggle();
+        setActiveActionBanner(null);
+        setTimeout(() => {
+          document.getElementById("commercial-tabs")?.scrollIntoView({ behavior: "smooth" });
+        }, 200);
+      }, 700);
+    } else if (actType === "navigate_page") {
+      setTimeout(() => {
+        setActiveActionBanner(null);
+        if (actionObj.targetSection) {
+          window.location.href = actionObj.targetSection;
+        }
+      }, 700);
+    }
+  };
 
   const handleSend = async (textToSend?: string) => {
     const text = textToSend || input;
@@ -118,6 +211,14 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
                   )
                 );
               }
+
+              // Nhận phản hồi điều khiển web (Web Action)
+              const webAction =
+                parsed.action || (parsed.type === "web_action" ? parsed.payload || parsed.action : null);
+              if (webAction) {
+                executeWebAction(webAction);
+              }
+
               const rec = parsed.recommendation || (parsed.type === "recommendation" ? parsed.data : null);
               if (rec) {
                 setMessages((prev) =>
@@ -126,6 +227,7 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
                   )
                 );
               }
+
               const draft = parsed.draft || (parsed.type === "booking_draft" ? parsed.payload : null);
               if (draft) {
                 setMessages((prev) =>
@@ -133,11 +235,19 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
                     msg.id === botMsgId ? { ...msg, bookingDraft: draft } : msg
                   )
                 );
+
+                // Nếu có cờ tự động thực thi (autoExecute) từ Agent
+                if (draft.autoExecute && !webAction) {
+                  executeWebAction({
+                    action: "auto_book",
+                    draft,
+                    message: `🤖 AI Agent đang mở màn hình đặt vé phim "${draft.movieTitle}" và chọn sẵn ghế đẹp...`,
+                  });
+                }
               }
             } catch {
               // Bỏ qua lỗi parse từng chunk không hoàn chỉnh
             }
-
           }
         }
       }
@@ -157,6 +267,7 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
 
   const handleClear = () => {
     setMessages(INITIAL_MESSAGES);
+    setActiveActionBanner(null);
   };
 
   return (
@@ -174,7 +285,7 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
           </div>
           <span className="hidden sm:inline">Hỏi Trợ Lý AI</span>
           <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/20 text-white border border-white/30 flex items-center gap-0.5">
-            <Zap className="w-2.5 h-2.5" /> Siêu tốc
+            <Zap className="w-2.5 h-2.5" /> Điều khiển web
           </span>
         </button>
       )}
@@ -190,14 +301,14 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
-                  <h4 className="font-extrabold text-sm text-slate-900">CineBot AI</h4>
+                  <h4 className="font-extrabold text-sm text-slate-900">CineBot AI Agent</h4>
                   <span className="text-[10px] px-1.5 py-0.5 rounded font-bold bg-sky-50 text-sky-700 border border-sky-200">
-                    Trực Tuyến
+                    Auto-Pilot
                   </span>
                 </div>
                 <p className="text-[10px] text-emerald-600 flex items-center gap-1 font-medium">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  Gợi ý tâm trạng & Ghế chuẩn
+                  Đặt vé hộ & Điều khiển trang web
                 </p>
               </div>
             </div>
@@ -219,6 +330,14 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
               </button>
             </div>
           </div>
+
+          {/* Banner thông báo AI Agent đang điều khiển web */}
+          {activeActionBanner && (
+            <div className="px-3.5 py-2 bg-sky-50 border-b border-sky-200 text-sky-800 text-xs font-bold flex items-center gap-2 animate-pulse">
+              <Zap className="w-4 h-4 text-amber-500 shrink-0 animate-bounce" />
+              <span className="truncate">{activeActionBanner}</span>
+            </div>
+          )}
 
           {/* Danh sách tin nhắn */}
           <div className="flex-1 p-3.5 overflow-y-auto space-y-3.5 text-xs">
@@ -344,29 +463,7 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
                       type="button"
                       onClick={() => {
                         const draft = msg.bookingDraft!;
-                        useBookingStore.getState().prefillFromAiTool({
-                          movieId: draft.movieId || "dune-2",
-                          movieTitle: draft.movieTitle,
-                          cinemaName: draft.cinemaName || "Beta Cinemas Xuân Thủy",
-                          showtimeId: draft.showtimeId || "st-beta-today-1",
-                          showtimeLabel: draft.showtimeLabel || "19:00",
-                          format: draft.format || "2D",
-                          suggestedSeats: draft.suggestedSeatIds.map((id) => ({
-                            id,
-                            type: draft.seatType,
-                          })),
-                          suggestedCombos: draft.comboName
-                            ? [{ id: "ai-combo", name: draft.comboName, quantity: draft.comboQuantity || 1 }]
-                            : [],
-                        });
-
-                        const foundMovie =
-                          movies.find((m) => m.title.toLowerCase().includes(draft.movieTitle.toLowerCase())) ||
-                          movies[0];
-
-                        if (onSelectMovieForBooking && foundMovie) {
-                          onSelectMovieForBooking(foundMovie, draft.suggestedSeatIds);
-                        }
+                        executeWebAction({ action: "auto_book", draft });
                       }}
                       className="w-full py-2 px-3 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-extrabold text-[11px] flex items-center justify-center gap-1.5 shadow-md shadow-sky-600/30 transition-all duration-200"
                     >
@@ -381,7 +478,7 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
             {/* Gợi ý câu hỏi nhanh theo tâm trạng */}
             {messages.length <= 2 && (
               <div className="pt-2">
-                <p className="text-[11px] font-semibold text-slate-500 mb-2">Hỏi nhanh theo tâm trạng:</p>
+                <p className="text-[11px] font-semibold text-slate-500 mb-2">Thử ra lệnh cho AI Agent:</p>
                 <div className="flex flex-col gap-1.5">
                   {SUGGESTIONS.map((item, idx) => (
                     <button
@@ -412,7 +509,7 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Chia sẻ tâm trạng hoặc hỏi vị trí ghế..."
+                placeholder="Ra lệnh: 'Đặt hộ 2 vé Dune', 'Xem lịch chiếu'..."
                 disabled={isStreaming}
                 className="flex-1 bg-white text-xs text-slate-900 placeholder-slate-400 px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-sky-500 transition-colors"
               />

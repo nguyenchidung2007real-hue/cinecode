@@ -70,6 +70,22 @@ export interface BookingDraftPayload {
   suggestedSeatIds: string[];
   comboName?: string;
   comboQuantity?: number;
+  autoExecute?: boolean;
+}
+
+export interface WebActionPayload {
+  action:
+    | "auto_book"
+    | "scroll_to_showtimes"
+    | "scroll_to_movies"
+    | "open_my_tickets"
+    | "open_search"
+    | "filter_mood"
+    | "navigate_page";
+  targetSection?: string;
+  moodId?: string;
+  message?: string;
+  data?: unknown;
 }
 
 const BOOKING_TOOLS: Groq.Chat.Completions.ChatCompletionTool[] = [
@@ -78,7 +94,7 @@ const BOOKING_TOOLS: Groq.Chat.Completions.ChatCompletionTool[] = [
     function: {
       name: "prepare_booking_draft",
       description:
-        "Chuẩn bị bản nháp đặt vé rạp và điền sẵn ghế/bắp nước vào BookingModal khi người dùng muốn đặt vé. Hàm này KHÔNG tạo vé đã thanh toán mà chỉ mở giao diện để giữ ghế trên Redis.",
+        "Chuẩn bị bản nháp đặt vé rạp và điền sẵn ghế/bắp nước vào BookingModal khi người dùng muốn đặt vé. Đặt autoExecute: true khi người dùng ra lệnh trực tiếp như 'đặt vé hộ', 'mua vé hộ', 'book vé', 'chọn ghế cho mình' để AI tự động mở modal và chọn ghế hộ.",
       parameters: {
         type: "object",
         properties: {
@@ -101,8 +117,52 @@ const BOOKING_TOOLS: Groq.Chat.Completions.ChatCompletionTool[] = [
           },
           comboName: { type: "string", description: "Tên combo bắp nước nếu khách nhắc tới" },
           comboQuantity: { type: "number", description: "Số lượng combo bắp nước" },
+          autoExecute: {
+            type: "boolean",
+            description: "Đặt true nếu người dùng ra lệnh 'đặt hộ', 'mua hộ', 'book ngay' để giao diện web tự động mở modal và chọn ghế.",
+          },
         },
         required: ["movieTitle", "seatType", "seatCount", "suggestedSeatIds"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "control_website",
+      description:
+        "Điều khiển trực tiếp giao diện website theo yêu cầu người dùng: cuộn đến bảng lịch chiếu, danh sách phim đang chiếu, mở ví vé của tôi, mở công cụ tìm kiếm, hoặc lọc phim theo tâm trạng.",
+      parameters: {
+        type: "object",
+        properties: {
+          action: {
+            type: "string",
+            enum: [
+              "auto_book",
+              "scroll_to_showtimes",
+              "scroll_to_movies",
+              "open_my_tickets",
+              "open_search",
+              "filter_mood",
+              "navigate_page",
+            ],
+            description: "Loại hành động điều khiển trang web muốn thực thi",
+          },
+          targetSection: {
+            type: "string",
+            description: "ID phần tử trên trang (matrix-section, commercial-tabs) hoặc URL điều hướng (/dashboard, /staff)",
+          },
+          moodId: {
+            type: "string",
+            enum: ["all", "blockbuster", "mindblown", "chill", "emotional"],
+            description: "ID tâm trạng nếu action là filter_mood",
+          },
+          message: {
+            type: "string",
+            description: "Thông báo ngắn gọn cho người dùng biết AI đang điều khiển web làm gì",
+          },
+        },
+        required: ["action"],
       },
     },
   },
@@ -335,12 +395,13 @@ function buildSystemPrompt(params: {
   const sections: string[] = [
     "Bạn là CineMax AI, trợ lý tư vấn phim và đặt vé thông minh của rạp chiếu CineMax.",
     "",
-    "## Quy tắc trả lời",
+    "## Quy tắc trả lời & Điều khiển hệ thống",
     "- Luôn trả lời bằng tiếng Việt, thân thiện, ngắn gọn (tối đa khoảng 120 từ), không dùng markdown nặng.",
     "- Chỉ gợi ý phim có trong danh mục CineMax bên dưới; ghi đúng tên phim.",
     "- Không bịa suất chiếu, giá vé hay thông tin không có trong dữ liệu.",
-    "- Khi người dùng thể hiện ý định đặt vé hoặc hỏi mua vé (ví dụ: 'Đặt 2 vé VIP...', 'Cho mình 2 ghế...'), hãy gọi tool prepare_booking_draft để hệ thống hiển thị bản nháp giữ ghế trên giao diện.",
-    "- Khi gợi ý phim, nêu lý do ngắn gọn và mời người dùng bấm nút Đặt vé nhanh / chọn ghế.",
+    "- Khi người dùng thể hiện ý định đặt vé hoặc yêu cầu đặt hộ (ví dụ: 'Đặt hộ mình 2 vé...', 'Mua vé hộ tôi...', 'Cho mình 2 ghế...'), hãy gọi tool prepare_booking_draft với autoExecute: true để website tự động mở giao diện chọn ghế và điền sẵn thông tin hộ người dùng.",
+    "- Khi người dùng muốn xem lịch chiếu, mở ví vé, tìm kiếm phim hoặc lọc tâm trạng, hãy gọi tool control_website để trực tiếp điều khiển giao diện trang web (cuộn trang, mở modal tương ứng).",
+    "- Khi gợi ý phim, nêu lý do ngắn gọn và mời người dùng trải nghiệm.",
     "",
     "## Danh mục phim CineMax (tên | thể loại | điểm | thời lượng | trạng thái)",
     summarizeCatalog(movies),
@@ -537,10 +598,44 @@ export async function POST(request: NextRequest): Promise<Response> {
           if (toolCallName === "prepare_booking_draft" && toolCallArgs) {
             try {
               const draft = JSON.parse(toolCallArgs) as BookingDraftPayload;
+              const lowerUser = stripDiacritics(userText);
+              const explicitAuto =
+                draft.autoExecute ||
+                lowerUser.includes("dat ho") ||
+                lowerUser.includes("mua ho") ||
+                lowerUser.includes("book ho") ||
+                lowerUser.includes("dat giup") ||
+                lowerUser.includes("dat cho toi") ||
+                lowerUser.includes("dat ngay") ||
+                lowerUser.includes("mua ve ho");
+              draft.autoExecute = explicitAuto;
+
               send({
                 type: "booking_draft",
                 draft,
                 payload: draft,
+              });
+
+              if (explicitAuto) {
+                send({
+                  type: "web_action",
+                  action: {
+                    action: "auto_book",
+                    message: `🤖 CineBot AI đang đặt vé hộ bạn: Tự động mở màn hình đặt vé phim "${draft.movieTitle}" và chọn sẵn ghế đẹp...`,
+                    data: draft,
+                  },
+                });
+              }
+            } catch {
+              // Bỏ qua nếu parse JSON bị lỗi
+            }
+          } else if (toolCallName === "control_website" && toolCallArgs) {
+            try {
+              const action = JSON.parse(toolCallArgs) as WebActionPayload;
+              send({
+                type: "web_action",
+                action,
+                payload: action,
               });
             } catch {
               // Bỏ qua nếu parse JSON bị lỗi
@@ -555,16 +650,71 @@ export async function POST(request: NextRequest): Promise<Response> {
             await sleep(18);
           }
 
-          // Smart Mock Agent Fallback: Nếu câu hỏi có ý định đặt vé, tự động sinh booking_draft
+          // Smart Mock Agent Fallback: Tự động điều khiển web hoặc sinh booking_draft
           const lowerUser = stripDiacritics(userText);
+          const isExplicitAutoBook =
+            lowerUser.includes("dat ho") ||
+            lowerUser.includes("mua ho") ||
+            lowerUser.includes("book ho") ||
+            lowerUser.includes("dat giup") ||
+            lowerUser.includes("dat cho toi") ||
+            lowerUser.includes("dat luon") ||
+            lowerUser.includes("mua luon") ||
+            lowerUser.includes("mua ve ho");
+
           const isBookingIntent =
+            isExplicitAutoBook ||
             lowerUser.includes("dat") ||
             lowerUser.includes("mua") ||
             lowerUser.includes("ve") ||
             lowerUser.includes("ghe") ||
             lowerUser.includes("book");
 
-          if (pick && isBookingIntent) {
+          const isShowtimesIntent =
+            lowerUser.includes("lich chieu") ||
+            lowerUser.includes("suat chieu") ||
+            lowerUser.includes("may gio chieu") ||
+            lowerUser.includes("xem lich") ||
+            lowerUser.includes("bang lich");
+
+          const isTicketsIntent =
+            lowerUser.includes("vi ve") ||
+            lowerUser.includes("ve cua toi") ||
+            lowerUser.includes("ve da mua") ||
+            lowerUser.includes("kiem tra ve") ||
+            lowerUser.includes("ma ve");
+
+          const isSearchIntent =
+            lowerUser.includes("tim kiem") ||
+            lowerUser.includes("search") ||
+            lowerUser.includes("tim phim");
+
+          if (isShowtimesIntent) {
+            send({
+              type: "web_action",
+              action: {
+                action: "scroll_to_showtimes",
+                targetSection: "matrix-section",
+                message: "🤖 AI Agent đang cuộn màn hình xuống Bảng Lịch Chiếu rạp Beta Xuân Thủy cho bạn...",
+              },
+            });
+          } else if (isTicketsIntent) {
+            send({
+              type: "web_action",
+              action: {
+                action: "open_my_tickets",
+                message: "🤖 AI Agent đang mở Ví Vé Điện Tử của bạn...",
+              },
+            });
+          } else if (isSearchIntent) {
+            send({
+              type: "web_action",
+              action: {
+                action: "open_search",
+                message: "🤖 AI Agent đang mở công cụ Tìm Kiếm Phim Thông Minh...",
+              },
+            });
+          } else if (pick && isBookingIntent) {
             const seats = suggestSeats(userText, mood);
             const isCouple = seats.length > 0 && seats[0].startsWith("K");
             const isVip =
@@ -580,11 +730,38 @@ export async function POST(request: NextRequest): Promise<Response> {
               seatType,
               seatCount: seats.length,
               suggestedSeatIds: seats,
+              autoExecute: isExplicitAutoBook,
             };
             send({
               type: "booking_draft",
               draft,
               payload: draft,
+            });
+
+            if (isExplicitAutoBook) {
+              send({
+                type: "web_action",
+                action: {
+                  action: "auto_book",
+                  message: `🤖 CineBot AI đang đặt vé hộ bạn: Tự động mở màn hình đặt vé và chọn ghế [${seats.join(", ")}]...`,
+                  data: draft,
+                },
+              });
+            }
+          } else if (mood.label) {
+            let targetMoodId = "all";
+            if (mood.label === "stressed" || mood.label === "chill") targetMoodId = "chill";
+            else if (mood.label === "sad" || mood.label === "emotional") targetMoodId = "emotional";
+            else if (mood.label === "excited") targetMoodId = "blockbuster";
+            else if (mood.label === "romantic") targetMoodId = "emotional";
+
+            send({
+              type: "web_action",
+              action: {
+                action: "filter_mood",
+                moodId: targetMoodId,
+                message: `🤖 AI Agent đã kích hoạt bộ lọc tâm trạng "${mood.label}" trên trang chủ!`,
+              },
             });
           }
         }
