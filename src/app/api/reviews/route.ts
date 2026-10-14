@@ -49,17 +49,18 @@ function unauthorized() {
 export async function GET(request: NextRequest) {
   try {
     const movieId = request.nextUrl.searchParams.get("movieId") ?? undefined;
+    const movieTitle = request.nextUrl.searchParams.get("movieTitle") ?? undefined;
 
     if (isAdminAuthorized(request)) {
       const orders = await getAdminOrders();
       return NextResponse.json({
-        reviews: getReviews(movieId),
+        reviews: getReviews(movieId, movieTitle),
         orders,
         loyaltyByPhone: getLoyaltyByPhone(orders),
       });
     }
 
-    const publicReviews = getReviews(movieId)
+    const publicReviews = getReviews(movieId, movieTitle)
       .filter((r) => r.status === "approved")
       .map((r) => ({ ...r, customerPhone: "" }));
 

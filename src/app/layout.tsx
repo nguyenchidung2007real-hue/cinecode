@@ -12,7 +12,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="vi">
-      <body className="bg-white text-slate-800 min-h-screen antialiased selection:bg-sky-500 selection:text-white">
+      <body className="bg-[#fdfcf0] text-[#1c1c1c] min-h-screen antialiased selection:bg-[#e71a0f] selection:text-white">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

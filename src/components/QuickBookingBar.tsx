@@ -69,11 +69,11 @@ export const QuickBookingBar: React.FC<QuickBookingBarProps> = ({ movies, onQuic
         {/* Header nhỏ thanh đặt vé nhanh */}
         <div className="flex items-center justify-between mb-3 px-1 sm:px-2">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-lg bg-sky-50 border border-sky-200 flex items-center justify-center text-sky-600">
+            <div className="w-6 h-6 rounded-lg bg-red-50 border border-red-200 flex items-center justify-center text-[#e71a0f]">
               <Ticket className="w-3.5 h-3.5" />
             </div>
-            <span className="text-xs sm:text-sm font-black text-slate-900 tracking-wide">
-              ĐẶT VÉ NHANH BETA 1-CLICK
+            <span className="text-xs sm:text-sm font-black text-[#1c1c1c] tracking-wide uppercase">
+              ĐẶT VÉ NHANH 1-CLICK
             </span>
           </div>
           <span className="text-[11px] text-slate-500 hidden sm:inline font-medium">
@@ -85,14 +85,14 @@ export const QuickBookingBar: React.FC<QuickBookingBarProps> = ({ movies, onQuic
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-3 items-center">
           
           {/* 1. Chọn Phim */}
-          <div className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 hover:border-sky-400 transition-colors">
+          <div className="bg-[#faf8f2] border border-[#e5e0d8] rounded-xl px-3 py-2 hover:border-[#e71a0f] transition-colors">
             <span className="text-[10px] text-slate-500 block font-bold uppercase tracking-wider flex items-center gap-1">
-              <Film className="w-3 h-3 text-sky-600" /> 1. Chọn Phim
+              <Film className="w-3 h-3 text-[#e71a0f]" /> 1. Chọn Phim
             </span>
             <select
               value={selectedMovieId}
               onChange={(e) => setSelectedMovieId(e.target.value)}
-              className="w-full bg-transparent border-none text-slate-800 text-xs font-bold focus:outline-none cursor-pointer mt-0.5 truncate"
+              className="w-full bg-transparent border-none text-[#1c1c1c] text-xs font-bold focus:outline-none cursor-pointer mt-0.5 truncate"
             >
               {movies.map((m) => (
                 <option key={m.id} value={m.id} className="bg-white text-slate-800">
@@ -103,14 +103,14 @@ export const QuickBookingBar: React.FC<QuickBookingBarProps> = ({ movies, onQuic
           </div>
 
           {/* 2. Chọn Rạp */}
-          <div className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 hover:border-sky-400 transition-colors">
+          <div className="bg-[#faf8f2] border border-[#e5e0d8] rounded-xl px-3 py-2 hover:border-[#e71a0f] transition-colors">
             <span className="text-[10px] text-slate-500 block font-bold uppercase tracking-wider flex items-center gap-1">
-              <MapPin className="w-3 h-3 text-sky-600" /> 2. Chọn Rạp
+              <MapPin className="w-3 h-3 text-[#e71a0f]" /> 2. Chọn Rạp
             </span>
             <select
               value={selectedCinemaId}
               onChange={(e) => setSelectedCinemaId(e.target.value)}
-              className="w-full bg-transparent border-none text-slate-800 text-xs font-bold focus:outline-none cursor-pointer mt-0.5 truncate"
+              className="w-full bg-transparent border-none text-[#1c1c1c] text-xs font-bold focus:outline-none cursor-pointer mt-0.5 truncate"
             >
               {MOCK_CINEMAS.map((c) => (
                 <option key={c.id} value={c.id} className="bg-white text-slate-800">
@@ -121,14 +121,14 @@ export const QuickBookingBar: React.FC<QuickBookingBarProps> = ({ movies, onQuic
           </div>
 
           {/* 3. Chọn Ngày */}
-          <div className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 hover:border-sky-400 transition-colors">
+          <div className="bg-[#faf8f2] border border-[#e5e0d8] rounded-xl px-3 py-2 hover:border-[#e71a0f] transition-colors">
             <span className="text-[10px] text-slate-500 block font-bold uppercase tracking-wider flex items-center gap-1">
-              <Calendar className="w-3 h-3 text-sky-600" /> 3. Chọn Ngày
+              <Calendar className="w-3 h-3 text-[#e71a0f]" /> 3. Chọn Ngày
             </span>
             <select
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="w-full bg-transparent border-none text-slate-800 text-xs font-bold focus:outline-none cursor-pointer mt-0.5"
+              className="w-full bg-transparent border-none text-[#1c1c1c] text-xs font-bold focus:outline-none cursor-pointer mt-0.5"
             >
               <option value={todayStr} className="bg-white text-slate-800">Hôm nay ({todayStr})</option>
               <option value={tomorrowStr} className="bg-white text-slate-800">Ngày mai ({tomorrowStr})</option>
@@ -137,14 +137,14 @@ export const QuickBookingBar: React.FC<QuickBookingBarProps> = ({ movies, onQuic
           </div>
 
           {/* 4. Chọn Suất Chiếu */}
-          <div className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 hover:border-sky-400 transition-colors">
+          <div className="bg-[#faf8f2] border border-[#e5e0d8] rounded-xl px-3 py-2 hover:border-[#e71a0f] transition-colors">
             <span className="text-[10px] text-slate-500 block font-bold uppercase tracking-wider flex items-center gap-1">
-              <Clock className="w-3 h-3 text-sky-600" /> 4. Suất Chiếu
+              <Clock className="w-3 h-3 text-[#e71a0f]" /> 4. Suất Chiếu
             </span>
             <select
               value={selectedShowtimeId || availableShowtimes[0]?.id}
               onChange={(e) => setSelectedShowtimeId(e.target.value)}
-              className="w-full bg-transparent border-none text-slate-800 text-xs font-bold focus:outline-none cursor-pointer mt-0.5"
+              className="w-full bg-transparent border-none text-[#1c1c1c] text-xs font-bold focus:outline-none cursor-pointer mt-0.5"
             >
               {availableShowtimes.map((st) => (
                 <option key={st.id} value={st.id} className="bg-white text-slate-800">
@@ -158,10 +158,10 @@ export const QuickBookingBar: React.FC<QuickBookingBarProps> = ({ movies, onQuic
           <div className="sm:col-span-2 lg:col-span-1">
             <button
               onClick={handleBookNow}
-              className="w-full h-full py-3.5 px-4 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs tracking-wider uppercase flex items-center justify-center gap-2 shadow-md shadow-sky-600/30 transition-all transform hover:-translate-y-0.5 active:translate-y-0"
+              className="w-full h-full py-3.5 px-4 rounded-xl bg-[#e71a0f] hover:bg-[#c81007] text-white font-bold text-xs tracking-wider uppercase flex items-center justify-center gap-2 shadow-md shadow-red-600/30 transition-all transform hover:-translate-y-0.5 active:translate-y-0"
             >
               <span>MUA VÉ NGAY</span>
-              <ArrowRight className="w-4 h-4 text-sky-200" />
+              <ArrowRight className="w-4 h-4 text-red-200" />
             </button>
           </div>
         </div>

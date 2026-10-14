@@ -17,7 +17,7 @@ import SemanticSearchModal from "@/components/SemanticSearchModal";
 import { SideBanners } from "@/components/SideBanners";
 import { Footer } from "@/components/Footer";
 
-import { Sparkles, Flame, Film, Clapperboard, Award, SearchX, Smile, Compass, Brain, Heart, Zap, Tag, Gift, Percent, Ticket, CheckCircle2, X, Clock, Calendar, Check, Copy, ArrowRight, Info, Armchair, Popcorn } from "lucide-react";
+import { Sparkles, Flame, Film, Clapperboard, Award, SearchX, Smile, Compass, Brain, Heart, Tag, Gift, Percent, Ticket, CheckCircle2, X, Clock, Calendar, Check, Copy, ArrowRight, Info, Armchair, Popcorn, Bot, Star } from "lucide-react";
 
 interface PromoItem {
   id: string;
@@ -362,17 +362,17 @@ export default function HomePage() {
               </div>
             ) : (
               <div className="py-20 text-center flex flex-col items-center justify-center space-y-3">
-                <SearchX className="w-12 h-12 text-slate-400" />
-                <h3 className="text-lg font-bold text-slate-800">Không tìm thấy bộ phim phù hợp</h3>
-                <p className="text-xs text-slate-500 max-w-sm">
-                  Thử tìm kiếm với từ khóa khác hoặc bấm nút **"Hỏi AI"** để trợ lý gợi ý phim hợp ý bạn nhất!
+                <SearchX className="w-12 h-12 text-neutral-400" />
+                <h3 className="text-lg font-bold text-neutral-800">Không tìm thấy bộ phim phù hợp</h3>
+                <p className="text-xs text-neutral-500 max-w-sm">
+                  Thử tìm kiếm với từ khóa khác hoặc bấm trợ lý bên dưới để được hỗ trợ tìm phim và suất chiếu nhanh nhất.
                 </p>
                 <button
                   onClick={() => setIsAiChatOpen(true)}
-                  className="px-4 py-2 rounded-xl bg-sky-50 border border-sky-200 text-sky-600 hover:bg-sky-100 text-xs font-bold flex items-center gap-1.5 mt-2 transition-colors"
+                  className="px-4 py-2.5 rounded-xl bg-[#e71a0f] text-white hover:bg-[#c81007] text-xs font-bold flex items-center gap-2 mt-2 transition-all shadow-md shadow-[#e71a0f]/20 cursor-pointer"
                 >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>Hỏi CineBot AI ngay</span>
+                  <Bot className="w-4 h-4 text-white" />
+                  <span>Trợ lý đặt vé</span>
                 </button>
               </div>
             )}
@@ -400,54 +400,54 @@ export default function HomePage() {
 
             {/* 2. Thanh Chuyển Tab Phim Chuẩn Rạp Chiếu Thương Mại */}
             <div id="commercial-tabs" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 sm:mt-16 scroll-mt-24">
-              <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-4">
+              <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#e5e0d8] pb-4">
                 <div className="flex items-center gap-4 sm:gap-8">
                   <button
                     onClick={() => setActiveCommercialTab("now_playing")}
-                    className={`text-base sm:text-2xl font-black transition-all flex items-center gap-2 pb-3 -mb-4.5 border-b-2 ${
+                    className={`text-base sm:text-2xl font-black transition-all flex items-center gap-2 pb-3 -mb-4.5 border-b-2 cursor-pointer ${
                       activeCommercialTab === "now_playing"
-                        ? "text-sky-600 border-sky-600 shadow-[0_2px_10px_rgba(2,132,199,0.3)]"
-                        : "text-slate-500 border-transparent hover:text-slate-900"
+                        ? "text-[#e71a0f] border-[#e71a0f] shadow-[0_2px_10px_rgba(231,26,15,0.3)]"
+                        : "text-neutral-500 border-transparent hover:text-neutral-900"
                     }`}
                   >
                     <span>🎬 PHIM ĐANG CHIẾU</span>
-                    <span className="text-xs px-2.5 py-0.5 rounded-full bg-sky-50 text-sky-600 font-black border border-sky-200">
+                    <span className="text-xs px-2.5 py-0.5 rounded-full bg-rose-50 text-[#e71a0f] font-black border border-rose-200">
                       {nowPlayingMovies.length}
                     </span>
                   </button>
 
                   <button
                     onClick={() => setActiveCommercialTab("upcoming")}
-                    className={`text-base sm:text-2xl font-black transition-all flex items-center gap-2 pb-3 -mb-4.5 border-b-2 ${
+                    className={`text-base sm:text-2xl font-black transition-all flex items-center gap-2 pb-3 -mb-4.5 border-b-2 cursor-pointer ${
                       activeCommercialTab === "upcoming"
-                        ? "text-sky-600 border-sky-600 shadow-[0_2px_10px_rgba(2,132,199,0.3)]"
-                        : "text-slate-500 border-transparent hover:text-slate-900"
+                        ? "text-[#e71a0f] border-[#e71a0f] shadow-[0_2px_10px_rgba(231,26,15,0.3)]"
+                        : "text-neutral-500 border-transparent hover:text-neutral-900"
                     }`}
                   >
                     <span>⏳ PHIM SẮP CHIẾU</span>
-                    <span className="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 font-bold border border-slate-200">
+                    <span className="text-xs px-2.5 py-0.5 rounded-full bg-neutral-100 text-neutral-600 font-bold border border-neutral-200">
                       {upcomingMovies.length}
                     </span>
                   </button>
 
                   <button
                     onClick={() => setActiveCommercialTab("trending")}
-                    className={`text-base sm:text-2xl font-black transition-all hidden sm:flex items-center gap-2 pb-3 -mb-4.5 border-b-2 ${
+                    className={`text-base sm:text-2xl font-black transition-all hidden sm:flex items-center gap-2 pb-3 -mb-4.5 border-b-2 cursor-pointer ${
                       activeCommercialTab === "trending"
-                        ? "text-sky-600 border-sky-600 shadow-[0_2px_10px_rgba(2,132,199,0.3)]"
-                        : "text-slate-500 border-transparent hover:text-slate-900"
+                        ? "text-[#e71a0f] border-[#e71a0f] shadow-[0_2px_10px_rgba(231,26,15,0.3)]"
+                        : "text-neutral-500 border-transparent hover:text-neutral-900"
                     }`}
                   >
                     <span>⭐ SUẤT CHIẾU ĐẶC BIỆT</span>
-                    <span className="text-xs px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-600 font-black border border-rose-200">
+                    <span className="text-xs px-2.5 py-0.5 rounded-full bg-rose-100 text-[#e71a0f] font-black border border-rose-200">
                       HOT
                     </span>
                   </button>
                 </div>
 
-                <div className="flex items-center gap-2 text-xs text-slate-500">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-                  <span>Cập nhật lịch chiếu Beta Cinemas Xuân Thủy</span>
+                <div className="flex items-center gap-2 text-xs text-neutral-500">
+                  <span className="w-2 h-2 rounded-full bg-[#e71a0f] animate-ping" />
+                  <span>Cập nhật trực tiếp rạp CGV Cinemas</span>
                 </div>
               </div>
 
@@ -483,12 +483,12 @@ export default function HomePage() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <Zap className="w-4 h-4 text-sky-600" />
-                  <h3 className="text-sm font-extrabold text-slate-900 tracking-wide">
+                  <Compass className="w-4 h-4 text-[#e71a0f]" />
+                  <h3 className="text-sm font-extrabold text-neutral-900 tracking-wide">
                     Hôm nay tâm trạng bạn thế nào?
                   </h3>
                 </div>
-                <span className="text-[11px] text-slate-500 font-mono">Gợi ý AI thông minh</span>
+                <span className="text-[11px] text-neutral-500 font-mono">Gợi ý phim rạp CGV</span>
               </div>
 
               <div className="flex items-center gap-2.5 overflow-x-auto pb-2 scrollbar-none">
@@ -499,10 +499,10 @@ export default function HomePage() {
                     <button
                       key={mood.id}
                       onClick={() => setSelectedMood(mood.id)}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all flex-shrink-0 border ${
+                      className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all flex-shrink-0 border cursor-pointer ${
                         isActive
-                          ? "bg-sky-600 border-sky-600 text-white shadow-md shadow-sky-600/30 scale-105"
-                          : "bg-white border-slate-200 text-slate-700 hover:border-sky-400 hover:text-sky-600"
+                          ? "bg-[#e71a0f] border-[#e71a0f] text-white shadow-md shadow-[#e71a0f]/30 scale-105"
+                          : "bg-white border-[#e5e0d8] text-neutral-700 hover:border-[#e71a0f] hover:text-[#e71a0f]"
                       }`}
                     >
                       <Icon className="w-3.5 h-3.5" />
@@ -516,17 +516,17 @@ export default function HomePage() {
             {/* Thanh Tab bộ lọc thể loại nhanh */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
               <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider mr-2 flex-shrink-0">
+                <span className="text-xs font-bold text-neutral-500 uppercase tracking-wider mr-2 flex-shrink-0">
                   Thể loại:
                 </span>
                 {GENRE_FILTERS.map((genre) => (
                   <button
                     key={genre}
                     onClick={() => setSelectedGenre(genre)}
-                    className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-all flex-shrink-0 ${
+                    className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-all flex-shrink-0 cursor-pointer ${
                       selectedGenre === genre
-                        ? "bg-sky-600 text-white shadow-md font-bold"
-                        : "bg-white border border-slate-200 text-slate-600 hover:text-slate-900 hover:border-slate-300"
+                        ? "bg-[#e71a0f] text-white shadow-md font-bold"
+                        : "bg-white border border-[#e5e0d8] text-neutral-600 hover:text-neutral-900 hover:border-neutral-400"
                     }`}
                   >
                     {genre}
@@ -535,31 +535,32 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Banner quảng bá Trợ lý AI Groq */}
+            {/* Banner Quyền Lợi Thành Viên & Trợ Lý CGV */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
-              <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-sky-50 via-blue-50 to-indigo-50 border border-sky-200 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
+              <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-red-50 via-rose-50 to-amber-50 border border-[#e5e0d8] flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-sky-600 flex items-center justify-center text-white shadow-md shadow-sky-600/30 flex-shrink-0">
-                    <Sparkles className="w-5 h-5 animate-pulse" />
+                  <div className="w-10 h-10 rounded-xl bg-[#e71a0f] flex items-center justify-center text-white shadow-md shadow-[#e71a0f]/30 flex-shrink-0">
+                    <Bot className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="font-extrabold text-sm sm:text-base text-slate-900 flex items-center gap-2">
-                      <span>Bạn chưa biết nên xem phim gì tối nay?</span>
-                      <span className="text-[10px] px-2 py-0.5 rounded font-bold bg-sky-100 text-sky-700 border border-sky-200">
-                        Gợi Ý Thông Minh
+                    <h3 className="font-extrabold text-sm sm:text-base text-neutral-900 flex items-center gap-2">
+                      <span>Trải Nghiệm Điện Ảnh Đỉnh Cao Tại CGV Cinemas</span>
+                      <span className="text-[10px] px-2 py-0.5 rounded font-bold bg-rose-100 text-[#e71a0f] border border-rose-200">
+                        CGV Cultureplex
                       </span>
                     </h3>
-                    <p className="text-xs text-slate-600 mt-0.5">
-                      Hỏi CineBot AI để được phân tích gu xem phim, tóm tắt đánh giá và tư vấn vị trí ghế ngồi đẹp nhất rạp chỉ trong 1 giây!
+                    <p className="text-xs text-neutral-600 mt-0.5">
+                      Cập nhật lịch chiếu sớm, tích điểm thành viên CGV Member và nhận tư vấn chọn suất chiếu, ghế đẹp chuẩn xác.
                     </p>
                   </div>
                 </div>
 
                 <button
                   onClick={() => setIsAiChatOpen(true)}
-                  className="px-5 py-2.5 rounded-xl bg-sky-600 text-white font-extrabold text-xs shadow-md shadow-sky-600/30 hover:bg-sky-700 transition-all flex-shrink-0 transform hover:scale-105 active:scale-95"
+                  className="w-10 h-10 rounded-xl bg-[#e71a0f] text-white shadow-md shadow-[#e71a0f]/30 hover:bg-[#c81007] transition-all flex items-center justify-center flex-shrink-0 transform hover:scale-105 active:scale-95 cursor-pointer"
+                  title="Trợ lý đặt vé"
                 >
-                  Trò chuyện với AI ngay
+                  <Bot className="w-5 h-5" />
                 </button>
               </div>
             </div>
@@ -569,12 +570,12 @@ export default function HomePage() {
               {/* Header */}
               <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
                 <div>
-                  <span className="text-xs text-sky-600 font-bold uppercase tracking-wider block">Bảng Giá Niêm Yết Toàn Hệ Thống</span>
-                  <h3 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight flex items-center gap-2 mt-0.5">
-                    <span>BẢNG GIÁ VÉ & PHỤ THU RẠP CHIẾU</span>
-                    <Ticket className="w-6 h-6 text-sky-600" />
+                  <span className="text-xs text-[#e71a0f] font-bold uppercase tracking-wider block">Bảng Giá Niêm Yết Toàn Hệ Thống</span>
+                  <h3 className="text-2xl sm:text-3xl font-black text-neutral-900 tracking-tight flex items-center gap-2 mt-0.5">
+                    <span>BẢNG GIÁ VÉ & PHỤ THU RẠP CHIẾU CGV</span>
+                    <Ticket className="w-6 h-6 text-[#e71a0f]" />
                   </h3>
-                  <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-2xl">
+                  <p className="text-xs sm:text-sm text-neutral-600 mt-1 max-w-2xl">
                     Giá vé minh bạch, đồng nhất cho mọi phòng chiếu tiêu chuẩn 2D. Đặt vé trực tuyến nhanh chóng, thanh toán VietQR tức thì và nhận vé QR điện tử vào thẳng phòng chiếu.
                   </p>
                 </div>
@@ -589,38 +590,38 @@ export default function HomePage() {
               {/* 4 Pricing Cards Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
                 {/* Card 1: Ghế Tiêu Chuẩn */}
-                <div className="bg-white rounded-2xl border border-slate-200 p-5 flex flex-col justify-between hover:border-sky-400 hover:shadow-md transition-all group">
+                <div className="bg-white rounded-2xl border border-[#e5e0d8] p-5 flex flex-col justify-between hover:border-[#e71a0f]/40 hover:shadow-md transition-all group">
                   <div>
                     <div className="flex items-center justify-between mb-3">
-                      <span className="px-2.5 py-1 rounded-full text-[10px] font-black bg-slate-100 text-slate-700 uppercase tracking-wider">
+                      <span className="px-2.5 py-1 rounded-full text-[10px] font-black bg-neutral-100 text-neutral-700 uppercase tracking-wider">
                         Hàng A - D
                       </span>
-                      <Armchair className="w-5 h-5 text-slate-400 group-hover:text-sky-600 transition-colors" />
+                      <Armchair className="w-5 h-5 text-neutral-400 group-hover:text-[#e71a0f] transition-colors" />
                     </div>
-                    <h4 className="text-lg font-black text-slate-900">Ghế Tiêu Chuẩn</h4>
-                    <p className="text-xs text-slate-500 mt-1">Standard Seat • Dãy đầu & giữa</p>
+                    <h4 className="text-lg font-black text-neutral-900">Ghế Tiêu Chuẩn</h4>
+                    <p className="text-xs text-neutral-500 mt-1">Standard Seat • Dãy đầu & giữa</p>
 
-                    <div className="mt-4 mb-4 pb-4 border-b border-slate-100">
+                    <div className="mt-4 mb-4 pb-4 border-b border-neutral-100">
                       <div className="flex items-baseline gap-1">
-                        <span className="text-3xl font-black text-slate-900">55.000</span>
-                        <span className="text-sm font-bold text-slate-600">đ/vé</span>
+                        <span className="text-3xl font-black text-neutral-900">55.000</span>
+                        <span className="text-sm font-bold text-neutral-600">đ/vé</span>
                       </div>
                       <p className="text-[11px] text-emerald-600 font-medium mt-1">
                         HSSV / Trẻ em: chỉ từ 45.000đ (trước 17h)
                       </p>
                     </div>
 
-                    <ul className="space-y-2 text-xs text-slate-600">
+                    <ul className="space-y-2 text-xs text-neutral-600">
                       <li className="flex items-center gap-2">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-sky-600 flex-shrink-0" />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#e71a0f] flex-shrink-0" />
                         <span>Khoảng cách màn hình tiêu chuẩn</span>
                       </li>
                       <li className="flex items-center gap-2">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-sky-600 flex-shrink-0" />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#e71a0f] flex-shrink-0" />
                         <span>Ghế nỉ cao cấp đệm êm ái</span>
                       </li>
                       <li className="flex items-center gap-2">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-sky-600 flex-shrink-0" />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#e71a0f] flex-shrink-0" />
                         <span>Âm thanh Dolby 7.1 trung thực</span>
                       </li>
                     </ul>
@@ -631,7 +632,7 @@ export default function HomePage() {
                       const target = movies.find((m) => m.status === "now_playing") || movies[0];
                       if (target) setActiveBookingMovie(target);
                     }}
-                    className="w-full mt-5 py-2.5 rounded-xl bg-slate-100 hover:bg-sky-600 hover:text-white text-slate-800 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="w-full mt-5 py-2.5 rounded-xl bg-neutral-100 hover:bg-[#e71a0f] hover:text-white text-neutral-800 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <span>Chọn Suất Chiếu</span>
                     <ArrowRight className="w-3.5 h-3.5" />
@@ -639,41 +640,41 @@ export default function HomePage() {
                 </div>
 
                 {/* Card 2: Ghế VIP (Sweet Spot) */}
-                <div className="bg-white rounded-2xl border-2 border-sky-500 p-5 flex flex-col justify-between shadow-sm relative group">
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-sky-600 text-white text-[10px] font-black uppercase tracking-wider px-3 py-0.5 rounded-full shadow-sm">
+                <div className="bg-white rounded-2xl border-2 border-[#e71a0f] p-5 flex flex-col justify-between shadow-sm relative group">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#e71a0f] text-white text-[10px] font-black uppercase tracking-wider px-3 py-0.5 rounded-full shadow-sm">
                     Được Chọn Nhiều Nhất
                   </div>
                   <div>
                     <div className="flex items-center justify-between mb-3">
-                      <span className="px-2.5 py-1 rounded-full text-[10px] font-black bg-sky-50 text-sky-700 uppercase tracking-wider border border-sky-200">
+                      <span className="px-2.5 py-1 rounded-full text-[10px] font-black bg-rose-50 text-[#e71a0f] uppercase tracking-wider border border-rose-200">
                         Hàng E - H
                       </span>
-                      <Sparkles className="w-5 h-5 text-sky-600" />
+                      <Star className="w-5 h-5 fill-amber-500 text-amber-500" />
                     </div>
-                    <h4 className="text-lg font-black text-slate-900">Ghế VIP Sweet Spot</h4>
-                    <p className="text-xs text-slate-500 mt-1">VIP Seat • Tầm nhìn trung tâm rạp</p>
+                    <h4 className="text-lg font-black text-neutral-900">Ghế VIP Sweet Spot</h4>
+                    <p className="text-xs text-neutral-500 mt-1">VIP Seat • Tầm nhìn trung tâm rạp</p>
 
-                    <div className="mt-4 mb-4 pb-4 border-b border-slate-100">
+                    <div className="mt-4 mb-4 pb-4 border-b border-neutral-100">
                       <div className="flex items-baseline gap-1">
-                        <span className="text-3xl font-black text-sky-600">75.000</span>
-                        <span className="text-sm font-bold text-slate-600">đ/vé</span>
+                        <span className="text-3xl font-black text-[#e71a0f]">75.000</span>
+                        <span className="text-sm font-bold text-neutral-600">đ/vé</span>
                       </div>
-                      <p className="text-[11px] text-sky-700 font-medium mt-1">
+                      <p className="text-[11px] text-[#e71a0f] font-medium mt-1">
                         Phụ thu +20k so với ghế thường
                       </p>
                     </div>
 
-                    <ul className="space-y-2 text-xs text-slate-600">
+                    <ul className="space-y-2 text-xs text-neutral-600">
                       <li className="flex items-center gap-2">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-sky-600 flex-shrink-0" />
-                        <span className="font-semibold text-slate-800">Tầm nhìn 100% diện tích màn chiếu</span>
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#e71a0f] flex-shrink-0" />
+                        <span className="font-semibold text-neutral-800">Tầm nhìn 100% diện tích màn chiếu</span>
                       </li>
                       <li className="flex items-center gap-2">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-sky-600 flex-shrink-0" />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#e71a0f] flex-shrink-0" />
                         <span>Khoảng để chân rộng rãi thoải mái</span>
                       </li>
                       <li className="flex items-center gap-2">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-sky-600 flex-shrink-0" />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#e71a0f] flex-shrink-0" />
                         <span>Trục âm thanh vòm hoàn hảo nhất</span>
                       </li>
                     </ul>
@@ -684,7 +685,7 @@ export default function HomePage() {
                       const target = movies.find((m) => m.status === "now_playing") || movies[0];
                       if (target) setActiveBookingMovie(target);
                     }}
-                    className="w-full mt-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs transition-colors flex items-center justify-center gap-1.5 shadow-md shadow-sky-600/20 cursor-pointer"
+                    className="w-full mt-5 py-2.5 rounded-xl bg-[#e71a0f] hover:bg-[#c81007] text-white font-bold text-xs transition-colors flex items-center justify-center gap-1.5 shadow-md shadow-[#e71a0f]/20 cursor-pointer"
                   >
                     <span>Đặt Vé Ghế VIP</span>
                     <ArrowRight className="w-3.5 h-3.5" />
@@ -692,7 +693,7 @@ export default function HomePage() {
                 </div>
 
                 {/* Card 3: Ghế Đôi Sweetbox */}
-                <div className="bg-white rounded-2xl border border-slate-200 p-5 flex flex-col justify-between hover:border-sky-400 hover:shadow-md transition-all group">
+                <div className="bg-white rounded-2xl border border-[#e5e0d8] p-5 flex flex-col justify-between hover:border-[#e71a0f]/40 hover:shadow-md transition-all group">
                   <div>
                     <div className="flex items-center justify-between mb-3">
                       <span className="px-2.5 py-1 rounded-full text-[10px] font-black bg-rose-50 text-rose-600 uppercase tracking-wider border border-rose-200">
@@ -700,30 +701,30 @@ export default function HomePage() {
                       </span>
                       <Heart className="w-5 h-5 text-rose-500" />
                     </div>
-                    <h4 className="text-lg font-black text-slate-900">Sweetbox Ghế Đôi</h4>
-                    <p className="text-xs text-slate-500 mt-1">Couple Sweetbox • Trọn gói 2 người</p>
+                    <h4 className="text-lg font-black text-neutral-900">Sweetbox Ghế Đôi</h4>
+                    <p className="text-xs text-neutral-500 mt-1">Couple Sweetbox • Trọn gói 2 người</p>
 
-                    <div className="mt-4 mb-4 pb-4 border-b border-slate-100">
+                    <div className="mt-4 mb-4 pb-4 border-b border-neutral-100">
                       <div className="flex items-baseline gap-1">
-                        <span className="text-3xl font-black text-slate-900">130.000</span>
-                        <span className="text-sm font-bold text-slate-600">đ/cặp</span>
+                        <span className="text-3xl font-black text-neutral-900">130.000</span>
+                        <span className="text-sm font-bold text-neutral-600">đ/cặp</span>
                       </div>
                       <p className="text-[11px] text-rose-600 font-medium mt-1">
                         Chỉ 65.000đ/người • Bao gồm 2 vé
                       </p>
                     </div>
 
-                    <ul className="space-y-2 text-xs text-slate-600">
+                    <ul className="space-y-2 text-xs text-neutral-600">
                       <li className="flex items-center gap-2">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-sky-600 flex-shrink-0" />
-                        <span className="font-semibold text-slate-800">Vách ngăn riêng tư cao cấp</span>
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#e71a0f] flex-shrink-0" />
+                        <span className="font-semibold text-neutral-800">Vách ngăn riêng tư cao cấp</span>
                       </li>
                       <li className="flex items-center gap-2">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-sky-600 flex-shrink-0" />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#e71a0f] flex-shrink-0" />
                         <span>Ghế sofa đôi bọc nhung liền khối</span>
                       </li>
                       <li className="flex items-center gap-2">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-sky-600 flex-shrink-0" />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#e71a0f] flex-shrink-0" />
                         <span>Tặng bắp phô mai suất chiếu sau 20h</span>
                       </li>
                     </ul>
@@ -734,7 +735,7 @@ export default function HomePage() {
                       const target = movies.find((m) => m.status === "now_playing") || movies[0];
                       if (target) setActiveBookingMovie(target);
                     }}
-                    className="w-full mt-5 py-2.5 rounded-xl bg-slate-100 hover:bg-sky-600 hover:text-white text-slate-800 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="w-full mt-5 py-2.5 rounded-xl bg-neutral-100 hover:bg-[#e71a0f] hover:text-white text-neutral-800 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <span>Đặt Ghế Đôi</span>
                     <ArrowRight className="w-3.5 h-3.5" />
@@ -742,7 +743,7 @@ export default function HomePage() {
                 </div>
 
                 {/* Card 4: Combo Bắp Nước Concession */}
-                <div className="bg-white rounded-2xl border border-slate-200 p-5 flex flex-col justify-between hover:border-sky-400 hover:shadow-md transition-all group">
+                <div className="bg-white rounded-2xl border border-[#e5e0d8] p-5 flex flex-col justify-between hover:border-[#e71a0f]/40 hover:shadow-md transition-all group">
                   <div>
                     <div className="flex items-center justify-between mb-3">
                       <span className="px-2.5 py-1 rounded-full text-[10px] font-black bg-amber-50 text-amber-700 uppercase tracking-wider border border-amber-200">
@@ -750,31 +751,31 @@ export default function HomePage() {
                       </span>
                       <Popcorn className="w-5 h-5 text-amber-500" />
                     </div>
-                    <h4 className="text-lg font-black text-slate-900">Combo Bắp Nước Rạp</h4>
-                    <p className="text-xs text-slate-500 mt-1">Concession • Solo & Couple & Party</p>
+                    <h4 className="text-lg font-black text-neutral-900">Combo Bắp Nước Rạp</h4>
+                    <p className="text-xs text-neutral-500 mt-1">Concession • Solo & Couple & Party</p>
 
-                    <div className="mt-4 mb-4 pb-4 border-b border-slate-100">
+                    <div className="mt-4 mb-4 pb-4 border-b border-neutral-100">
                       <div className="flex items-baseline gap-1">
-                        <span className="text-xs font-bold text-slate-500">Từ</span>
-                        <span className="text-3xl font-black text-slate-900">59.000</span>
-                        <span className="text-sm font-bold text-slate-600">đ</span>
+                        <span className="text-xs font-bold text-neutral-500">Từ</span>
+                        <span className="text-3xl font-black text-neutral-900">59.000</span>
+                        <span className="text-sm font-bold text-neutral-600">đ</span>
                       </div>
                       <p className="text-[11px] text-amber-700 font-medium mt-1">
                         Tiết kiệm tới 30% so với mua trực tiếp
                       </p>
                     </div>
 
-                    <ul className="space-y-2 text-xs text-slate-600">
+                    <ul className="space-y-2 text-xs text-neutral-600">
                       <li className="flex items-center gap-2">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-sky-600 flex-shrink-0" />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#e71a0f] flex-shrink-0" />
                         <span>Bắp rang bơ phô mai / caramel giòn rụm</span>
                       </li>
                       <li className="flex items-center gap-2">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-sky-600 flex-shrink-0" />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#e71a0f] flex-shrink-0" />
                         <span>Nước ngọt tươi có ga hoặc trà hoa quả</span>
                       </li>
                       <li className="flex items-center gap-2">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-sky-600 flex-shrink-0" />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#e71a0f] flex-shrink-0" />
                         <span>Tùy biến vị bắp và cỡ ly khi đặt vé</span>
                       </li>
                     </ul>
@@ -782,7 +783,7 @@ export default function HomePage() {
 
                   <a
                     href="#promo-section"
-                    className="w-full mt-5 py-2.5 rounded-xl bg-slate-100 hover:bg-sky-600 hover:text-white text-slate-800 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer text-center"
+                    className="w-full mt-5 py-2.5 rounded-xl bg-neutral-100 hover:bg-[#e71a0f] hover:text-white text-neutral-800 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer text-center"
                   >
                     <span>Xem Menu Combo 68k</span>
                     <ArrowRight className="w-3.5 h-3.5" />
@@ -791,20 +792,20 @@ export default function HomePage() {
               </div>
 
               {/* Comparison Table */}
-              <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-                <div className="px-5 py-3.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-                  <span className="text-xs font-extrabold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-                    <Info className="w-4 h-4 text-sky-600" />
+              <div className="bg-white rounded-2xl border border-[#e5e0d8] overflow-hidden shadow-sm">
+                <div className="px-5 py-3.5 bg-neutral-50 border-b border-[#e5e0d8] flex items-center justify-between">
+                  <span className="text-xs font-extrabold text-neutral-800 uppercase tracking-wider flex items-center gap-1.5">
+                    <Info className="w-4 h-4 text-[#e71a0f]" />
                     Bảng Chi Tiết Giá Vé Theo Khung Giờ & Đối Tượng
                   </span>
-                  <span className="text-[11px] text-slate-500 hidden sm:inline">
+                  <span className="text-[11px] text-neutral-500 hidden sm:inline">
                     Đơn vị tính: VNĐ / vé
                   </span>
                 </div>
 
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs text-left">
-                    <thead className="bg-slate-50/70 text-slate-700 font-bold border-b border-slate-200">
+                    <thead className="bg-neutral-50/70 text-neutral-700 font-bold border-b border-[#e5e0d8]">
                       <tr>
                         <th className="py-3 px-4">Loại Vé & Đối Tượng</th>
                         <th className="py-3 px-4 text-center">Thứ 2 - Thứ 6 (Trước 17:00)</th>
@@ -812,34 +813,34 @@ export default function HomePage() {
                         <th className="py-3 px-4 text-center">Thứ 7, CN & Ngày Lễ</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100 text-slate-600">
-                      <tr className="hover:bg-slate-50/50 transition-colors">
-                        <td className="py-3 px-4 font-semibold text-slate-900">
+                    <tbody className="divide-y divide-neutral-100 text-neutral-600">
+                      <tr className="hover:bg-neutral-50/50 transition-colors">
+                        <td className="py-3 px-4 font-semibold text-neutral-900">
                           Học Sinh - Sinh Viên / Trẻ Em (U22)
                         </td>
                         <td className="py-3 px-4 text-center font-bold text-emerald-600">45.000đ</td>
                         <td className="py-3 px-4 text-center font-bold text-emerald-600">50.000đ</td>
-                        <td className="py-3 px-4 text-center font-bold text-slate-700">55.000đ</td>
+                        <td className="py-3 px-4 text-center font-bold text-neutral-700">55.000đ</td>
                       </tr>
-                      <tr className="hover:bg-slate-50/50 transition-colors">
-                        <td className="py-3 px-4 font-semibold text-slate-900">
+                      <tr className="hover:bg-neutral-50/50 transition-colors">
+                        <td className="py-3 px-4 font-semibold text-neutral-900">
                           Ghế Thường (Hàng A - D)
                         </td>
-                        <td className="py-3 px-4 text-center font-bold text-slate-900">55.000đ</td>
-                        <td className="py-3 px-4 text-center font-bold text-slate-900">60.000đ</td>
-                        <td className="py-3 px-4 text-center font-bold text-slate-900">65.000đ</td>
+                        <td className="py-3 px-4 text-center font-bold text-neutral-900">55.000đ</td>
+                        <td className="py-3 px-4 text-center font-bold text-neutral-900">60.000đ</td>
+                        <td className="py-3 px-4 text-center font-bold text-neutral-900">65.000đ</td>
                       </tr>
-                      <tr className="hover:bg-slate-50/50 transition-colors bg-sky-50/30">
-                        <td className="py-3 px-4 font-semibold text-sky-900 flex items-center gap-1.5">
+                      <tr className="hover:bg-neutral-50/50 transition-colors bg-rose-50/40">
+                        <td className="py-3 px-4 font-semibold text-neutral-900 flex items-center gap-1.5">
                           <span>Ghế VIP Sweet Spot (Hàng E - H)</span>
-                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-sky-100 text-sky-700 font-bold">Hot</span>
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-rose-100 text-[#e71a0f] font-bold">Hot</span>
                         </td>
-                        <td className="py-3 px-4 text-center font-bold text-sky-600">75.000đ</td>
-                        <td className="py-3 px-4 text-center font-bold text-sky-600">80.000đ</td>
-                        <td className="py-3 px-4 text-center font-bold text-sky-600">85.000đ</td>
+                        <td className="py-3 px-4 text-center font-bold text-[#e71a0f]">75.000đ</td>
+                        <td className="py-3 px-4 text-center font-bold text-[#e71a0f]">80.000đ</td>
+                        <td className="py-3 px-4 text-center font-bold text-[#e71a0f]">85.000đ</td>
                       </tr>
-                      <tr className="hover:bg-slate-50/50 transition-colors">
-                        <td className="py-3 px-4 font-semibold text-slate-900">
+                      <tr className="hover:bg-neutral-50/50 transition-colors">
+                        <td className="py-3 px-4 font-semibold text-neutral-900">
                           Ghế Đôi Sweetbox (Hàng K - 2 vé)
                         </td>
                         <td className="py-3 px-4 text-center font-bold text-rose-600">130.000đ</td>
@@ -850,9 +851,9 @@ export default function HomePage() {
                   </table>
                 </div>
 
-                <div className="p-3 bg-slate-50/80 border-t border-slate-200 text-[11px] text-slate-500 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div className="p-3 bg-neutral-50/80 border-t border-[#e5e0d8] text-[11px] text-neutral-500 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <span>* Giá trên đã bao gồm thuế VAT (8%). Áp dụng cho các phòng chiếu 2D tiêu chuẩn.</span>
-                  <span className="text-sky-600 font-semibold">🎉 Thứ 3 hàng tuần: Đồng giá 45.000đ mọi loại ghế</span>
+                  <span className="text-[#e71a0f] font-semibold">🎉 Thứ 3 hàng tuần: Đồng giá 45.000đ mọi loại ghế</span>
                 </div>
               </div>
             </section>
@@ -861,8 +862,8 @@ export default function HomePage() {
             <section id="promo-section" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 scroll-mt-24">
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <span className="text-xs text-sky-600 font-bold uppercase tracking-wider block">Ưu Đãi Rạp Chiếu</span>
-                  <h3 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2 mt-0.5">
+                  <span className="text-xs text-[#e71a0f] font-bold uppercase tracking-wider block">Ưu Đãi Rạp Chiếu</span>
+                  <h3 className="text-2xl font-black text-neutral-900 tracking-tight flex items-center gap-2 mt-0.5">
                     <span>KHUYẾN MÃI & COMBO BẮP NƯỚC HOT</span>
                     <Tag className="w-5 h-5 text-amber-500" />
                   </h3>
@@ -877,20 +878,20 @@ export default function HomePage() {
                       setSelectedPromo(promo);
                       setCopiedPromoCode(false);
                     }}
-                    className="relative rounded-2xl overflow-hidden bg-white border border-slate-200 p-5 flex flex-col justify-between group hover:border-sky-400 hover:shadow-md transition-all hover:scale-[1.01] cursor-pointer"
+                    className="relative rounded-2xl overflow-hidden bg-white border border-[#e5e0d8] p-5 flex flex-col justify-between group hover:border-[#e71a0f]/40 hover:shadow-md transition-all hover:scale-[1.01] cursor-pointer"
                   >
                     <div className="space-y-2">
                       <span className={`px-2.5 py-1 rounded-full text-[10px] font-black ${promo.badgeBg} ${promo.badgeText} uppercase tracking-wider inline-block border ${promo.badgeBorder}`}>
                         {promo.badge}
                       </span>
-                      <h4 className="text-lg font-black text-slate-900 group-hover:text-sky-600 transition-colors">
+                      <h4 className="text-lg font-black text-neutral-900 group-hover:text-[#e71a0f] transition-colors">
                         {promo.title}
                       </h4>
-                      <p className="text-xs text-slate-600 leading-relaxed">
+                      <p className="text-xs text-neutral-600 leading-relaxed">
                         {promo.shortDesc}
                       </p>
                     </div>
-                    <div className="pt-4 flex items-center justify-between text-xs text-slate-500 font-medium border-t border-slate-100 mt-4">
+                    <div className="pt-4 flex items-center justify-between text-xs text-neutral-500 font-medium border-t border-neutral-100 mt-4">
                       <span>{promo.validity}</span>
                       <button
                         type="button"
@@ -899,7 +900,7 @@ export default function HomePage() {
                           setSelectedPromo(promo);
                           setCopiedPromoCode(false);
                         }}
-                        className="text-sky-600 hover:text-sky-800 font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                        className="text-[#e71a0f] hover:text-[#c81007] font-bold flex items-center gap-1 cursor-pointer transition-colors"
                       >
                         Chi tiết →
                       </button>

@@ -42,6 +42,71 @@ const TMDB_GENRES_MAP: Record<number, string> = {
   37: "Miền Tây",
 };
 
+// Danh mục trailer YouTube chuẩn xác cho các phim rạp Việt Nam & Hoạt hình
+export const KNOWN_TRAILERS_MAP: Record<string, string> = {
+  // Hoạt hình chiếu rạp
+  "doraemon": "T1_aN36Lgq0",
+  "bản giao hưởng địa cầu": "T1_aN36Lgq0",
+  "conan": "W8yF8k0xN_o",
+  "ngôi sao 5 cánh 1 triệu đô": "W8yF8k0xN_o",
+  "kung fu panda 4": "kgGzVfK_1Wk",
+  "panda 4": "kgGzVfK_1Wk",
+  "wild robot": "67vbA5ZJb3s",
+  "robot hoang dã": "67vbA5ZJb3s",
+  "despicable me 4": "qQlr9-rF32A",
+  "kẻ trộm mặt trăng 4": "qQlr9-rF32A",
+  "inside out 2": "LEjhY15eCx0",
+  "những mảnh ghép cảm xúc 2": "LEjhY15eCx0",
+  "transformers one": "u2NuUWsw_L8",
+  "moana 2": "hDZ7y8RP5HE",
+
+  // Phim rạp Việt Nam
+  "lật mặt 7": "d7y-b6G-E1s",
+  "một điều ước": "d7y-b6G-E1s",
+  "mai": "z3uxX5nS5Yw",
+  "đào, phở và piano": "XQxK5Z9Q9l8",
+  "cám": "g58uL1UfgXw",
+  "ma da": "V72-p3_qXG8",
+  "hai muối": "kK5Z6w6_Bq8",
+  "làm giàu với ma": "8dDkP1YqNso",
+  "ngày xưa có một chuyện tình": "E7Bw9bT3Tq4",
+
+  // Bom tấn quốc tế
+  "dune: phần hai": "Way9Dexny3w",
+  "dune: part two": "Way9Dexny3w",
+  "oppenheimer": "uYPbbksJxIg",
+  "quật mộ trùng ma": "dffkY6y8K4o",
+  "exhuma": "dffkY6y8K4o",
+  "deadpool & wolverine": "73_1biulkYk",
+  "deadpool": "73_1biulkYk",
+  "interstellar": "zSWdZVtXT7E",
+  "hố đen tử thần": "zSWdZVtXT7E",
+  "avatar 3": "d9MyW72ELq0",
+  "avatar: fire and ash": "d9MyW72ELq0",
+  "godzilla x kong": "qqrpMRDuPfc",
+  "đế chế mới": "qqrpMRDuPfc",
+  "gladiator": "4rgYUipGJNo",
+  "venom": "HyIyd9ovGHY",
+  "joker": "bdOX4n5_c7I",
+  "wicked": "6COmYeLsz4c",
+  "alien": "x0XDEhP4MQs",
+  "beetlejuice": "CoZqL9N6Rx4",
+  "twisters": "Jb8nZ_V3q-M",
+  "furiosa": "XJMuhwVwcaU",
+};
+
+export function resolveMovieTrailer(title: string, originalTitle?: string): string {
+  const normTitle = (title || "").toLowerCase();
+  const normOrig = (originalTitle || "").toLowerCase();
+
+  for (const [key, id] of Object.entries(KNOWN_TRAILERS_MAP)) {
+    if (normTitle.includes(key) || normOrig.includes(key)) {
+      return id;
+    }
+  }
+  return "";
+}
+
 async function fetchFromTMDB(path: string, apiKey: string): Promise<any> {
   const queryDelim = path.includes("?") ? "&" : "?";
   const urlPrimary = `${TMDB_PRIMARY_URL}${path}${queryDelim}api_key=${apiKey}`;
@@ -95,7 +160,7 @@ export async function getMovies(category: "all" | "now_playing" | "upcoming" | "
       const fallbackBackdrop = MOCK_MOVIES[idx % MOCK_MOVIES.length].backdropPath;
 
       const overviewText = item.overview?.trim() ||
-        `${item.title} (${item.original_title || "Bom tấn"}) - Tác phẩm điện ảnh đỉnh cao đang thu hút sự chú ý tại hệ thống cụm rạp Beta Cinemas. Trải nghiệm âm thanh Dolby 7.1 sống động.`;
+        `${item.title} (${item.original_title || "Bom tấn"}) - Tác phẩm điện ảnh đỉnh cao đang thu hút sự chú ý tại hệ thống cụm rạp CGV Cinemas. Trải nghiệm âm thanh Dolby 7.1 sống động.`;
 
       let movieStatus: "now_playing" | "upcoming" | "trending" = "now_playing";
       if (category === "upcoming" || (item.release_date && new Date(item.release_date) > new Date())) {
@@ -103,6 +168,8 @@ export async function getMovies(category: "all" | "now_playing" | "upcoming" | "
       } else if (category === "trending" || item.vote_average >= 7.8) {
         movieStatus = "trending";
       }
+
+      const resolvedTrailer = resolveMovieTrailer(item.title, item.original_title);
 
       return {
         id: `tmdb-${item.id}`,
@@ -118,7 +185,7 @@ export async function getMovies(category: "all" | "now_playing" | "upcoming" | "
         durationMinutes: 115 + (item.id % 35),
         director: "Đang cập nhật",
         cast: ["Dàn diễn viên chuẩn quốc tế"],
-        trailerYoutubeId: "Way9Dexny3w",
+        trailerYoutubeId: resolvedTrailer,
         ageRating: item.vote_average >= 8 ? "T18" : item.vote_average >= 7 ? "T16" : "T13",
         status: category === "all" ? movieStatus : category,
       };
@@ -156,13 +223,14 @@ export async function getMovieById(id: string | number): Promise<Movie | null> {
 
     const director = item.credits?.crew?.find((c: { job: string; name: string }) => c.job === "Director")?.name || "Đạo diễn danh tiếng";
     const cast = item.credits?.cast?.slice(0, 5).map((c: { name: string }) => c.name) || ["Diễn viên nổi tiếng"];
-    const trailer = item.videos?.results?.find((v: any) => v.site === "YouTube" && (v.type === "Trailer" || v.type === "Teaser"))?.key || "Way9Dexny3w";
+    const tmdbVideoKey = item.videos?.results?.find((v: any) => v.site === "YouTube" && (v.type === "Trailer" || v.type === "Teaser"))?.key;
+    const trailer = tmdbVideoKey || resolveMovieTrailer(item.title, item.original_title);
 
     return {
       id: `tmdb-${item.id}`,
       title: item.title,
       originalTitle: item.original_title,
-      overview: item.overview || `${item.title} - Siêu phẩm điện ảnh bom tấn tại rạp Beta Cinemas.`,
+      overview: item.overview || `${item.title} - Siêu phẩm điện ảnh bom tấn tại rạp CGV Cinemas.`,
       posterPath: item.poster_path ? `${TMDB_IMAGE_BASE}${item.poster_path}` : MOCK_MOVIES[0].posterPath,
       backdropPath: item.backdrop_path ? `${TMDB_BACKDROP_BASE}${item.backdrop_path}` : MOCK_MOVIES[0].backdropPath,
       releaseDate: item.release_date,

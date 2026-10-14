@@ -9,33 +9,39 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Bảng màu Trắng chủ đạo & Xanh da trời (Sky Blue) tiêu chuẩn
-        void: "#ffffff",          // Nền trắng chủ đạo
+        // Bảng màu CGV Cinemas - Đỏ Burgundy / Crimson & Rạp chiếu cổ điển
+        void: "#fdfcf0",          // Nền kem vintage rạp chiếu
         surface: "#ffffff",       // Bề mặt card/modal trắng
-        panel: "#f8fafc",         // Panel phụ slate-50
-        "border-navy": "#e2e8f0", // Viền slate-200
-        borderNavy: "#e2e8f0",
-        background: "#ffffff",
-        surfaceBorder: "#e2e8f0",
+        panel: "#faf8f2",         // Panel phụ rạp phim ấm áp
+        "border-navy": "#e5e0d8", // Viền ấm
+        borderNavy: "#e5e0d8",
+        background: "#fdfcf0",
+        surfaceBorder: "#e5e0d8",
         accent: {
-          red: "#0284c7",         // Sky-600 chuẩn cho nút bấm hành động chính
-          redHover: "#0369a1",    // Sky-700 hover
-          gold: "#0284c7",        // Sky-600 điểm nhấn
-          cyan: "#0ea5e9",        // Sky-500
-          purple: "#818cf8",      // Sweetbox tím nhẹ
+          red: "#e71a0f",         // CGV Crimson Red chuẩn rạp chiếu
+          redHover: "#c81007",    // CGV Dark Red hover
+          gold: "#c5a059",        // Vàng kim vintage cinema
+          cyan: "#e71a0f",        // Primary red
+          purple: "#ec4899",      // Sweetbox hồng đôi
         },
-        "gold-text": "#0369a1",
-        goldText: "#0369a1",
+        "gold-text": "#c5a059",
+        goldText: "#c5a059",
         sweetbox: "#ec4899",
-        // Token Beta Cinemas tương thích
-        betaNavy: "#ffffff",
+        // CGV Cultureplex tokens
+        cgvRed: "#e71a0f",
+        cgvRedDark: "#c81007",
+        cgvDark: "#1c1c1c",
+        cgvParchment: "#fdfcf0",
+        cgvGold: "#c5a059",
+        cgvBorder: "#e5e0d8",
+        betaNavy: "#1c1c1c",
         betaBlue: "#ffffff",
-        betaBlueLight: "#f1f5f9",
-        betaCyan: "#0ea5e9",
-        betaOrange: "#0284c7",
+        betaBlueLight: "#faf8f2",
+        betaCyan: "#e71a0f",
+        betaOrange: "#e71a0f",
         betaPink: "#ec4899",
-        betaGray: "#f8fafc",
-        betaBorder: "#e2e8f0",
+        betaGray: "#faf8f2",
+        betaBorder: "#e5e0d8",
       },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",

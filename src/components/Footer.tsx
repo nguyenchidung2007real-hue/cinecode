@@ -1,74 +1,76 @@
 import React from "react";
-import { Film, Sparkles, Phone, Mail, ShieldCheck } from "lucide-react";
+import { Film, Bot, Phone, Mail, ShieldCheck } from "lucide-react";
 
 export const Footer: React.FC = () => {
   return (
-    <footer className="mt-20 border-t border-slate-200 bg-slate-50 text-slate-600 text-xs">
+    <footer className="mt-20 border-t border-neutral-800 bg-[#1c1c1c] text-neutral-400 text-xs">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-          {/* Cột Logo & Thông tin công ty Beta Media */}
+          {/* Cột Logo & Thông tin công ty CGV Việt Nam */}
           <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-sky-600 flex items-center justify-center text-white shadow-md shadow-sky-600/30">
+              <div className="w-8 h-8 rounded-xl bg-[#e71a0f] flex items-center justify-center text-white shadow-md shadow-[#e71a0f]/30">
                 <Film className="w-4 h-4" />
               </div>
-              <span className="font-black text-base text-slate-900 tracking-tight">
-                BETA<span className="text-sky-600">CINEMAS</span> AI
+              <span className="font-black text-base text-white tracking-tight">
+                CGV<span className="text-[#e71a0f]">CINEMAS</span> VIETNAM
               </span>
             </div>
-            <p className="text-slate-500 text-[11px] leading-relaxed">
-              CÔNG TY CỔ PHẦN BETA MEDIA
+            <p className="text-neutral-500 text-[11px] leading-relaxed">
+              CÔNG TY TNHH CJ CGV VIỆT NAM
               <br />
-              Tầng 3, Tòa nhà HITC, 239 Xuân Thủy, Dịch Vọng Hậu, Cầu Giấy, Hà Nội.
+              Tầng 5, Tòa nhà Rivera Park, 7/28 Thành Thái, Phường 14, Quận 10, TP. Hồ Chí Minh.
             </p>
-            <div className="text-[11px] text-slate-500 space-y-1 pt-1">
+            <div className="text-[11px] text-neutral-400 space-y-1 pt-1">
               <div className="flex items-center gap-1.5">
-                <Phone className="w-3.5 h-3.5 text-sky-600" />
-                <span>Hotline: <strong className="text-slate-900">1900 636 807</strong></span>
+                <Phone className="w-3.5 h-3.5 text-[#e71a0f]" />
+                <span>Hotline: <strong className="text-white">1900 6017</strong> (8:00 - 22:00)</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <Mail className="w-3.5 h-3.5 text-sky-600" />
-                <span>Email: cskh@betacinemas.vn</span>
+                <Mail className="w-3.5 h-3.5 text-[#e71a0f]" />
+                <span>Email: cskh@cgv.vn</span>
               </div>
             </div>
           </div>
 
           {/* Cột Phim */}
           <div>
-            <h4 className="font-bold text-slate-900 uppercase tracking-wider mb-3 text-xs">Phim Chiếu Rạp</h4>
-            <ul className="space-y-2 text-slate-600 text-[11px]">
-              <li className="hover:text-sky-600 cursor-pointer transition-colors">Phim đang chiếu rạp</li>
-              <li className="hover:text-sky-600 cursor-pointer transition-colors">Phim sắp ra mắt 2026</li>
-              <li className="hover:text-sky-600 cursor-pointer transition-colors">Suất chiếu đặc biệt (Sneak Show)</li>
-              <li className="hover:text-sky-600 cursor-pointer transition-colors">Phim bom tấn hành động</li>
+            <h4 className="font-bold text-white uppercase tracking-wider mb-3 text-xs">Phim Chiếu Rạp</h4>
+            <ul className="space-y-2 text-neutral-400 text-[11px]">
+              <li className="hover:text-[#e71a0f] cursor-pointer transition-colors">Phim đang chiếu rạp</li>
+              <li className="hover:text-[#e71a0f] cursor-pointer transition-colors">Phim sắp ra mắt 2026</li>
+              <li className="hover:text-[#e71a0f] cursor-pointer transition-colors">Phim hoạt hình chiếu rạp</li>
+              <li className="hover:text-[#e71a0f] cursor-pointer transition-colors">Suất chiếu đặc biệt (Sneak Show)</li>
+              <li className="hover:text-[#e71a0f] cursor-pointer transition-colors">Phim IMAX & 4DX Bom Tấn</li>
             </ul>
           </div>
 
           {/* Cột Cụm Rạp */}
           <div>
-            <h4 className="font-bold text-slate-900 uppercase tracking-wider mb-3 text-xs">Cụm Rạp Beta</h4>
-            <ul className="space-y-2 text-slate-600 text-[11px]">
-              <li className="hover:text-sky-600 font-semibold text-slate-800 cursor-pointer transition-colors">
-                📍 Beta Cinemas Xuân Thủy (HITC Cầu Giấy)
+            <h4 className="font-bold text-white uppercase tracking-wider mb-3 text-xs">Cụm Rạp CGV Toàn Quốc</h4>
+            <ul className="space-y-2 text-neutral-400 text-[11px]">
+              <li className="hover:text-[#e71a0f] font-semibold text-neutral-200 cursor-pointer transition-colors">
+                📍 CGV Vincom Center Bà Triệu (Hà Nội)
               </li>
-              <li className="hover:text-sky-600 cursor-pointer transition-colors">📍 Beta Cinemas Thanh Xuân (Hà Nội)</li>
-              <li className="hover:text-sky-600 cursor-pointer transition-colors">📍 Beta Cinemas Mỹ Đình (Hà Nội)</li>
-              <li className="hover:text-sky-600 cursor-pointer transition-colors">📍 Beta Cinemas Quang Trung (TP. HCM)</li>
+              <li className="hover:text-[#e71a0f] cursor-pointer transition-colors">📍 CGV Vincom Landmark 81 (TP. HCM)</li>
+              <li className="hover:text-[#e71a0f] cursor-pointer transition-colors">📍 CGV Mipec Tower Tây Sơn (Hà Nội)</li>
+              <li className="hover:text-[#e71a0f] cursor-pointer transition-colors">📍 CGV Sư Vạn Hạnh (TP. HCM)</li>
+              <li className="hover:text-[#e71a0f] cursor-pointer transition-colors">📍 CGV Vincom Metropolis Liễu Giai (Hà Nội)</li>
             </ul>
           </div>
 
-          {/* Cột Công nghệ AI & An toàn */}
+          {/* Cột Công nghệ & An toàn */}
           <div>
-            <h4 className="font-bold text-slate-900 uppercase tracking-wider mb-3 text-xs">Hệ Thống Thông Minh</h4>
-            <div className="space-y-2 text-slate-600 text-[11px]">
-              <div className="flex items-center gap-1.5 text-sky-600">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span className="font-bold">Trợ Lý Phim Trực Tuyến</span>
+            <h4 className="font-bold text-white uppercase tracking-wider mb-3 text-xs">Hệ Thống Tiện Ích</h4>
+            <div className="space-y-2 text-neutral-400 text-[11px]">
+              <div className="flex items-center gap-1.5 text-[#e71a0f]">
+                <Bot className="w-4 h-4" />
+                <span className="font-bold text-neutral-200">Trợ Lý Đặt Vé Trực Tuyến</span>
               </div>
-              <p className="text-[11px] text-slate-500">
-                Tư vấn chọn phim theo cảm xúc và đề xuất ghế ngồi rạp trực quan.
+              <p className="text-[11px] text-neutral-500">
+                Gợi ý phim thông minh theo sở thích và hỗ trợ đặt vé giữ chỗ tức thì.
               </p>
-              <div className="flex items-center gap-1.5 text-emerald-600 pt-1 font-semibold">
+              <div className="flex items-center gap-1.5 text-emerald-400 pt-1 font-semibold">
                 <ShieldCheck className="w-3.5 h-3.5" />
                 <span>Vé ký số HMAC chống giả mạo</span>
               </div>
@@ -76,11 +78,11 @@ export const Footer: React.FC = () => {
           </div>
         </div>
 
-        <div className="pt-6 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-slate-500 text-[11px]">
-          <p>© 2024 - 2026 Beta Media Joint Stock Company. Bảo lưu mọi quyền.</p>
+        <div className="pt-6 border-t border-neutral-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-neutral-500 text-[11px]">
+          <p>© 2026 CJ CGV Vietnam Co., Ltd. Tất cả quyền được bảo lưu.</p>
 
           <p className="flex items-center gap-1">
-            Thiết kế theo nhận diện thương hiệu <span className="text-sky-600 font-bold">Beta Cinemas</span>
+            Giao diện lấy cảm hứng theo phong cách <span className="text-[#e71a0f] font-bold">CGV Cultureplex</span>
           </p>
         </div>
       </div>

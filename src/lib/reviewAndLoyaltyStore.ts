@@ -295,8 +295,8 @@ function buildSampleReviews(): MovieReviewItem[] {
   return [
     {
       id: "rv_sample_001",
-      movieId: slugify(MOVIE_TITLES.dune),
-      movieTitle: MOVIE_TITLES.dune,
+      movieId: "dune-2",
+      movieTitle: "Dune: Phần Hai",
       customerName: "Nguyễn Văn An",
       customerPhone: "0901234567",
       rating: 5,
@@ -309,8 +309,8 @@ function buildSampleReviews(): MovieReviewItem[] {
     },
     {
       id: "rv_sample_002",
-      movieId: slugify(MOVIE_TITLES.insideOut),
-      movieTitle: MOVIE_TITLES.insideOut,
+      movieId: "inside-out-2",
+      movieTitle: "Những Mảnh Ghép Cảm Xúc 2",
       customerName: "Trần Thị Bích",
       customerPhone: "0912345678",
       rating: 4,
@@ -323,8 +323,8 @@ function buildSampleReviews(): MovieReviewItem[] {
     },
     {
       id: "rv_sample_003",
-      movieId: slugify(MOVIE_TITLES.deadpool),
-      movieTitle: MOVIE_TITLES.deadpool,
+      movieId: "deadpool-wolverine",
+      movieTitle: "Deadpool & Wolverine",
       customerName: "Lê Hoàng Nam",
       customerPhone: "0987654321",
       rating: 5,
@@ -337,45 +337,101 @@ function buildSampleReviews(): MovieReviewItem[] {
     },
     {
       id: "rv_sample_004",
-      movieId: slugify(MOVIE_TITLES.mai),
-      movieTitle: MOVIE_TITLES.mai,
-      customerName: "Phạm Quỳnh Chi",
-      customerPhone: "0933445566",
-      rating: 3,
+      movieId: "doraemon-earth-symphony",
+      movieTitle: "Doraemon: Nobita và Bản Giao Hưởng Địa Cầu",
+      customerName: "Minh Anh",
+      customerPhone: "0981122334",
+      rating: 5,
       content:
-        "Diễn xuất tốt, cảnh quay đẹp nhưng nhịp phim nửa sau hơi chậm. Mình xem xong vẫn khá cảm động, nên đi cùng người thân.",
+        "Bản giao hưởng âm nhạc đỉnh cao! Nhạc phim quá hay, Nobita thổi sáo tuy vụng về nhưng đầy cảm xúc. Cả gia đình mình đi xem rạp CGV đều mê mẩn.",
       isVerifiedBuyer: true,
-      likesCount: 9,
-      status: "pending",
-      createdAt: daysAgo(2, 12),
+      likesCount: 35,
+      status: "approved",
+      createdAt: daysAgo(1, 14),
     },
     {
       id: "rv_sample_005",
-      movieId: slugify(MOVIE_TITLES.godzilla),
-      movieTitle: MOVIE_TITLES.godzilla,
-      customerName: "Vũ Quốc Bảo",
-      customerPhone: "0944111222",
-      rating: 2,
+      movieId: "conan-movie-27",
+      movieTitle: "Thám Tử Lừng Danh Conan: Ngôi Sao 5 Cánh 1 Triệu Đô",
+      customerName: "Tuấn Kiệt",
+      customerPhone: "0977889900",
+      rating: 5,
       content:
-        "Kịch bản khá yếu, chủ yếu là đánh nhau. Nhưng phải công nhận hiệu ứng hình ảnh khủng. Chưa mua vé ở đây nhưng xem rạp khác.",
-      isVerifiedBuyer: false,
-      likesCount: 3,
+        "Cú twist ở đoạn kết làm cả rạp vỗ tay rần rần! Màn so kiếm giữa Kid, Heiji và Conan mãn nhãn, cảnh đêm Hakodate lung linh không chê vào đâu được.",
+      isVerifiedBuyer: true,
+      likesCount: 52,
       status: "approved",
-      createdAt: daysAgo(6, 20),
+      createdAt: daysAgo(2, 19),
     },
     {
       id: "rv_sample_006",
-      movieId: slugify(MOVIE_TITLES.kungfu),
-      movieTitle: MOVIE_TITLES.kungfu,
-      customerName: "Spam Bot 247",
-      customerPhone: "0900000000",
-      rating: 1,
+      movieId: "wild-robot",
+      movieTitle: "Robot Hoang Dã",
+      customerName: "Thanh Hằng",
+      customerPhone: "0918765432",
+      rating: 5,
       content:
-        "Xem phim miễn phí tại link xxx.example, tặng ngay 500k cho thành viên mới!!! Click ngay để nhận quà.",
-      isVerifiedBuyer: false,
-      likesCount: 0,
-      status: "hidden",
-      createdAt: daysAgo(1, 3),
+        "Tác phẩm hoạt hình đẹp nhất năm nay! Hình ảnh như tranh sơn dầu chuyển động, tình mẫu tử giữa robot Roz và chú ngỗng con lấy đi nước mắt của cả rạp.",
+      isVerifiedBuyer: true,
+      likesCount: 48,
+      status: "approved",
+      createdAt: daysAgo(0, 16),
+    },
+    {
+      id: "rv_sample_007",
+      movieId: "kungfu-panda-4",
+      movieTitle: "Kung Fu Panda 4",
+      customerName: "Huy Hoàng",
+      customerPhone: "0936112233",
+      rating: 4,
+      content:
+        "Chú gấu Po vẫn giữ được sự duyên dáng hài hước. Các cảnh võ thuật nhanh, âm thanh đã tai. Rất thích hợp đưa các bé đi xả stress dịp cuối tuần.",
+      isVerifiedBuyer: true,
+      likesCount: 22,
+      status: "approved",
+      createdAt: daysAgo(3, 11),
+    },
+    {
+      id: "rv_sample_008",
+      movieId: "despicable-me-4",
+      movieTitle: "Kẻ Trộm Mặt Trăng 4",
+      customerName: "Ngọc Mai",
+      customerPhone: "0945678901",
+      rating: 4,
+      content:
+        "Các chú Minions siêu nhân bựa vô đối, cười đau cả bụng từ đầu đến cuối phim. Bắp rang bơ CGV giòn rụm ăn kèm xem phim này là chuẩn bài!",
+      isVerifiedBuyer: true,
+      likesCount: 19,
+      status: "approved",
+      createdAt: daysAgo(2, 10),
+    },
+    {
+      id: "rv_sample_009",
+      movieId: "lat-mat-7",
+      movieTitle: "Lật Mặt 7: Một Điều Ước",
+      customerName: "Bảo Trâm",
+      customerPhone: "0908776655",
+      rating: 5,
+      content:
+        "Phim xúc động rơi nước mắt. Diễn xuất của bà Hai quá chân thật và gần gũi. Đi xem nhớ mang theo khăn giấy nha mọi người!",
+      isVerifiedBuyer: true,
+      likesCount: 64,
+      status: "approved",
+      createdAt: daysAgo(5, 20),
+    },
+    {
+      id: "rv_sample_010",
+      movieId: "mai",
+      movieTitle: "Mai",
+      customerName: "Phạm Quỳnh Chi",
+      customerPhone: "0933445566",
+      rating: 4,
+      content:
+        "Diễn xuất của Phương Anh Đào và Tuấn Trần ăn ý, góc máy điện ảnh đẹp và âm nhạc lôi cuốn. Một bộ phim đáng xem.",
+      isVerifiedBuyer: true,
+      likesCount: 29,
+      status: "approved",
+      createdAt: daysAgo(2, 12),
     },
   ];
 }
@@ -642,9 +698,27 @@ export function getLoyaltyByPhone(orders: AdminOrder[]): Record<string, LoyaltyI
  * 7. ĐÁNH GIÁ & BÌNH LUẬN
  * ============================================================ */
 
-export function getReviews(movieId?: string): MovieReviewItem[] {
+export function getReviews(movieId?: string, movieTitle?: string): MovieReviewItem[] {
   const all = getState().reviews;
-  const filtered = movieId ? all.filter((r) => r.movieId === movieId) : all;
+  if (!movieId && !movieTitle) {
+    return [...all].sort((a, b) => timeValue(b.createdAt) - timeValue(a.createdAt));
+  }
+  const cleanId = (movieId || "").toLowerCase().trim();
+  const cleanTitleSlug = movieTitle ? slugify(movieTitle) : "";
+  const cleanTitle = (movieTitle || "").toLowerCase().trim();
+
+  const filtered = all.filter((r) => {
+    if (movieId) {
+      if (r.movieId === cleanId) return true;
+      if (r.movieId && cleanId && (r.movieId.includes(cleanId) || cleanId.includes(r.movieId))) return true;
+    }
+    if (movieTitle) {
+      if (r.movieTitle.toLowerCase() === cleanTitle) return true;
+      if (slugify(r.movieTitle) === cleanTitleSlug) return true;
+      if (r.movieTitle.toLowerCase().includes(cleanTitle) || cleanTitle.includes(r.movieTitle.toLowerCase())) return true;
+    }
+    return false;
+  });
   return [...filtered].sort((a, b) => timeValue(b.createdAt) - timeValue(a.createdAt));
 }
 
