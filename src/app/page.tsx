@@ -84,6 +84,79 @@ export default function HomePage() {
     }
   }, []);
 
+  const [vnpayNotice, setVnpayNotice] = useState<{ type: "success" | "error" | "info"; message: string } | null>(null);
+
+  // Bắt callback sau khi thanh toán từ cổng VNPay quay về (vnp_return=true)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const isVnpReturn = params.get("vnp_return") === "true";
+    if (!isVnpReturn) return;
+
+    const bookingId = params.get("bookingId");
+    const status = params.get("status");
+    const sig = params.get("sig");
+
+    // Dọn query param trên thanh địa chỉ để tránh F5 kích hoạt lại
+    window.history.replaceState({}, "", window.location.pathname);
+
+    if (status === "failed" || status === "invalid_checksum") {
+      setVnpayNotice({
+        type: "error",
+        message: "Giao dịch qua VNPay chưa hoàn tất hoặc đã bị hủy. Ghế của bạn vẫn được giữ tạm thời, vui lòng thử lại.",
+      });
+      return;
+    }
+
+    if (bookingId && sig) {
+      setVnpayNotice({
+        type: "info",
+        message: "Hệ thống đang đồng bộ và xuất vé điện tử từ VNPay...",
+      });
+
+      let attempts = 0;
+      const pollTicket = () => {
+        attempts++;
+        fetch(`/api/tickets/${encodeURIComponent(bookingId)}?sig=${encodeURIComponent(sig)}`)
+          .then((res) => (res.ok ? res.json() : Promise.reject(res)))
+          .then((data) => {
+            if (data?.success && data?.ticket) {
+              const ticket = data.ticket;
+              try {
+                const existing = JSON.parse(localStorage.getItem("cinemax_tickets") || "[]");
+                if (!existing.some((t: any) => t.bookingId === ticket.bookingId)) {
+                  localStorage.setItem("cinemax_tickets", JSON.stringify([ticket, ...existing]));
+                  setTicketCount((prev) => prev + 1);
+                }
+              } catch (e) {
+                console.error("Lỗi lưu vé sau VNPay:", e);
+              }
+              setVnpayNotice({
+                type: "success",
+                message: `🎉 Thanh toán thành công vé xem phim! Mã vé: ${ticket.bookingId}`,
+              });
+              setIsMyTicketsOpen(true);
+            } else if (attempts < 6) {
+              setTimeout(pollTicket, 1500);
+            } else {
+              setVnpayNotice({
+                type: "info",
+                message: "Thanh toán thành công. Vé của bạn đã được lưu trong Ví Vé Của Tôi.",
+              });
+              setIsMyTicketsOpen(true);
+            }
+          })
+          .catch(() => {
+            if (attempts < 6) {
+              setTimeout(pollTicket, 1500);
+            }
+          });
+      };
+
+      pollTicket();
+    }
+  }, []);
+
   const handleBookingSuccess = (newTicket: BookingInfo) => {
     setTicketCount((prev) => prev + 1);
   };
@@ -140,6 +213,33 @@ export default function HomePage() {
       <SideBanners />
 
       <main className="flex-1">
+        {/* Banner thông báo kết quả giao dịch VNPay */}
+        {vnpayNotice && (
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+            <div
+              className={`p-4 rounded-2xl border flex items-center justify-between gap-3 text-sm shadow-xl transition-all ${
+                vnpayNotice.type === "success"
+                  ? "bg-emerald-500/15 border-emerald-500/40 text-emerald-300"
+                  : vnpayNotice.type === "error"
+                  ? "bg-red-500/15 border-red-500/40 text-red-300"
+                  : "bg-blue-500/15 border-blue-500/40 text-blue-300 animate-pulse"
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                <Sparkles className="w-5 h-5 shrink-0" />
+                <span className="font-semibold">{vnpayNotice.message}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setVnpayNotice(null)}
+                className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-bold text-white transition-all shrink-0"
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* NẾU ĐANG TÌM KIẾM HOẶC LỌC TÂM TRẠNG RIÊNG */}
         {searchQuery.trim() !== "" || selectedMood !== "all" || selectedGenre !== "Tất cả" ? (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">

@@ -43,5 +43,12 @@ export async function GET(request: NextRequest) {
   targetUrl.searchParams.set("bookingId", bookingId);
   targetUrl.searchParams.set("status", displayStatus);
 
+  if (bookingId && isValid) {
+    const { buildTicketToken } = await import("@/lib/ticketStore");
+    const token = buildTicketToken(bookingId);
+    const sig = token.split(".")[1];
+    if (sig) targetUrl.searchParams.set("sig", sig);
+  }
+
   return NextResponse.redirect(targetUrl);
 }

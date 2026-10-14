@@ -8,6 +8,7 @@ export interface VnpayOrderParams {
   orderInfo: string;    // Nội dung chuyển khoản (đã sanitize)
   ipAddr: string;       // IP khách hàng
   expireDate: Date;     // Hạn thanh toán (gắn với thời gian giữ ghế)
+  bankCode?: string;    // Mã ngân hàng tùy chọn (NCB, VNPAYQR,...)
   returnUrl?: string;   // Ghi đè URL trả về nếu cần
 }
 
@@ -96,6 +97,10 @@ export function createVnpayPaymentUrl(order: VnpayOrderParams): string {
     vnp_CreateDate: createDate,
     vnp_ExpireDate: expireDate,
   };
+
+  if (order.bankCode) {
+    vnpParams.vnp_BankCode = order.bankCode;
+  }
 
   const { signData, queryString } = buildVnpaySignData(vnpParams);
   const hmac = createHmac("sha512", secretKey);

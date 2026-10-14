@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
         `CẦN SOÁT HOÀN TIỀN THỦ CÔNG CHO KHÁCH HÀNG!\n`
       );
     }
-    return NextResponse.json({ RspCode: "00", Message: "Order already confirmed" });
+    return NextResponse.json({ RspCode: "02", Message: "Order already confirmed" });
   }
 
   // 3b. Chặn tuyệt đối nếu vé đã bị đóng (void hoặc used)
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
         `Hệ thống từ chối chốt ghế vì vé không ở trạng thái pending. CẦN SOÁT HOÀN TIỀN THỦ CÔNG!\n`
       );
     }
-    return NextResponse.json({ RspCode: "00", Message: "Order already closed" });
+    return NextResponse.json({ RspCode: "02", Message: "Order already confirmed" });
   }
 
   // 4. Xác định kết quả giao dịch từ VNPay trước

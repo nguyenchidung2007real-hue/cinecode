@@ -36,6 +36,7 @@ import {
   Info,
   Utensils,
   Coffee,
+  ExternalLink,
 } from "lucide-react";
 import { useSeatHold, useSeatAvailability } from "@/hooks/useSeatHold";
 import { ApiError, describeError, submitBooking } from "@/lib/bookingClient";
@@ -188,8 +189,9 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   const [customerEmail, setCustomerEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Phương thức thanh toán (vietqr / momo)
-  const [paymentMethod, setPaymentMethod] = useState<"vietqr" | "momo">("vietqr");
+  // Phương thức thanh toán (vnpay / vietqr / momo)
+  const [paymentMethod, setPaymentMethod] = useState<"vnpay" | "vietqr" | "momo">("vnpay");
+  const [isRedirectingVnpay, setIsRedirectingVnpay] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
   const handleCopy = (text: string, field: string) => {
@@ -592,6 +594,59 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     setNotice(null);
     h.hold(selectedSeats.map((s) => s.id)); // làm mới 5 phút cho bước thanh toán
     setStep(4);
+  };
+
+  // Tạo phiên thanh toán VNPay và chuyển hướng trình duyệt
+  const handlePayWithVnpay = async () => {
+    if (!selectedShowtimeId || !h.holdId || h.status !== "held") {
+      setNotice("Phiên giữ ghế đã hết hạn hoặc chưa được tạo. Vui lòng chọn lại ghế.");
+      setStep(2);
+      return;
+    }
+    setIsRedirectingVnpay(true);
+    setNotice(null);
+    try {
+      const res = await fetch("/api/payment/vnpay/create-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          showtimeId: selectedShowtimeId,
+          holdId: h.holdId,
+          concessions: selectedConcessions.map((c) => ({
+            id: c.id,
+            quantity: c.quantity,
+            popcornFlavors: c.popcornFlavors,
+            drinks: c.drinks,
+          })),
+          customer: {
+            name: customerName.trim(),
+            phone: customerPhone.trim(),
+            email: customerEmail.trim() || undefined,
+          },
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.paymentUrl) {
+        throw new Error(data.error || "Không thể khởi tạo phiên thanh toán VNPay.");
+      }
+
+      // Lưu số điện thoại để đồng bộ danh sách vé cá nhân
+      try {
+        if (customerPhone.trim()) {
+          localStorage.setItem("cinemax_customer_phone", customerPhone.trim().replace(/[\s.\-()]/g, ""));
+          localStorage.setItem("cinemax_customer_name", customerName.trim() || "Khách Hàng Beta");
+        }
+      } catch (e) {
+        console.error(e);
+      }
+
+      // Chuyển hướng người dùng sang Cổng thanh toán Quốc gia VNPay
+      window.location.href = data.paymentUrl;
+    } catch (err: unknown) {
+      setIsRedirectingVnpay(false);
+      setNotice(err instanceof Error ? err.message : "Đã có lỗi xảy ra khi kết nối tới VNPay.");
+    }
   };
 
   // Xác nhận thanh toán & xuất vé chính thức
@@ -1316,95 +1371,143 @@ export const BookingModal: React.FC<BookingModalProps> = ({
             {alertBanner}
 
             {/* Tùy chọn phương thức */}
-            <div className="flex items-center gap-3">
+            <div className="grid grid-cols-3 gap-2 sm:gap-3">
+              <button
+                type="button"
+                onClick={() => setPaymentMethod("vnpay")}
+                className={`py-2 px-2 rounded-xl text-xs font-bold transition-all border flex items-center justify-center gap-1.5 ${
+                  paymentMethod === "vnpay"
+                    ? "bg-red-600/20 border-red-500 text-red-400 ring-1 ring-red-500"
+                    : "bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-white"
+                }`}
+              >
+                <div className="w-4 h-4 rounded bg-red-600 flex items-center justify-center text-[7px] text-white font-black">VN</div>
+                <span className="truncate">Cổng VNPay</span>
+              </button>
+
               <button
                 type="button"
                 onClick={() => setPaymentMethod("vietqr")}
-                className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all border flex items-center justify-center gap-2 ${
+                className={`py-2 px-2 rounded-xl text-xs font-bold transition-all border flex items-center justify-center gap-1.5 ${
                   paymentMethod === "vietqr"
                     ? "bg-blue-600/20 border-blue-500 text-blue-400 ring-1 ring-blue-500"
                     : "bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-white"
                 }`}
               >
-                <CreditCard className="w-3.5 h-3.5" />
-                <span>VietQR (Mọi Ngân Hàng)</span>
+                <CreditCard className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">VietQR Napas</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setPaymentMethod("momo")}
-                className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all border flex items-center justify-center gap-2 ${
+                className={`py-2 px-2 rounded-xl text-xs font-bold transition-all border flex items-center justify-center gap-1.5 ${
                   paymentMethod === "momo"
                     ? "bg-[#8a5a8f]/20 border-[#8a5a8f]/50 text-[#d9b95c] ring-1 ring-[#8a5a8f]"
                     : "bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-white"
                 }`}
               >
-                <div className="w-3.5 h-3.5 rounded-full bg-[#8a5a8f] flex items-center justify-center text-[8px] text-white font-black">M</div>
-                <span>Ví MoMo / QR Pay</span>
+                <div className="w-3.5 h-3.5 rounded-full bg-[#8a5a8f] flex items-center justify-center text-[8px] text-white font-black shrink-0">M</div>
+                <span className="truncate">Ví MoMo</span>
               </button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-              {/* Cột mã QR */}
-              <div className="flex flex-col items-center justify-center p-5 bg-white rounded-2xl shadow-xl text-black">
-                <div className="flex items-center justify-between w-full border-b pb-2 mb-3">
-                  <span className="font-extrabold text-xs text-blue-700">
-                    {paymentMethod === "vietqr" ? "NAPAS 247 | VIETQR" : "VÍ ĐIỆN TỬ MOMO"}
-                  </span>
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
-                    paymentMethod === "vietqr" ? "bg-blue-100 text-blue-800" : "bg-purple-100 text-purple-900"
-                  }`}>
-                    {paymentMethod === "vietqr" ? "MB BANK" : "MOMO PAY"}
-                  </span>
-                </div>
-
-                <img
-                  src={paymentMethod === "vietqr" ? vietQrUrl : `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(`2|99|0388899999|CINEMAX CINEMA VN||0|0|${grandTotal}|VECINEMAX ${selectedSeats.map(s => s.id).join("")}`)}`}
-                  alt="Mã QR Thanh Toán"
-                  className="w-52 h-52 object-contain"
-                />
-
-                <div className="mt-3 w-full text-center space-y-1.5 border-t pt-2.5">
-                  <div className="flex items-center justify-between text-xs px-2">
-                    <span className="text-neutral-500">Số tài khoản / SĐT:</span>
-                    <button
-                      type="button"
-                      onClick={() => handleCopy("0388899999", "account")}
-                      className="flex items-center gap-1 font-mono font-bold text-neutral-900 hover:text-blue-600 bg-neutral-100 px-1.5 py-0.5 rounded"
-                    >
-                      <span>0388899999</span>
-                      <Copy className="w-3 h-3 text-neutral-500" />
-                      {copiedField === "account" && <span className="text-[9px] text-emerald-600 font-sans">Đã chép!</span>}
-                    </button>
+              {paymentMethod === "vnpay" ? (
+                /* Cột Cổng VNPay */
+                <div className="flex flex-col p-5 bg-gradient-to-b from-neutral-900 to-neutral-950 border border-neutral-800 rounded-2xl shadow-xl space-y-4">
+                  <div className="flex items-center justify-between border-b border-neutral-800 pb-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded bg-red-600 flex items-center justify-center text-[9px] text-white font-black">VN</div>
+                      <span className="font-extrabold text-sm text-white">CỔNG THANH TOÁN VNPAY</span>
+                    </div>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-red-500/15 text-red-400 border border-red-500/30">
+                      Sandbox / Live
+                    </span>
                   </div>
 
-                  <div className="flex items-center justify-between text-xs px-2">
-                    <span className="text-neutral-500">Số tiền:</span>
-                    <button
-                      type="button"
-                      onClick={() => handleCopy(grandTotal.toString(), "amount")}
-                      className="flex items-center gap-1 font-black text-red-600 bg-red-50 px-1.5 py-0.5 rounded"
-                    >
-                      <span>{formatVND(grandTotal)}</span>
-                      <Copy className="w-3 h-3 text-red-400" />
-                      {copiedField === "amount" && <span className="text-[9px] text-emerald-600 font-sans">Đã chép!</span>}
-                    </button>
-                  </div>
+                  <div className="space-y-2.5 text-xs text-neutral-300">
+                    <div className="p-3 bg-neutral-900/90 rounded-xl border border-neutral-800/80 space-y-1">
+                      <p className="font-semibold text-white flex items-center gap-1.5">
+                        <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                        <span>Phương thức hỗ trợ qua VNPay:</span>
+                      </p>
+                      <ul className="list-disc list-inside text-neutral-400 space-y-0.5 text-[11px] pt-1">
+                        <li>Ứng dụng Ngân hàng quét mã <strong>VNPAY-QR</strong></li>
+                        <li>Thẻ ATM nội địa (VCB, Techcombank, BIDV, NCB, MB...)</li>
+                        <li>Thẻ quốc tế <strong>Visa, MasterCard, JCB</strong></li>
+                        <li>Ví điện tử VNPAY</li>
+                      </ul>
+                    </div>
 
-                  <div className="flex items-center justify-between text-xs px-2">
-                    <span className="text-neutral-500">Nội dung:</span>
-                    <button
-                      type="button"
-                      onClick={() => handleCopy(`VECINEMAX ${selectedSeats.map(s => s.id).join("")}`, "content")}
-                      className="flex items-center gap-1 font-mono text-[11px] font-semibold text-neutral-800 bg-neutral-100 px-1.5 py-0.5 rounded"
-                    >
-                      <span>VECINEMAX {selectedSeats.map(s => s.id).join("")}</span>
-                      <Copy className="w-3 h-3 text-neutral-500" />
-                      {copiedField === "content" && <span className="text-[9px] text-emerald-600 font-sans">Đã chép!</span>}
-                    </button>
+                    <div className="p-2.5 bg-blue-500/10 border border-blue-500/20 rounded-xl text-blue-300 text-[11px] flex items-start gap-2">
+                      <Info className="w-4 h-4 shrink-0 mt-0.5 text-blue-400" />
+                      <span>Sau khi nhấn thanh toán, bạn sẽ được chuyển hướng sang cổng bảo mật VNPay để hoàn tất giao dịch. Vé sẽ được kích hoạt tự động qua Webhook IPN.</span>
+                    </div>
                   </div>
                 </div>
-              </div>
+              ) : (
+                /* Cột mã QR Chuyển khoản VietQR / MoMo */
+                <div className="flex flex-col items-center justify-center p-5 bg-white rounded-2xl shadow-xl text-black">
+                  <div className="flex items-center justify-between w-full border-b pb-2 mb-3">
+                    <span className="font-extrabold text-xs text-blue-700">
+                      {paymentMethod === "vietqr" ? "NAPAS 247 | VIETQR" : "VÍ ĐIỆN TỬ MOMO"}
+                    </span>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                      paymentMethod === "vietqr" ? "bg-blue-100 text-blue-800" : "bg-purple-100 text-purple-900"
+                    }`}>
+                      {paymentMethod === "vietqr" ? "MB BANK" : "MOMO PAY"}
+                    </span>
+                  </div>
+
+                  <img
+                    src={paymentMethod === "vietqr" ? vietQrUrl : `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(`2|99|0388899999|CINEMAX CINEMA VN||0|0|${grandTotal}|VECINEMAX ${selectedSeats.map(s => s.id).join("")}`)}`}
+                    alt="Mã QR Thanh Toán"
+                    className="w-52 h-52 object-contain"
+                  />
+
+                  <div className="mt-3 w-full text-center space-y-1.5 border-t pt-2.5">
+                    <div className="flex items-center justify-between text-xs px-2">
+                      <span className="text-neutral-500">Số tài khoản / SĐT:</span>
+                      <button
+                        type="button"
+                        onClick={() => handleCopy("0388899999", "account")}
+                        className="flex items-center gap-1 font-mono font-bold text-neutral-900 hover:text-blue-600 bg-neutral-100 px-1.5 py-0.5 rounded"
+                      >
+                        <span>0388899999</span>
+                        <Copy className="w-3 h-3 text-neutral-500" />
+                        {copiedField === "account" && <span className="text-[9px] text-emerald-600 font-sans">Đã chép!</span>}
+                      </button>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs px-2">
+                      <span className="text-neutral-500">Số tiền:</span>
+                      <button
+                        type="button"
+                        onClick={() => handleCopy(grandTotal.toString(), "amount")}
+                        className="flex items-center gap-1 font-black text-red-600 bg-red-50 px-1.5 py-0.5 rounded"
+                      >
+                        <span>{formatVND(grandTotal)}</span>
+                        <Copy className="w-3 h-3 text-red-400" />
+                        {copiedField === "amount" && <span className="text-[9px] text-emerald-600 font-sans">Đã chép!</span>}
+                      </button>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs px-2">
+                      <span className="text-neutral-500">Nội dung:</span>
+                      <button
+                        type="button"
+                        onClick={() => handleCopy(`VECINEMAX ${selectedSeats.map(s => s.id).join("")}`, "content")}
+                        className="flex items-center gap-1 font-mono text-[11px] font-semibold text-neutral-800 bg-neutral-100 px-1.5 py-0.5 rounded"
+                      >
+                        <span>VECINEMAX {selectedSeats.map(s => s.id).join("")}</span>
+                        <Copy className="w-3 h-3 text-neutral-500" />
+                        {copiedField === "content" && <span className="text-[9px] text-emerald-600 font-sans">Đã chép!</span>}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Cột thông tin & nút xác nhận */}
               <div className="space-y-4">
@@ -1436,18 +1539,33 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
                 <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-300 text-xs flex items-center gap-2">
                   <ShieldCheck className="w-5 h-5 flex-shrink-0" />
-                  <span>Hệ thống hỗ trợ quét mã tự động từ mọi ứng dụng Ngân hàng & Ví MoMo/ZaloPay.</span>
+                  <span>
+                    {paymentMethod === "vnpay"
+                      ? "Bảo mật chuẩn PCI-DSS qua Cổng Thanh Toán VNPay."
+                      : "Hệ thống hỗ trợ quét mã tự động từ mọi ứng dụng Ngân hàng & Ví MoMo/ZaloPay."}
+                  </span>
                 </div>
 
                 <div className="space-y-2 pt-2">
-                  <button
-                    onClick={handleConfirmPaid}
-                    disabled={isSubmitting || h.status !== "held"}
-                    className="w-full py-3.5 rounded-xl bg-accent-red hover:bg-accent-redHover disabled:opacity-50 text-black font-extrabold text-sm shadow-lg shadow-black/40 transition-all flex items-center justify-center gap-2"
-                  >
-                    <Check className="w-4 h-4" />
-                    <span>{isSubmitting ? "Đang xác thực thanh toán..." : "Tôi Đã Chuyển Khoản Thành Công"}</span>
-                  </button>
+                  {paymentMethod === "vnpay" ? (
+                    <button
+                      onClick={handlePayWithVnpay}
+                      disabled={isRedirectingVnpay || h.status !== "held"}
+                      className="w-full py-3.5 rounded-xl bg-accent-red hover:bg-accent-redHover disabled:opacity-50 text-white font-extrabold text-sm shadow-lg shadow-accent-red/30 transition-all flex items-center justify-center gap-2"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                      <span>{isRedirectingVnpay ? "Đang kết nối cổng VNPay..." : `Thanh Toán Qua Cổng VNPay (${formatVND(grandTotal)})`}</span>
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleConfirmPaid}
+                      disabled={isSubmitting || h.status !== "held"}
+                      className="w-full py-3.5 rounded-xl bg-accent-red hover:bg-accent-redHover disabled:opacity-50 text-black font-extrabold text-sm shadow-lg shadow-black/40 transition-all flex items-center justify-center gap-2"
+                    >
+                      <Check className="w-4 h-4" />
+                      <span>{isSubmitting ? "Đang xác thực thanh toán..." : "Tôi Đã Chuyển Khoản Thành Công"}</span>
+                    </button>
+                  )}
 
                   <button
                     onClick={() => setStep(3)}
