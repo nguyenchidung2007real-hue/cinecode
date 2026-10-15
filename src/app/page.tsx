@@ -14,7 +14,9 @@ import { AiChatWidget } from "@/components/AiChatWidget";
 import { QuickBookingBar } from "@/components/QuickBookingBar";
 import { CinemaShowtimeMatrix } from "@/components/CinemaShowtimeMatrix";
 import SemanticSearchModal from "@/components/SemanticSearchModal";
-import { SideBanners } from "@/components/SideBanners";
+import { CgvQuickIconBar } from "@/components/CgvQuickIconBar";
+import { CgvPromotionalCarousel } from "@/components/CgvPromotionalCarousel";
+import { CgvLeftSkyscraperBanner, CgvRightSkyscraperBanner } from "@/components/CgvSideSkyscraperBanners";
 import { Footer } from "@/components/Footer";
 
 import { Sparkles, Flame, Film, Clapperboard, Award, SearchX, Smile, Compass, Brain, Heart, Tag, Gift, Percent, Ticket, CheckCircle2, X, Clock, Calendar, Check, Copy, ArrowRight, Info, Armchair, Popcorn, Bot, Star } from "lucide-react";
@@ -307,9 +309,6 @@ export default function HomePage() {
         onCityChange={setSelectedCity}
       />
 
-      {/* Banner khuyến mãi 2 bên hông (Gutter Banners chuẩn Beta Cinemas) */}
-      <SideBanners />
-
       <main className="flex-1">
         {/* Banner thông báo kết quả giao dịch VNPay */}
         {vnpayNotice && (
@@ -396,117 +395,69 @@ export default function HomePage() {
             )}
           </div>
         ) : (
-          /* GIAO DIỆN TRANG CHỦ TIÊU CHUẨN PHONG CÁCH CGV / GALAXY / FANDANGO */
+          /* GIAO DIỆN TRANG CHỦ TIÊU CHUẨN CGV CULTUREPLEX VIETNAM */
           <>
-            {/* Hero Banner với phim tâm điểm xoay vòng Carousel chuẩn CGV */}
-            {movies.length > 0 && (
-              <HeroBanner
-                movies={movies}
-                movie={heroMovie}
-                onWatchTrailer={setActiveDetailMovie}
-                onBookTicket={setActiveBookingMovie}
-              />
-            )}
+            {/* 1. THANH 7 ICON TIỆN ÍCH NHANH CHUẨN CGV.VN (ẢNH MẪU 2) */}
+            <CgvQuickIconBar />
 
-            {/* 1. Thanh Mua Vé Nhanh 1-Click (Đặc trưng số 1 của CGV & Galaxy Cinema) */}
-            <QuickBookingBar
-              movies={movies}
-              onQuickBook={(movie, cinemaName, date, time, format, showtimeId) => {
-                setBookingInitialShowtimeId(showtimeId);
-                setActiveBookingMovie(movie);
+            {/* 2. KHU VỰC HERO BANNER NỀN TƯỜNG GẠCH ĐỎ & 3 CỘT KHÔNG BỊ CHỒNG LÊN NHAU */}
+            <div
+              className="w-full relative py-6 px-2 sm:px-4 border-b border-[#e5e0d8] shadow-inner"
+              style={{
+                backgroundColor: "#8f3627",
+                backgroundImage:
+                  "url(\"data:image/svg+xml,%3Csvg width='40' height='20' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='40' height='20' fill='%238f3627'/%3E%3Cpath d='M0 0h40v1H0zM0 10h40v1H0zM20 0v10M0 10v10M40 10v10' stroke='%236e2619' stroke-width='1.5'/%3E%3C/svg%3E\")",
               }}
-            />
+            >
+              <div className="max-w-[1360px] mx-auto flex justify-center items-start gap-3 2xl:gap-5">
+                {/* Banner Skyscraper Cột Trái: Shaun the Sheep / Hoạt Hình (Không bao giờ bị đè) */}
+                <aside className="hidden xl:block w-[130px] 2xl:w-[150px] shrink-0 sticky top-24 self-start">
+                  <CgvLeftSkyscraperBanner onSelectGenre={setSelectedGenre} />
+                </aside>
 
-            {/* DẢI BANNER QUẢNG CÁO & SỰ KIỆN NỔI BẬT CHUẨN CGV VIETNAM */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Banner 1: CGV Happy Wednesday */}
-                <a
-                  href="#price-table"
-                  className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#e71a0f] to-[#b71007] p-5 text-white shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group block"
-                >
-                  <div className="relative z-10 space-y-1.5">
-                    <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-black bg-white text-[#e71a0f] uppercase tracking-wider">
-                      Thứ 4 Hàng Tuần
-                    </span>
-                    <h3 className="text-lg font-black tracking-tight leading-snug">
-                      CGV HAPPY WEDNESDAY
-                    </h3>
-                    <p className="text-xs text-white/90">
-                      Đồng giá <strong className="text-amber-300 font-black text-sm">45.000đ</strong> mọi loại ghế kể cả VIP.
-                    </p>
-                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-200 mt-2 group-hover:underline">
-                      Đặt vé thứ 4 ngay →
-                    </span>
-                  </div>
-                  <div className="absolute -right-4 -bottom-4 w-28 h-28 bg-white/10 rounded-full blur-xl pointer-events-none" />
-                </a>
-
-                {/* Banner 2: CGV U22 Pass */}
-                <a
-                  href="#promo-section"
-                  className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#1c1c1c] via-[#2d2d2d] to-[#1c1c1c] p-5 text-white border border-neutral-700 shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group block"
-                >
-                  <div className="relative z-10 space-y-1.5">
-                    <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-400 text-neutral-900 uppercase tracking-wider">
-                      Dành Cho 12-22 Tuổi
-                    </span>
-                    <h3 className="text-lg font-black tracking-tight leading-snug text-amber-400">
-                      ĐẶC QUYỀN THÀNH VIÊN U22
-                    </h3>
-                    <p className="text-xs text-neutral-300">
-                      Vé xem phim <strong className="text-white font-black text-sm">45k - 50k</strong> + Giảm 20% Combo bắp nước.
-                    </p>
-                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-300 mt-2 group-hover:underline">
-                      Xem thể lệ & đăng ký →
-                    </span>
-                  </div>
-                  <div className="absolute -right-4 -bottom-4 w-28 h-28 bg-amber-500/10 rounded-full blur-xl pointer-events-none" />
-                </a>
-
-                {/* Banner 3: Lễ Hội Hoạt Hình & Quà Tặng */}
-                <div
-                  onClick={() => setSelectedGenre("Hoạt hình")}
-                  className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-700 p-5 text-white shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group block cursor-pointer"
-                >
-                  <div className="relative z-10 space-y-1.5">
-                    <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-black bg-white text-emerald-700 uppercase tracking-wider">
-                      Hot Anime 2026
-                    </span>
-                    <h3 className="text-lg font-black tracking-tight leading-snug">
-                      ĐẠI TIỆC PHIM HOẠT HÌNH
-                    </h3>
-                    <p className="text-xs text-white/90">
-                      Doraemon, Conan, Kung Fu Panda 4 tặng thẻ hologram độc quyền.
-                    </p>
-                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-100 mt-2 group-hover:underline">
-                      Lọc phim hoạt hình ngay →
-                    </span>
-                  </div>
-                  <div className="absolute -right-4 -bottom-4 w-28 h-28 bg-emerald-400/20 rounded-full blur-xl pointer-events-none" />
+                {/* Bảng Banner Nhiều Thông Tin Quảng Cáo Ở Giữa (Fan C, Happy Wednesday, U22, Anime) */}
+                <div className="w-full max-w-[980px] 2xl:max-w-[1000px] shrink-0">
+                  <CgvPromotionalCarousel
+                    movies={movies}
+                    onSelectGenre={setSelectedGenre}
+                    onOpenDetail={setActiveDetailMovie}
+                    onBookTicket={setActiveBookingMovie}
+                  />
                 </div>
+
+                {/* Banner Skyscraper Cột Phải: Conan / U22 (Không bao giờ bị đè) */}
+                <aside className="hidden xl:block w-[130px] 2xl:w-[150px] shrink-0 sticky top-24 self-start">
+                  <CgvRightSkyscraperBanner
+                    onSelectMovie={setActiveDetailMovie}
+                    onBookMovie={setActiveBookingMovie}
+                  />
+                </aside>
               </div>
             </div>
 
-            {/* 2. KHU VỰC MOVIE SELECTION CHUẨN CGV.VN */}
-            <div id="commercial-tabs" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 sm:mt-16 scroll-mt-24">
+            {/* 3. THANH ĐẶT VÉ NHANH 1-CLICK NẰM GỌN TRONG CONTAINER GIỮA */}
+            <div className="max-w-[980px] 2xl:max-w-[1000px] mx-auto px-4 mt-6">
+              <QuickBookingBar
+                movies={movies}
+                onQuickBook={(movie, cinemaName, date, time, format, showtimeId) => {
+                  setBookingInitialShowtimeId(showtimeId);
+                  setActiveBookingMovie(movie);
+                }}
+              />
+            </div>
+
+            {/* 4. KHU VỰC MOVIE SELECTION CHUẨN CGV.VN (ẢNH MẪU 2) */}
+            <div id="commercial-tabs" className="max-w-[980px] 2xl:max-w-[1000px] mx-auto px-4 mt-10 scroll-mt-24">
               
-              {/* Tiêu Đề Ribbon MOVIE SELECTION Độc Quyền CGV */}
-              <div className="flex flex-col items-center justify-center mb-6">
-                <div className="flex items-center gap-3 sm:gap-6 w-full max-w-2xl justify-center">
-                  <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-[#e71a0f]/50 to-[#e71a0f]" />
-                  <div className="flex items-center gap-2 px-5 py-1.5 rounded-full bg-[#1c1c1c] text-white shadow-lg border border-[#e71a0f]/30">
-                    <span className="text-[#e71a0f] text-sm animate-pulse">★</span>
-                    <h2 className="text-xs sm:text-sm font-black tracking-widest uppercase text-white">
-                      MOVIE SELECTION
-                    </h2>
-                    <span className="text-[#e71a0f] text-sm animate-pulse">★</span>
-                  </div>
-                  <div className="h-[2px] flex-1 bg-gradient-to-l from-transparent via-[#e71a0f]/50 to-[#e71a0f]" />
+              {/* Tiêu Đề Double-Line MOVIE SELECTION Chính Xác Như Ảnh Mẫu CGV */}
+              <div className="flex items-center justify-center my-8">
+                <div className="flex items-center gap-3 sm:gap-6 w-full justify-center">
+                  <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-neutral-400 to-neutral-700" />
+                  <h2 className="text-xl sm:text-3xl font-black tracking-widest uppercase text-neutral-800 font-serif drop-shadow-sm px-2">
+                    MOVIE SELECTION
+                  </h2>
+                  <div className="h-[2px] flex-1 bg-gradient-to-l from-transparent via-neutral-400 to-neutral-700" />
                 </div>
-                <p className="text-[11px] text-neutral-500 font-bold uppercase tracking-wider mt-1.5">
-                  Phim Đang Chiếu & Sắp Chiếu Tại Toàn Bộ Cụm Rạp CGV
-                </p>
               </div>
 
               {/* Thanh Chuyển Tab Phim Chuẩn CGV */}

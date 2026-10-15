@@ -63,8 +63,8 @@ export const QuickBookingBar: React.FC<QuickBookingBarProps> = ({ movies, onQuic
   const dayAfterStr = getVnDateString(2);
 
   return (
-    <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-7 sm:-mt-10 z-30">
-      <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 shadow-xl backdrop-blur-xl">
+    <div className="relative w-full z-20">
+      <div className="bg-white border border-[#e5e0d8] rounded-2xl p-3.5 sm:p-4 shadow-lg backdrop-blur-xl">
         
         {/* Header nhỏ thanh đặt vé nhanh */}
         <div className="flex items-center justify-between mb-3 px-1 sm:px-2">
