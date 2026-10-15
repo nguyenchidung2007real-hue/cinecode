@@ -60,8 +60,8 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
         className="absolute inset-0 bg-cover bg-center transition-all duration-700 ease-in-out transform scale-100 animate-in fade-in zoom-in-105"
         style={{ backgroundImage: `url(${currentMovie.backdropPath || currentMovie.posterPath})` }}
       >
-        <div className="absolute inset-0 bg-gradient-to-t from-[#fdfcf0] via-[#fdfcf0]/80 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#fdfcf0] via-[#fdfcf0]/85 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0e0e11] via-[#0e0e11]/70 to-black/20" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0e0e11] via-[#0e0e11]/85 to-transparent" />
       </div>
 
       {/* Nội dung Banner */}
@@ -73,7 +73,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
               {currentMovie.ageRating || "P"}
             </span>
 
-            <span className="px-2.5 py-0.5 rounded font-bold bg-white/95 text-neutral-800 border border-[#e5e0d8] shadow-sm">
+            <span className="px-2.5 py-0.5 rounded font-bold bg-white/10 text-white backdrop-blur-md border border-white/20 shadow-sm">
               {currentMovie.genres.join(" • ")}
             </span>
 
@@ -83,49 +83,49 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
               </span>
             )}
 
-            <div className="flex items-center gap-1 text-amber-600 font-bold bg-white/95 px-2.5 py-0.5 rounded border border-[#e5e0d8] shadow-sm">
-              <Star className="w-3.5 h-3.5 fill-current text-amber-500" />
+            <div className="flex items-center gap-1 text-amber-400 font-bold bg-white/10 backdrop-blur-md px-2.5 py-0.5 rounded border border-white/20 shadow-sm">
+              <Star className="w-3.5 h-3.5 fill-current text-amber-400" />
               <span>{currentMovie.voteAverage}</span>
-              <span suppressHydrationWarning className="text-neutral-500 font-normal">
+              <span suppressHydrationWarning className="text-white/60 font-normal">
                 ({formatNumber(currentMovie.voteCount)} vote)
               </span>
             </div>
           </div>
 
           {/* Tiêu đề phim */}
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-[#1c1c1c] tracking-tight leading-tight uppercase drop-shadow-sm">
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight uppercase drop-shadow-md">
             {currentMovie.title}
           </h1>
 
           {currentMovie.originalTitle && currentMovie.originalTitle !== currentMovie.title && (
-            <p className="text-sm sm:text-base font-medium text-neutral-600 italic">
+            <p className="text-sm sm:text-base font-medium text-white/70 italic">
               {currentMovie.originalTitle} ({currentMovie.releaseDate?.split("-")[0] || "2024"})
             </p>
           )}
 
           {/* Thời lượng & Đạo diễn */}
-          <div className="flex flex-wrap items-center gap-4 text-xs text-neutral-600">
+          <div className="flex flex-wrap items-center gap-4 text-xs text-white/80">
             <div className="flex items-center gap-1.5">
               <Clock className="w-3.5 h-3.5 text-[#e71a0f]" />
               <span>{currentMovie.durationMinutes} phút</span>
             </div>
             <div className="flex items-center gap-1.5">
               <Calendar className="w-3.5 h-3.5 text-[#e71a0f]" />
-              <span>Khởi chiếu: <strong className="text-neutral-900">{currentMovie.releaseDate}</strong></span>
+              <span>Khởi chiếu: <strong className="text-white">{currentMovie.releaseDate}</strong></span>
             </div>
-            <span>Đạo diễn: <strong className="text-neutral-900">{currentMovie.director}</strong></span>
+            <span>Đạo diễn: <strong className="text-white">{currentMovie.director}</strong></span>
           </div>
 
           {/* Tóm tắt */}
-          <p className="text-xs sm:text-sm text-neutral-700 line-clamp-3 leading-relaxed font-normal">
+          <p className="text-xs sm:text-sm text-white/80 line-clamp-3 leading-relaxed font-normal">
             {currentMovie.overview}
           </p>
 
-          {/* Nhóm nút bấm hành động chuẩn CGV Cultureplex */}
+          {/* Nhóm nút bấm hành động */}
           <div className="flex flex-wrap items-center gap-3 pt-2">
             <button
               onClick={() => onBookTicket(currentMovie)}
-              className="flex items-center gap-2 px-7 py-3.5 rounded-xl bg-[#e71a0f] hover:bg-[#c81007] text-white font-black text-sm uppercase tracking-wider shadow-lg shadow-[#e71a0f]/30 transition-all transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
+              className="flex items-center gap-2 px-7 py-3.5 rounded-xl bg-[#e71a0f] hover:bg-[#c81007] text-white font-black text-sm uppercase tracking-wider shadow-lg shadow-[#e71a0f]/40 transition-all transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
             >
               <Ticket className="w-4 h-4" />
               <span>ĐẶT VÉ NGAY</span>
@@ -133,9 +133,9 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
 
             <button
               onClick={() => onWatchTrailer(currentMovie)}
-              className="flex items-center gap-2 px-5 py-3.5 rounded-xl bg-white hover:bg-neutral-50 text-neutral-900 font-bold text-sm border border-[#e5e0d8] shadow-sm transition-all cursor-pointer"
+              className="flex items-center gap-2 px-5 py-3.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm border border-white/30 backdrop-blur-md shadow-sm transition-all cursor-pointer"
             >
-              <Play className="w-4 h-4 fill-neutral-900" />
+              <Play className="w-4 h-4 fill-white" />
               <span>Xem Trailer</span>
             </button>
           </div>

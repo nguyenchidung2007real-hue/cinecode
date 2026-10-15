@@ -343,7 +343,7 @@ function buildSampleReviews(): MovieReviewItem[] {
       customerPhone: "0981122334",
       rating: 5,
       content:
-        "Bản giao hưởng âm nhạc đỉnh cao! Nhạc phim quá hay, Nobita thổi sáo tuy vụng về nhưng đầy cảm xúc. Cả gia đình mình đi xem rạp CGV đều mê mẩn.",
+        "Bản giao hưởng âm nhạc đỉnh cao! Nhạc phim quá hay, Nobita thổi sáo tuy vụng về nhưng đầy cảm xúc. Cả gia đình mình đi xem rạp CineMax đều mê mẩn.",
       isVerifiedBuyer: true,
       likesCount: 35,
       status: "approved",
@@ -399,7 +399,7 @@ function buildSampleReviews(): MovieReviewItem[] {
       customerPhone: "0945678901",
       rating: 4,
       content:
-        "Các chú Minions siêu nhân bựa vô đối, cười đau cả bụng từ đầu đến cuối phim. Bắp rang bơ CGV giòn rụm ăn kèm xem phim này là chuẩn bài!",
+        "Các chú Minions siêu nhân bựa vô đối, cười đau cả bụng từ đầu đến cuối phim. Bắp rang bơ CineMax giòn rụm ăn kèm xem phim này là chuẩn bài!",
       isVerifiedBuyer: true,
       likesCount: 19,
       status: "approved",

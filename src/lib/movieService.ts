@@ -160,7 +160,7 @@ export async function getMovies(category: "all" | "now_playing" | "upcoming" | "
       const fallbackBackdrop = MOCK_MOVIES[idx % MOCK_MOVIES.length].backdropPath;
 
       const overviewText = item.overview?.trim() ||
-        `${item.title} (${item.original_title || "Bom tấn"}) - Tác phẩm điện ảnh đỉnh cao đang thu hút sự chú ý tại hệ thống cụm rạp CGV Cinemas. Trải nghiệm âm thanh Dolby 7.1 sống động.`;
+        `${item.title} (${item.original_title || "Bom tấn"}) - Tác phẩm điện ảnh đỉnh cao đang thu hút sự chú ý tại hệ thống cụm rạp CineMax Cinemas. Trải nghiệm âm thanh Dolby 7.1 sống động.`;
 
       let movieStatus: "now_playing" | "upcoming" | "trending" = "now_playing";
       if (category === "upcoming" || (item.release_date && new Date(item.release_date) > new Date())) {
@@ -230,7 +230,7 @@ export async function getMovieById(id: string | number): Promise<Movie | null> {
       id: `tmdb-${item.id}`,
       title: item.title,
       originalTitle: item.original_title,
-      overview: item.overview || `${item.title} - Siêu phẩm điện ảnh bom tấn tại rạp CGV Cinemas.`,
+      overview: item.overview || `${item.title} - Siêu phẩm điện ảnh bom tấn tại rạp CineMax Cinemas.`,
       posterPath: item.poster_path ? `${TMDB_IMAGE_BASE}${item.poster_path}` : MOCK_MOVIES[0].posterPath,
       backdropPath: item.backdrop_path ? `${TMDB_BACKDROP_BASE}${item.backdrop_path}` : MOCK_MOVIES[0].backdropPath,
       releaseDate: item.release_date,

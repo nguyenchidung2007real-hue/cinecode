@@ -21,11 +21,11 @@ function resolveSiteUrl(): string {
 }
 
 export const SITE_URL = resolveSiteUrl();
-export const SITE_NAME = "CGV Cinemas Cultureplex";
+export const SITE_NAME = "CineMax Cinemas Cultureplex";
 
-const TITLE = "CGV Cinemas Vietnam - Hệ Thống Rạp Chiếu Phim & Đặt Vé Trực Tuyến";
+const TITLE = "CineMax Cinemas Vietnam - Hệ Thống Rạp Chiếu Phim Đẳng Cấp & Đặt Vé Trực Tuyến";
 const DESCRIPTION =
-  "Trải nghiệm điện ảnh đỉnh cao tại CJ CGV Vietnam. Đặt vé xem phim nhanh chóng, xem lịch chiếu IMAX, 4DX, Gold Class, combo bắp nước và các sự kiện ưu đãi mới nhất.";
+  "Trải nghiệm điện ảnh đỉnh cao tại CineMax Vietnam. Đặt vé xem phim nhanh chóng, xem lịch chiếu IMAX Laser, 4DX Motion, CineMax Luxe Lounge, combo bắp nước và các sự kiện ưu đãi mới nhất.";
 
 export const siteMetadata: Metadata = {
   metadataBase: new URL(SITE_URL),

@@ -100,7 +100,7 @@ const BOOKING_TOOLS: Groq.Chat.Completions.ChatCompletionTool[] = [
         properties: {
           movieId: { type: "string", description: "ID của bộ phim" },
           movieTitle: { type: "string", description: "Tên bộ phim khách muốn xem" },
-          cinemaName: { type: "string", description: "Tên rạp chiếu (VD: Beta Xuân Thủy, CGV Vincom)" },
+          cinemaName: { type: "string", description: "Tên rạp chiếu (VD: Beta Xuân Thủy, CineMax Vincom)" },
           showtimeId: { type: "string", description: "ID suất chiếu nếu có" },
           showtimeLabel: { type: "string", description: "Giờ chiếu (VD: 19:30 - Hôm nay)" },
           format: { type: "string", enum: ["2D", "IMAX Laser", "3D"], description: "Định dạng phòng chiếu" },

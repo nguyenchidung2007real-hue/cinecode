@@ -438,7 +438,7 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
                     <div>
                       <h4 className="font-black text-sm text-neutral-900">{msg.bookingDraft.movieTitle}</h4>
                       <p className="text-[10px] text-neutral-500 mt-0.5">
-                        📍 {msg.bookingDraft.cinemaName || "CGV Vincom Bà Triệu"} • 🕒 {msg.bookingDraft.showtimeLabel || "19:00"} ({msg.bookingDraft.format || "2D"})
+                        📍 {msg.bookingDraft.cinemaName || "CineMax Vincom Bà Triệu"} • 🕒 {msg.bookingDraft.showtimeLabel || "19:00"} ({msg.bookingDraft.format || "2D"})
                       </p>
                     </div>
 

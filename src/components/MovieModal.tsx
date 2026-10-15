@@ -296,7 +296,7 @@ export const MovieModal: React.FC<MovieModalProps> = ({
               </div>
               <div className="flex items-center gap-1.5">
                 <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                <span className="text-emerald-700 font-medium">Bản quyền rạp chiếu CGV</span>
+                <span className="text-emerald-700 font-medium">Bản quyền rạp chiếu CineMax</span>
               </div>
             </div>
 

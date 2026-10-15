@@ -293,20 +293,20 @@ export const MOCK_MOVIES: Movie[] = [
 
 export const MOCK_CINEMAS: Cinema[] = [
   {
-    id: "cgv-vincom-ba-trieu",
-    name: "CGV Vincom Center Bà Triệu",
+    id: "cinemax-vincom-ba-trieu",
+    name: "CineMax Vincom Center Bà Triệu",
     address: "Tầng 6, Vincom Center, 191 Bà Triệu, Hai Bà Trưng, Hà Nội",
     city: "Hà Nội",
   },
   {
-    id: "cgv-landmark-81",
-    name: "CGV Vincom Landmark 81 (IMAX)",
+    id: "cinemax-landmark-81",
+    name: "CineMax Vincom Landmark 81 (IMAX Laser)",
     address: "Tầng B1, Landmark 81, 720A Điện Biên Phủ, P. 22, Bình Thạnh, TP.HCM",
     city: "TP. Hồ Chí Minh",
   },
   {
-    id: "cgv-su-van-hanh",
-    name: "CGV Vạn Hạnh Mall (Gold Class & 4DX)",
+    id: "cinemax-su-van-hanh",
+    name: "CineMax Vạn Hạnh Mall (Luxe Lounge & 4DX)",
     address: "Tầng 6, Vạn Hạnh Mall, 11 Sư Vạn Hạnh, Quận 10, TP.HCM",
     city: "TP. Hồ Chí Minh",
   },
@@ -528,8 +528,8 @@ const BASE_MOCK_SHOWTIMES: ShowTime[] = [
   {
     id: "st-1",
     movieId: "dune-2",
-    cinemaId: "cgv-landmark-81",
-    cinemaName: "CGV Vincom Landmark 81",
+    cinemaId: "cinemax-landmark-81",
+    cinemaName: "CineMax Vincom Landmark 81",
     roomName: "Phòng IMAX Laser 01",
     format: "IMAX Laser",
     date: tomorrowVN,
@@ -538,9 +538,9 @@ const BASE_MOCK_SHOWTIMES: ShowTime[] = [
   {
     id: "st-3",
     movieId: "dune-2",
-    cinemaId: "cgv-vincom-ba-trieu",
-    cinemaName: "CGV Vincom Center Bà Triệu",
-    roomName: "Phòng Cinema 03",
+    cinemaId: "cinemax-vincom-ba-trieu",
+    cinemaName: "CineMax Vincom Center Bà Triệu",
+    roomName: "Phòng CineMax 03",
     format: "2D Phụ Đề",
     date: tomorrowVN,
     time: "19:00",
@@ -588,8 +588,8 @@ const BASE_MOCK_SHOWTIMES: ShowTime[] = [
   {
     id: "st-godzilla-1",
     movieId: "godzilla-x-kong",
-    cinemaId: "cgv-landmark-81",
-    cinemaName: "CGV Vincom Landmark 81",
+    cinemaId: "cinemax-landmark-81",
+    cinemaName: "CineMax Vincom Landmark 81",
     roomName: "Phòng IMAX Laser 01",
     format: "IMAX Laser",
     date: tomorrowVN,
@@ -618,14 +618,14 @@ export const CINEMA_SCHEDULE_TEMPLATES: CinemaScheduleTemplate[] = [
     ],
   },
   {
-    cinemaId: "cgv-vincom-ba-trieu",
+    cinemaId: "cinemax-vincom-ba-trieu",
     slots: [
-      { time: "10:00", roomName: "Phòng ScreenX 01", format: "4DX" },
-      { time: "13:15", roomName: "Phòng Cinema 02", format: "2D Phụ Đề" },
-      { time: "16:00", roomName: "Phòng ScreenX 01", format: "4DX" },
-      { time: "18:45", roomName: "Phòng Cinema 02", format: "2D Phụ Đề" },
-      { time: "21:00", roomName: "Phòng ScreenX 01", format: "4DX" },
-      { time: "22:45", roomName: "Phòng Cinema 02", format: "2D Phụ Đề" },
+      { time: "10:00", roomName: "Phòng 4DX Motion 01", format: "4DX" },
+      { time: "13:15", roomName: "Phòng CineMax Deluxe 02", format: "2D Phụ Đề" },
+      { time: "16:00", roomName: "Phòng 4DX Motion 01", format: "4DX" },
+      { time: "18:45", roomName: "Phòng CineMax Deluxe 02", format: "2D Phụ Đề" },
+      { time: "21:00", roomName: "Phòng 4DX Motion 01", format: "4DX" },
+      { time: "22:45", roomName: "Phòng CineMax Deluxe 02", format: "2D Phụ Đề" },
     ],
   },
   {
@@ -639,10 +639,10 @@ export const CINEMA_SCHEDULE_TEMPLATES: CinemaScheduleTemplate[] = [
     ],
   },
   {
-    cinemaId: "cgv-landmark-81",
+    cinemaId: "cinemax-landmark-81",
     slots: [
       { time: "10:15", roomName: "Phòng IMAX Laser 01", format: "IMAX Laser" },
-      { time: "13:30", roomName: "Phòng Gold Class 01", format: "2D Phụ Đề" },
+      { time: "13:30", roomName: "Phòng CineMax Luxe Lounge 01", format: "2D Phụ Đề" },
       { time: "16:45", roomName: "Phòng IMAX Laser 01", format: "IMAX Laser" },
       { time: "19:30", roomName: "Phòng IMAX Laser 01", format: "IMAX Laser" },
       { time: "22:15", roomName: "Phòng IMAX Laser 01", format: "IMAX Laser" },
@@ -667,7 +667,7 @@ export function generateShowtimesForMovie(movieId: string | number): ShowTime[] 
   const cleanMovie = idStr.replace(/[^a-zA-Z0-9]/g, "").slice(0, 14);
   const results: ShowTime[] = [];
   const baseToday = getTodayInVietnam();
-  const dates = [baseToday, shiftDays(baseToday, 1), shiftDays(baseToday, 2)];
+  const dates = Array.from({ length: 10 }, (_, i) => shiftDays(baseToday, i));
 
   for (const date of dates) {
     const dateCompact = date.replace(/-/g, "");
