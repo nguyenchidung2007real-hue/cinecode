@@ -36,53 +36,72 @@ interface PromoItem {
 
 const PROMO_DATA: PromoItem[] = [
   {
-    id: "tuesday-deal",
-    badge: "Thứ 3 Vui Vẻ",
+    id: "cgv-happy-wednesday",
+    badge: "CGV Happy Wednesday",
     badgeBg: "bg-rose-50",
-    badgeText: "text-rose-600",
+    badgeText: "text-[#e71a0f]",
     badgeBorder: "border-rose-200",
-    title: "Đồng Giá Vé 45.000đ Mọi Suất Chiếu",
-    shortDesc: "Áp dụng cho tất cả khách hàng vào thứ Ba hàng tuần tại mọi cụm rạp Beta Cinemas trên toàn quốc.",
-    validity: "Thứ 3 hàng tuần • Đến hết 31/12/2026",
-    discountHighlight: "Đồng giá vé 45.000đ (Tiết kiệm tới 40%)",
-    promoCode: "BETA45K",
+    title: "Thứ Tư Vui Vẻ - Đồng Giá Vé 45.000đ",
+    shortDesc: "Chương trình ưu đãi truyền thống được yêu thích nhất tại CGV Cinemas. Đồng giá 45.000đ mọi suất chiếu 2D và miễn phụ thu ghế VIP.",
+    validity: "Thứ 4 hàng tuần • Đến hết 31/12/2026",
+    discountHighlight: "Đồng giá vé 45.000đ (Miễn phụ thu ghế VIP)",
+    promoCode: "CGVHAPPY45",
     conditions: [
-      "Áp dụng vào tất cả các ngày Thứ 3 hàng tuần cho mọi suất chiếu phim 2D.",
-      "Miễn phụ thu ghế VIP (Ghế VIP đồng giá 45.000đ như ghế thường).",
-      "Áp dụng cho cả hình thức đặt vé online trên website và mua trực tiếp tại quầy.",
+      "Áp dụng vào tất cả các ngày Thứ Tư hàng tuần cho mọi suất chiếu phim 2D.",
+      "Miễn hoàn toàn phụ thu ghế VIP (Ghế VIP đồng giá 45.000đ).",
+      "Áp dụng cho cả hình thức đặt vé online trên website và mua tại quầy.",
       "Không giới hạn số lượng vé trong mỗi giao dịch đặt vé.",
-      "Không áp dụng đồng thời cùng các chương trình thẻ cào trúng thưởng khác."
+      "Tự động áp dụng khi chọn suất chiếu ngày Thứ 4."
     ],
-    applicableNote: "Mẹo: Bạn có thể chọn suất chiếu Thứ 3 bất kỳ để hệ thống tự động áp dụng giá vé 45k."
+    applicableNote: "Mẹo: Bạn có thể chọn suất chiếu Thứ 4 bất kỳ để hệ thống tự động áp dụng giá vé 45k."
   },
   {
-    id: "student-pass",
-    badge: "Beta Student Pass",
-    badgeBg: "bg-sky-50",
-    badgeText: "text-sky-600",
-    badgeBorder: "border-sky-200",
-    title: "Ưu Đãi Học Sinh - Sinh Viên 45k - 50k",
-    shortDesc: "Chỉ cần xuất trình thẻ học sinh, sinh viên tại quầy vé để nhận giá vé ưu đãi và giảm 20% combo bắp nước.",
+    id: "cgv-u22-pass",
+    badge: "CGV U22 Pass",
+    badgeBg: "bg-amber-50",
+    badgeText: "text-amber-700",
+    badgeBorder: "border-amber-200",
+    title: "Đặc Quyền Thành Viên U22 - Giá Vé 45k - 50k",
+    shortDesc: "Dành riêng cho khán giả từ 12 đến 22 tuổi hoặc học sinh - sinh viên. Xem phim thả ga cả tuần với mức giá siêu ưu đãi.",
     validity: "Thứ 2 đến Thứ 6 • Đến hết 31/12/2026",
     discountHighlight: "Giá vé 45k (trước 17h) / 50k (sau 17h) + Giảm 20% Combo",
-    promoCode: "STUDENTVIP",
+    promoCode: "CGVU22",
     conditions: [
       "Áp dụng từ Thứ Hai đến Thứ Sáu cho đối tượng Học sinh, Sinh viên hoặc dưới 22 tuổi.",
       "Giá vé 45.000đ đối với các suất chiếu bắt đầu trước 17:00.",
       "Giá vé 50.000đ đối với các suất chiếu bắt đầu sau 17:00.",
       "Giảm thêm 20% khi mua kèm Combo Bắp Nước Solo (1 Bắp + 1 Nước).",
-      "Vui lòng xuất trình thẻ HSSV (hoặc CCCD/VNeID) khi nhân viên rạp soát vé vào phòng chiếu."
+      "Vui lòng xuất trình thẻ HSSV hoặc CCCD khi nhân viên soát vé vào phòng chiếu."
     ],
-    applicableNote: "Áp dụng cho mọi phim 2D đang chiếu tại cụm rạp."
+    applicableNote: "Áp dụng cho mọi phim 2D đang chiếu tại cụm rạp CGV."
+  },
+  {
+    id: "cgv-anime-festival",
+    badge: "Lễ Hội Hoạt Hình",
+    badgeBg: "bg-emerald-50",
+    badgeText: "text-emerald-700",
+    badgeBorder: "border-emerald-200",
+    title: "Đại Tiệc Hoạt Hình CGV - Tặng Quà Độc Quyền",
+    shortDesc: "Thưởng thức các siêu phẩm hoạt hình Doraemon, Conan, Kung Fu Panda 4 và nhận thẻ sưu tầm hologram cùng ưu đãi bình nước Minions.",
+    validity: "Tất cả các ngày trong tuần • Số lượng có hạn",
+    discountHighlight: "Tặng thẻ Hologram + Giảm 30% Ly nước nhân vật",
+    promoCode: "CGVANIME",
+    conditions: [
+      "Áp dụng khi đặt vé xem các bộ phim thuộc thể loại Hoạt hình.",
+      "Nhận thẻ sưu tầm nhân vật bản quyền tại quầy vé trước giờ chiếu.",
+      "Ưu đãi giảm giá trực tiếp combo ly nhân vật Minions / Doraemon.",
+      "Áp dụng cho cả vé trẻ em và vé người lớn."
+    ],
+    applicableNote: "Chương trình áp dụng tại tất cả các cụm rạp CGV trên toàn quốc."
   },
   {
     id: "sweetbox-couple",
-    badge: "Sweetbox Couple Night",
-    badgeBg: "bg-amber-50",
-    badgeText: "text-amber-600",
-    badgeBorder: "border-amber-200",
-    title: "Tặng Kèm Bắp Rang Bơ Khi Đặt Ghế Đôi",
-    shortDesc: "Thưởng thức không gian ghế đôi nỉ nhung riêng tư và nhận ngay 1 bắp phô mai thơm giòn nóng hổi.",
+    badge: "Sweetbox Couple",
+    badgeBg: "bg-rose-50",
+    badgeText: "text-[#e71a0f]",
+    badgeBorder: "border-rose-200",
+    title: "Sweetbox Ghế Đôi - Tặng Kèm Bắp Phô Mai",
+    shortDesc: "Thưởng thức không gian ghế đôi nỉ nhung riêng tư và nhận ngay 1 bắp phô mai thơm giòn nóng hổi cho buổi hẹn hò lãng mạn.",
     validity: "Suất chiếu sau 20:00 • Tất cả các ngày trong tuần",
     discountHighlight: "Tặng miễn phí 01 Bắp Phô Mai 60oz (Trị giá 45.000đ)",
     promoCode: "SWEETBOXFREE",
@@ -90,8 +109,7 @@ const PROMO_DATA: PromoItem[] = [
       "Áp dụng khi đặt từ 01 cặp ghế Sweetbox (Hàng K) cho các suất chiếu sau 20:00.",
       "Khách hàng nhận voucher bắp phô mai tự động đính kèm trong mã QR vé xem phim.",
       "Quét mã QR tại quầy Concession bắp nước để nhận bắp nóng ngay trước giờ chiếu.",
-      "Có thể chọn nâng cấp vị caramel hoặc upsize ly nước với phụ thu chỉ từ 10.000đ.",
-      "Áp dụng cho cả khách hàng thành viên và khách vãng lai."
+      "Có thể nâng cấp vị caramel hoặc upsize ly nước chỉ từ 10.000đ."
     ],
     applicableNote: "Tận hưởng không gian rạp chiếu lãng mạn cùng ghế đôi Sweetbox bọc nhung cao cấp."
   }
@@ -380,9 +398,10 @@ export default function HomePage() {
         ) : (
           /* GIAO DIỆN TRANG CHỦ TIÊU CHUẨN PHONG CÁCH CGV / GALAXY / FANDANGO */
           <>
-            {/* Hero Banner với phim tâm điểm */}
-            {heroMovie && (
+            {/* Hero Banner với phim tâm điểm xoay vòng Carousel chuẩn CGV */}
+            {movies.length > 0 && (
               <HeroBanner
+                movies={movies}
                 movie={heroMovie}
                 onWatchTrailer={setActiveDetailMovie}
                 onBookTicket={setActiveBookingMovie}
@@ -397,6 +416,77 @@ export default function HomePage() {
                 setActiveBookingMovie(movie);
               }}
             />
+
+            {/* DẢI BANNER QUẢNG CÁO & SỰ KIỆN NỔI BẬT CHUẨN CGV VIETNAM */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Banner 1: CGV Happy Wednesday */}
+                <a
+                  href="#price-table"
+                  className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#e71a0f] to-[#b71007] p-5 text-white shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group block"
+                >
+                  <div className="relative z-10 space-y-1.5">
+                    <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-black bg-white text-[#e71a0f] uppercase tracking-wider">
+                      Thứ 4 Hàng Tuần
+                    </span>
+                    <h3 className="text-lg font-black tracking-tight leading-snug">
+                      CGV HAPPY WEDNESDAY
+                    </h3>
+                    <p className="text-xs text-white/90">
+                      Đồng giá <strong className="text-amber-300 font-black text-sm">45.000đ</strong> mọi loại ghế kể cả VIP.
+                    </p>
+                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-200 mt-2 group-hover:underline">
+                      Đặt vé thứ 4 ngay →
+                    </span>
+                  </div>
+                  <div className="absolute -right-4 -bottom-4 w-28 h-28 bg-white/10 rounded-full blur-xl pointer-events-none" />
+                </a>
+
+                {/* Banner 2: CGV U22 Pass */}
+                <a
+                  href="#promo-section"
+                  className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#1c1c1c] via-[#2d2d2d] to-[#1c1c1c] p-5 text-white border border-neutral-700 shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group block"
+                >
+                  <div className="relative z-10 space-y-1.5">
+                    <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-400 text-neutral-900 uppercase tracking-wider">
+                      Dành Cho 12-22 Tuổi
+                    </span>
+                    <h3 className="text-lg font-black tracking-tight leading-snug text-amber-400">
+                      ĐẶC QUYỀN THÀNH VIÊN U22
+                    </h3>
+                    <p className="text-xs text-neutral-300">
+                      Vé xem phim <strong className="text-white font-black text-sm">45k - 50k</strong> + Giảm 20% Combo bắp nước.
+                    </p>
+                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-300 mt-2 group-hover:underline">
+                      Xem thể lệ & đăng ký →
+                    </span>
+                  </div>
+                  <div className="absolute -right-4 -bottom-4 w-28 h-28 bg-amber-500/10 rounded-full blur-xl pointer-events-none" />
+                </a>
+
+                {/* Banner 3: Lễ Hội Hoạt Hình & Quà Tặng */}
+                <div
+                  onClick={() => setSelectedGenre("Hoạt hình")}
+                  className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-700 p-5 text-white shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group block cursor-pointer"
+                >
+                  <div className="relative z-10 space-y-1.5">
+                    <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-black bg-white text-emerald-700 uppercase tracking-wider">
+                      Hot Anime 2026
+                    </span>
+                    <h3 className="text-lg font-black tracking-tight leading-snug">
+                      ĐẠI TIỆC PHIM HOẠT HÌNH
+                    </h3>
+                    <p className="text-xs text-white/90">
+                      Doraemon, Conan, Kung Fu Panda 4 tặng thẻ hologram độc quyền.
+                    </p>
+                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-100 mt-2 group-hover:underline">
+                      Lọc phim hoạt hình ngay →
+                    </span>
+                  </div>
+                  <div className="absolute -right-4 -bottom-4 w-28 h-28 bg-emerald-400/20 rounded-full blur-xl pointer-events-none" />
+                </div>
+              </div>
+            </div>
 
             {/* 2. Thanh Chuyển Tab Phim Chuẩn Rạp Chiếu Thương Mại */}
             <div id="commercial-tabs" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 sm:mt-16 scroll-mt-24">
