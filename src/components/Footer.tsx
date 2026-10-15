@@ -78,12 +78,24 @@ export const Footer: React.FC = () => {
           </div>
         </div>
 
-        <div className="pt-6 border-t border-neutral-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-neutral-500 text-[11px]">
-          <p>© 2026 CJ CGV Vietnam Co., Ltd. Tất cả quyền được bảo lưu.</p>
+        <div className="pt-6 border-t border-neutral-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-neutral-500 text-[11px]">
+          <div>
+            <p>© 2026 CJ CGV Vietnam Co., Ltd. Tất cả quyền được bảo lưu.</p>
+            <p className="text-[10px] text-neutral-600 mt-0.5">
+              Giấy CNĐKDN: 0303675393, đăng ký lần đầu ngày 31/7/2008, cấp bởi Sở KH&ĐT TP. Hồ Chí Minh.
+            </p>
+          </div>
 
-          <p className="flex items-center gap-1">
-            Giao diện lấy cảm hứng theo phong cách <span className="text-[#e71a0f] font-bold">CGV Cultureplex</span>
-          </p>
+          {/* Huy Hiệu Bộ Công Thương */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-neutral-900 border border-neutral-700 text-neutral-300 text-[10px] font-bold">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" />
+              <span>ĐÃ THÔNG BÁO BỘ CÔNG THƯƠNG</span>
+            </div>
+            <p className="flex items-center gap-1 text-[11px]">
+              Giao diện chuẩn <span className="text-[#e71a0f] font-bold">CGV Cultureplex</span>
+            </p>
+          </div>
         </div>
       </div>
     </footer>

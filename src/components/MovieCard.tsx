@@ -98,29 +98,50 @@ export const MovieCard: React.FC<MovieCardProps> = ({
         )}
       </div>
 
-      {/* Thông tin phim bên dưới poster */}
-      <div className="p-3.5 flex flex-col flex-1 justify-between gap-2">
+      {/* Thông tin phim chuẩn giao diện CGV Cinemas bên dưới poster */}
+      <div className="p-3 sm:p-3.5 flex flex-col flex-1 justify-between gap-2.5 bg-white">
         <div>
           <h3
             onClick={() => onOpenDetail(movie)}
-            className="font-black text-sm text-[#1c1c1c] line-clamp-1 group-hover:text-[#e71a0f] cursor-pointer transition-colors uppercase"
+            className="font-black text-xs sm:text-sm text-[#1c1c1c] line-clamp-1 group-hover:text-[#e71a0f] cursor-pointer transition-colors uppercase tracking-tight"
             title={movie.title}
           >
             {movie.title}
           </h3>
-          <p className="text-[11px] text-slate-500 line-clamp-1 mt-0.5">
-            {movie.genres.slice(0, 2).join(", ")}
-          </p>
+          <div className="text-[11px] text-neutral-500 space-y-0.5 mt-1 font-medium">
+            <p className="line-clamp-1">
+              <span className="text-neutral-400">Thể loại:</span> {movie.genres.slice(0, 2).join(", ")}
+            </p>
+            <p className="flex items-center justify-between">
+              <span>
+                <span className="text-neutral-400">Thời lượng:</span> {movie.durationMinutes} phút
+              </span>
+              <span className="font-bold text-amber-500 flex items-center gap-0.5">
+                <Star className="w-3 h-3 fill-current" /> {movie.voteAverage}
+              </span>
+            </p>
+          </div>
         </div>
 
-        <div className="flex items-center justify-between text-[11px] text-slate-500 pt-2 border-t border-[#e5e0d8]">
-          <span className="flex items-center gap-1 text-slate-600">
-            <Clock className="w-3 h-3 text-[#e71a0f]" />
-            {movie.durationMinutes} phút
-          </span>
-          <span className="font-bold text-amber-600">
-            ★ {movie.voteAverage}
-          </span>
+        {/* 2 Nút Bấm Chuẩn CGV: CHI TIẾT & MUA VÉ (Luôn hiển thị cố định) */}
+        <div className="pt-2 border-t border-[#e5e0d8] flex items-center gap-1.5 sm:gap-2">
+          <button
+            onClick={() => onOpenDetail(movie)}
+            title="Xem chi tiết & Trailer"
+            className="px-2.5 py-1.5 rounded-lg border border-neutral-300 hover:border-[#e71a0f] bg-neutral-50 hover:bg-rose-50 text-neutral-700 hover:text-[#e71a0f] text-[10px] sm:text-[11px] font-bold transition-all flex items-center gap-1 cursor-pointer"
+          >
+            <Play className="w-3 h-3 fill-current" />
+            <span className="hidden sm:inline">Chi tiết</span>
+          </button>
+
+          <button
+            onClick={() => onBookTicket(movie)}
+            title="Mua vé xem phim"
+            className="flex-1 py-1.5 px-3 rounded-lg bg-[#e71a0f] hover:bg-[#c81007] text-white text-[10px] sm:text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-1 shadow-md shadow-[#e71a0f]/30 hover:shadow-lg transition-all cursor-pointer transform active:scale-95"
+          >
+            <Ticket className="w-3 h-3 text-white" />
+            <span>MUA VÉ</span>
+          </button>
         </div>
       </div>
     </div>

@@ -293,21 +293,9 @@ export const MOCK_MOVIES: Movie[] = [
 
 export const MOCK_CINEMAS: Cinema[] = [
   {
-    id: "beta-cinemas-xuan-thuy",
-    name: "Beta Cinemas Xuân Thủy",
-    address: "Tầng 4, Tòa nhà HITC, 239 Xuân Thủy, Cầu Giấy, Hà Nội",
-    city: "Hà Nội",
-  },
-  {
     id: "cgv-vincom-ba-trieu",
     name: "CGV Vincom Center Bà Triệu",
     address: "Tầng 6, Vincom Center, 191 Bà Triệu, Hai Bà Trưng, Hà Nội",
-    city: "Hà Nội",
-  },
-  {
-    id: "lotte-cinema-keangnam",
-    name: "Lotte Cinema Keangnam Landmark",
-    address: "Tầng 5, Keangnam Landmark Tower, Phạm Hùng, Cầu Giấy, Hà Nội",
     city: "Hà Nội",
   },
   {
@@ -315,6 +303,24 @@ export const MOCK_CINEMAS: Cinema[] = [
     name: "CGV Vincom Landmark 81 (IMAX)",
     address: "Tầng B1, Landmark 81, 720A Điện Biên Phủ, P. 22, Bình Thạnh, TP.HCM",
     city: "TP. Hồ Chí Minh",
+  },
+  {
+    id: "cgv-su-van-hanh",
+    name: "CGV Vạn Hạnh Mall (Gold Class & 4DX)",
+    address: "Tầng 6, Vạn Hạnh Mall, 11 Sư Vạn Hạnh, Quận 10, TP.HCM",
+    city: "TP. Hồ Chí Minh",
+  },
+  {
+    id: "beta-cinemas-xuan-thuy",
+    name: "Beta Cinemas Xuân Thủy",
+    address: "Tầng 4, Tòa nhà HITC, 239 Xuân Thủy, Cầu Giấy, Hà Nội",
+    city: "Hà Nội",
+  },
+  {
+    id: "lotte-cinema-keangnam",
+    name: "Lotte Cinema Keangnam Landmark",
+    address: "Tầng 5, Keangnam Landmark Tower, Phạm Hùng, Cầu Giấy, Hà Nội",
+    city: "Hà Nội",
   },
   {
     id: "bhd-star-bitexco",

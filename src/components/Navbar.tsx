@@ -50,21 +50,28 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="flex items-center gap-4">
           <span className="flex items-center gap-1.5 text-neutral-300 font-medium">
             <Phone className="w-3.5 h-3.5 text-[#e71a0f]" />
-            Hotline: <strong className="text-white">1900 636 807</strong> (9:00 - 22:00)
+            Hotline CGV: <strong className="text-white">1900 6017</strong> (8:00 - 22:00)
           </span>
           <span className="hidden md:inline text-neutral-600">|</span>
           <span className="hidden md:inline text-neutral-300">
-            Rạp trọng điểm: <strong className="text-[#e71a0f]">CGV / Beta Cinemas Xuân Thủy</strong>
+            Rạp trọng điểm: <strong className="text-[#e71a0f]">CGV Vincom Center Bà Triệu</strong> & <strong className="text-[#e71a0f]">CGV Landmark 81</strong>
           </span>
         </div>
 
         <div className="flex items-center gap-3">
+          <a
+            href="#promo-section"
+            className="hidden sm:inline text-neutral-300 hover:text-[#e71a0f] font-medium transition-colors"
+          >
+            Tin Mới & Ưu Đãi
+          </a>
+          <span className="hidden sm:inline text-neutral-600">•</span>
           <Link
             href="/dashboard"
             className="flex items-center gap-1.5 text-neutral-300 hover:text-[#e71a0f] font-medium transition-colors"
           >
             <User className="w-3.5 h-3.5 text-[#e71a0f]" />
-            <span>{customerInfo ? `Thành viên: ${customerInfo.name}` : "Đăng nhập Thành viên"}</span>
+            <span>{customerInfo ? `Thành viên: ${customerInfo.name}` : "Đăng ký / Đăng nhập CGV"}</span>
           </Link>
           <span className="text-neutral-600">•</span>
           <div className="flex items-center gap-1 text-neutral-300 cursor-pointer hover:text-[#e71a0f]">
@@ -75,32 +82,28 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* 2. Main Navigation Bar - CGV Vintage Cultureplex Style */}
       <div className="w-full bg-[#fdfcf0]/95 backdrop-blur-md border-b border-[#e5e0d8] shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between gap-4">
           
-          {/* Logo CGV / Cinema */}
+          {/* Logo CJ CGV VIETNAM */}
           <div
-            className="flex items-center gap-3 cursor-pointer select-none"
+            className="flex items-center gap-3 cursor-pointer select-none group"
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
           >
-            <div className="relative w-10 h-10 rounded-xl bg-[#e71a0f] flex items-center justify-center shadow-md shadow-red-600/30">
-              <Film className="w-5 h-5 text-white" />
+            <div className="flex items-baseline gap-1">
+              <span className="font-black text-2xl tracking-tighter text-[#1c1c1c]">CJ</span>
+              <span className="font-black text-3xl tracking-tight text-[#e71a0f] drop-shadow-sm group-hover:scale-105 transition-transform">CGV</span>
             </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <span className="font-black text-xl tracking-tight text-[#1c1c1c]">
-                  CINEMAX<span className="text-[#e71a0f]">.VN</span>
-                </span>
-                <span className="text-[10px] px-1.5 py-0.5 rounded font-black bg-[#e71a0f] text-white flex items-center gap-0.5 shadow-sm">
-                  CULTUREPLEX
-                </span>
-              </div>
-              <p className="text-[9px] text-slate-500 font-semibold tracking-wider uppercase">
-                Rạp chiếu phim hiện đại & giá hợp lý
-              </p>
+            <div className="border-l-2 border-[#e71a0f] pl-2.5 text-left hidden sm:block">
+              <span className="block text-[11px] font-black tracking-widest text-[#1c1c1c] uppercase leading-none">
+                CULTUREPLEX
+              </span>
+              <span className="block text-[8px] text-neutral-500 font-bold uppercase tracking-wider mt-0.5">
+                Vượt xa điện ảnh
+              </span>
             </div>
           </div>
 
-          {/* Chọn Cụm Rạp */}
+          {/* Chọn Cụm Rạp CGV */}
           <div className="hidden lg:flex items-center gap-2 bg-white border border-[#e5e0d8] px-3 py-1.5 rounded-xl text-xs text-slate-800 shadow-sm">
             <MapPin className="w-3.5 h-3.5 text-[#e71a0f]" />
             <select
@@ -108,20 +111,16 @@ export const Navbar: React.FC<NavbarProps> = ({
               onChange={(e) => onCityChange(e.target.value)}
               className="bg-transparent border-none text-slate-800 font-bold focus:outline-none cursor-pointer"
             >
-              <option value="Tất cả" className="bg-white text-slate-900">📍 Tất cả cụm rạp</option>
-              <option value="Hà Nội" className="bg-white text-slate-900">📍 Hà Nội - Xuân Thủy (Cầu Giấy)</option>
-              <option value="TP. Hồ Chí Minh" className="bg-white text-slate-900">📍 TP. HCM - Quang Trung (Gò Vấp)</option>
+              <option value="Tất cả" className="bg-white text-slate-900">📍 Tất cả cụm rạp CGV</option>
+              <option value="Hà Nội" className="bg-white text-slate-900">📍 CGV Vincom Bà Triệu (Hà Nội)</option>
+              <option value="TP. Hồ Chí Minh" className="bg-white text-slate-900">📍 CGV Landmark 81 (TP. HCM)</option>
+              <option value="Hà Nội" className="bg-white text-slate-900">📍 CGV Metropolis Liễu Giai (Hà Nội)</option>
+              <option value="TP. Hồ Chí Minh" className="bg-white text-slate-900">📍 CGV Sư Vạn Hạnh (TP. HCM)</option>
             </select>
           </div>
 
-          {/* Menu Điều Hướng Rạp Phim */}
-          <nav className="hidden xl:flex items-center gap-6 text-xs font-bold text-slate-700 tracking-wide uppercase">
-            <a
-              href="#commercial-tabs"
-              className="hover:text-[#e71a0f] transition-colors py-1 border-b-2 border-transparent hover:border-[#e71a0f]"
-            >
-              Lịch Chiếu
-            </a>
+          {/* Menu Điều Hướng Rạp CGV Chuẩn CGV.VN */}
+          <nav className="hidden xl:flex items-center gap-7 text-xs font-black text-slate-800 tracking-wider uppercase">
             <a
               href="#commercial-tabs"
               className="hover:text-[#e71a0f] transition-colors py-1 border-b-2 border-transparent hover:border-[#e71a0f]"
@@ -132,7 +131,13 @@ export const Navbar: React.FC<NavbarProps> = ({
               href="#matrix-section"
               className="hover:text-[#e71a0f] transition-colors py-1 border-b-2 border-transparent hover:border-[#e71a0f]"
             >
-              Rạp Chiếu
+              Rạp CGV
+            </a>
+            <a
+              href="#special-cinema-section"
+              className="hover:text-[#e71a0f] transition-colors py-1 border-b-2 border-transparent hover:border-[#e71a0f]"
+            >
+              Rạp Đặc Biệt
             </a>
             <a
               href="#price-table"
@@ -144,7 +149,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               href="#promo-section"
               className="text-[#e71a0f] hover:text-[#c81007] transition-colors py-1 border-b-2 border-transparent hover:border-[#e71a0f]"
             >
-              Combo Bắp Nước
+              Cultureplex & Combo
             </a>
           </nav>
 
@@ -158,7 +163,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               >
                 <Search className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#e71a0f] absolute left-2.5 top-1/2 -translate-y-1/2 transition-colors" />
                 <span className="truncate text-[11px] text-slate-600 group-hover:text-slate-900">
-                  Tìm phim, diễn viên...
+                  Tìm phim, rạp CGV...
                 </span>
                 <kbd className="inline-flex items-center text-[9px] font-mono font-bold text-slate-500 bg-slate-200/80 border border-slate-300 px-1 py-0.5 rounded">
                   Ctrl K
