@@ -212,52 +212,58 @@ export default function AdminDashboardPage() {
   return (
     <div className="min-h-screen bg-[#0B0C10] text-neutral-100 flex flex-col font-sans">
       {/* Top Navbar */}
-      <header className="border-b border-white/10 bg-[#14151B]/80 backdrop-blur-md sticky top-0 z-40">
+      <header className="border-b border-white/10 bg-[#12141c]/90 backdrop-blur-md sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link
               href="/"
-              className="flex items-center gap-1.5 text-xs text-neutral-400 hover:text-white transition-colors bg-white/5 px-2.5 py-1.5 rounded-lg border border-white/10 mr-2"
+              className="flex items-center gap-1.5 text-xs text-neutral-400 hover:text-white transition-colors bg-white/5 hover:bg-white/10 px-2.5 py-1.5 rounded-lg border border-white/10 mr-1"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Về Trang Bán Vé</span>
+              <span className="hidden sm:inline">Trang Bán Vé</span>
             </Link>
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-accent-red to-amber-500 flex items-center justify-center shadow-lg shadow-accent-red/20">
-              <Building2 className="w-4 h-4 text-white" />
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#e71a0f] to-amber-500 flex items-center justify-center shadow-lg shadow-[#e71a0f]/20">
+              <Building2 className="w-5 h-5 text-white" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-extrabold text-sm tracking-wide text-white">BETA CINEMAS XUÂN THỦY</span>
-                <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-accent-red/20 text-accent-red border border-accent-red/30">
+                <span className="font-black text-sm tracking-wide text-white uppercase">CINEMAX CULTUREPLEX</span>
+                <span className="px-2 py-0.5 text-[10px] font-black rounded-full bg-[#e71a0f]/20 text-[#ff4d42] border border-[#e71a0f]/30">
                   ADMIN PORTAL
                 </span>
               </div>
-              <p className="text-[11px] text-neutral-400">Tầng 4, Tòa nhà HITC, 239 Xuân Thủy, Cầu Giấy, Hà Nội</p>
+              <p className="text-[11px] text-neutral-400 hidden sm:block">Trung Tâm Điều Hành Toàn Diện Rạp Chiếu Phim</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <button
               onClick={handleSyncBeta}
               disabled={isSyncing}
-              className="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-accent-red/90 hover:bg-accent-red text-white transition-all shadow-md shadow-accent-red/20 disabled:opacity-50"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold bg-[#e71a0f] hover:bg-[#c81007] text-white transition-all shadow-md shadow-[#e71a0f]/20 disabled:opacity-50"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? "animate-spin" : ""}`} />
-              <span>{isSyncing ? "Đang Cập Nhật..." : "Làm Mới Dữ Liệu Mô Phỏng"}</span>
+              <span className="hidden md:inline">{isSyncing ? "Đang Cập Nhật..." : "Làm Mới Dữ Liệu"}</span>
             </button>
             <Link
-              href="/dashboard"
-              className="text-xs px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-300 transition-colors"
+              href="/staff"
+              className="text-xs px-3 py-1.5 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/30 text-sky-400 transition-colors font-bold"
             >
-              Xem Dashboard Khách
+              Cổng Nhân Viên
+            </Link>
+            <Link
+              href="/dashboard"
+              className="text-xs px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-300 transition-colors hidden sm:block"
+            >
+              Khách Hàng
             </Link>
             <button
               onClick={handleLogout}
-              className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-red-950/40 hover:bg-red-950/80 border border-red-800/60 text-red-300 transition-colors"
+              className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-red-950/40 hover:bg-red-950/80 border border-red-800/60 text-red-300 transition-colors font-semibold"
               title="Đăng xuất quản trị"
             >
               <LogOut className="w-3.5 h-3.5" />
-              <span>Đăng Xuất</span>
+              <span className="hidden sm:inline">Đăng Xuất</span>
             </button>
           </div>
         </div>
@@ -283,43 +289,43 @@ export default function AdminDashboardPage() {
 
         {/* 4 Cards Thống Kê Tổng Quan */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="p-4 rounded-xl bg-[#14151B] border border-white/10 shadow-lg">
+          <div className="p-4 rounded-xl bg-[#13151f] border border-white/10 shadow-lg hover:border-amber-500/30 transition-all">
             <div className="flex items-center justify-between text-neutral-400 mb-2">
-              <span className="text-xs font-medium">Doanh thu hôm nay</span>
+              <span className="text-xs font-bold uppercase tracking-wider">Doanh thu hôm nay</span>
               <DollarSign className="w-4 h-4 text-amber-400" />
             </div>
             <div className="text-2xl font-black text-white">{formatVND(stats.todayRevenue)}</div>
-            <div className="flex items-center gap-1 text-[11px] text-emerald-400 mt-2">
+            <div className="flex items-center gap-1 text-[11px] text-emerald-400 mt-2 font-semibold">
               <TrendingUp className="w-3 h-3" />
               <span>+18.5% so với hôm qua</span>
             </div>
           </div>
 
-          <div className="p-4 rounded-xl bg-[#14151B] border border-white/10 shadow-lg">
+          <div className="p-4 rounded-xl bg-[#13151f] border border-white/10 shadow-lg hover:border-[#e71a0f]/40 transition-all">
             <div className="flex items-center justify-between text-neutral-400 mb-2">
-              <span className="text-xs font-medium">Vé đã bán (HITC)</span>
-              <Ticket className="w-4 h-4 text-accent-red" />
+              <span className="text-xs font-bold uppercase tracking-wider">Vé đã bán ra</span>
+              <Ticket className="w-4 h-4 text-[#e71a0f]" />
             </div>
             <div className="text-2xl font-black text-white">{stats.ticketsSold} <span className="text-xs font-normal text-neutral-400">vé</span></div>
-            <div className="text-[11px] text-neutral-400 mt-2">Hầu hết là suất 19:15 & 21:30</div>
+            <div className="text-[11px] text-neutral-400 mt-2">Cao điểm: Suất 19:15 & 21:30</div>
           </div>
 
-          <div className="p-4 rounded-xl bg-[#14151B] border border-white/10 shadow-lg">
+          <div className="p-4 rounded-xl bg-[#13151f] border border-white/10 shadow-lg hover:border-cyan-500/30 transition-all">
             <div className="flex items-center justify-between text-neutral-400 mb-2">
-              <span className="text-xs font-medium">Suất chiếu hoạt động</span>
+              <span className="text-xs font-bold uppercase tracking-wider">Suất chiếu hôm nay</span>
               <Calendar className="w-4 h-4 text-cyan-400" />
             </div>
             <div className="text-2xl font-black text-white">{stats.activeShowtimes} <span className="text-xs font-normal text-neutral-400">suất</span></div>
-            <div className="text-[11px] text-cyan-400/80 mt-2">Phòng Beta 01, 02, 03</div>
+            <div className="text-[11px] text-cyan-400/90 mt-2">Phòng Beta 01, 02, 03</div>
           </div>
 
-          <div className="p-4 rounded-xl bg-[#14151B] border border-white/10 shadow-lg">
+          <div className="p-4 rounded-xl bg-[#13151f] border border-white/10 shadow-lg hover:border-emerald-500/30 transition-all">
             <div className="flex items-center justify-between text-neutral-400 mb-2">
-              <span className="text-xs font-medium">Tỷ lệ lấp đầy ghế</span>
+              <span className="text-xs font-bold uppercase tracking-wider">Tỷ lệ lấp đầy ghế</span>
               <Users className="w-4 h-4 text-emerald-400" />
             </div>
             <div className="text-2xl font-black text-white">{stats.occupancyRate}</div>
-            <div className="text-[11px] text-emerald-400 mt-2">Tập trung khu vực ghế VIP</div>
+            <div className="text-[11px] text-emerald-400 mt-2">Tập trung hàng VIP & Sweetbox</div>
           </div>
         </div>
 
@@ -774,31 +780,126 @@ export default function AdminDashboardPage() {
 
         {/* TAB 3: QUẢN LÝ PHIM */}
         {activeTab === "movies" && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="font-bold text-base text-white">Danh Sách Phim Chiếu Rạp ({MOCK_MOVIES.length})</h3>
-              <div className="text-xs text-neutral-400">Tất cả phim đều có mặt tại Beta Xuân Thủy</div>
+          <div className="space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h3 className="font-black text-base text-white flex items-center gap-2">
+                  <Film className="w-5 h-5 text-[#e71a0f]" />
+                  <span>Kho Phim Chiếu Rạp & Quản Lý Bản Quyền ({MOCK_MOVIES.length} phim)</span>
+                </h3>
+                <p className="text-xs text-neutral-400 mt-0.5">
+                  Quản lý phim đang chiếu, sắp chiếu và điều phối định dạng rạp (IMAX Laser, ScreenX, 4DX, 2D)
+                </p>
+              </div>
+
+              <div className="relative w-full sm:w-72">
+                <Search className="w-4 h-4 text-neutral-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Tìm phim theo tên hoặc thể loại..."
+                  className="w-full pl-9 pr-3 py-2 rounded-xl bg-black/40 border border-white/10 text-xs text-white placeholder:text-neutral-500 focus:outline-none focus:border-[#e71a0f]"
+                />
+              </div>
             </div>
 
-            <div className="space-y-2.5">
-              {MOCK_MOVIES.map((movie) => (
-                <div key={movie.id} className="p-3.5 rounded-xl bg-[#14151B] border border-white/10 flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <img src={movie.posterPath} alt={movie.title} className="w-10 h-14 object-cover rounded-lg shrink-0" />
-                    <div>
-                      <h4 className="font-bold text-sm text-white">{movie.title}</h4>
-                      <div className="text-xs text-neutral-400 mt-0.5">
-                        {movie.durationMinutes} phút • {movie.genres.join(", ")} • <span className="text-amber-400">IMDb {movie.voteAverage}</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {MOCK_MOVIES.filter((m) => {
+                if (!searchQuery.trim()) return true;
+                const q = searchQuery.toLowerCase();
+                return (
+                  m.title.toLowerCase().includes(q) ||
+                  (m.originalTitle && m.originalTitle.toLowerCase().includes(q)) ||
+                  m.genres.some((g) => g.toLowerCase().includes(q))
+                );
+              }).map((movie) => {
+                const ageColor =
+                  movie.ageRating === "P"
+                    ? "bg-emerald-500 text-white"
+                    : movie.ageRating === "T13"
+                    ? "bg-amber-500 text-white"
+                    : movie.ageRating === "T16"
+                    ? "bg-orange-500 text-white"
+                    : movie.ageRating === "T18"
+                    ? "bg-red-600 text-white"
+                    : "bg-blue-500 text-white";
+
+                return (
+                  <div
+                    key={movie.id}
+                    className="p-4 rounded-2xl bg-[#13151f] border border-white/10 hover:border-white/20 transition-all flex flex-col justify-between shadow-lg group"
+                  >
+                    <div className="flex gap-4">
+                      {/* Poster với Age Badge */}
+                      <div className="relative w-20 h-28 shrink-0 rounded-xl overflow-hidden bg-neutral-900 border border-white/10 shadow-md">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={movie.posterPath}
+                          alt={movie.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                        <span
+                          className={`absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[9px] font-black uppercase shadow-md ${ageColor}`}
+                        >
+                          {movie.ageRating}
+                        </span>
+                      </div>
+
+                      {/* Thông tin phim */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h4 className="font-extrabold text-sm text-white truncate">{movie.title}</h4>
+                          <span className="text-[10px] text-amber-400 font-bold flex items-center gap-0.5">
+                            <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                            {movie.voteAverage}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-neutral-400 italic line-clamp-1 mt-0.5">
+                          {movie.originalTitle}
+                        </p>
+
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {movie.genres.map((g, i) => (
+                            <span
+                              key={i}
+                              className="px-2 py-0.5 rounded text-[9px] font-semibold bg-white/5 text-neutral-300 border border-white/5"
+                            >
+                              {g}
+                            </span>
+                          ))}
+                          <span className="px-2 py-0.5 rounded text-[9px] font-semibold bg-white/5 text-neutral-400">
+                            {movie.durationMinutes} phút
+                          </span>
+                        </div>
+
+                        <p className="text-[11px] text-neutral-400 mt-2 line-clamp-2 leading-relaxed">
+                          {movie.overview}
+                        </p>
                       </div>
                     </div>
+
+                    <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between text-xs">
+                      <span className="text-[11px] font-bold text-emerald-400 flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                        Đang Khai Thác
+                      </span>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setNewMovieId(String(movie.id));
+                          setActiveTab("showtimes");
+                        }}
+                        className="px-3 py-1.5 rounded-lg bg-[#e71a0f]/20 hover:bg-[#e71a0f] text-[#ff6b62] hover:text-white border border-[#e71a0f]/40 text-xs font-bold transition-all flex items-center gap-1"
+                      >
+                        <Calendar className="w-3.5 h-3.5" />
+                        <span>Xếp Lịch Suất Chiếu</span>
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">
-                      Đang Chiếu
-                    </span>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -848,13 +949,20 @@ export default function AdminDashboardPage() {
               </div>
             </div>
 
-            <div className="pt-3">
+            <div className="pt-3 flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Link
+                href="/staff"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-bold transition-all border border-white/15 group"
+              >
+                <Users className="w-4 h-4 text-sky-400" />
+                <span>Cổng Vận Hành Nhân Viên (/staff)</span>
+              </Link>
               <Link
                 href="/staff/scanner"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-accent-red hover:bg-accent-red/90 text-white text-xs font-bold transition-all shadow-xl shadow-accent-red/25 group"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#e71a0f] hover:bg-[#c81007] text-white text-xs font-black transition-all shadow-xl shadow-[#e71a0f]/25 group"
               >
                 <QrCode className="w-4 h-4" />
-                <span>Truy Cập Ứng Dụng Soát Vé Chuyên Dụng (/staff/scanner)</span>
+                <span>Máy Quét Camera QR (/staff/scanner)</span>
                 <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
               </Link>
             </div>

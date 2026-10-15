@@ -38,16 +38,16 @@ interface PromoItem {
 
 const PROMO_DATA: PromoItem[] = [
   {
-    id: "cgv-happy-wednesday",
-    badge: "CGV Happy Wednesday",
+    id: "cinemax-happy-wednesday",
+    badge: "CineMax Happy Wednesday",
     badgeBg: "bg-rose-50",
     badgeText: "text-[#e71a0f]",
     badgeBorder: "border-rose-200",
     title: "Thứ Tư Vui Vẻ - Đồng Giá Vé 45.000đ",
-    shortDesc: "Chương trình ưu đãi truyền thống được yêu thích nhất tại CGV Cinemas. Đồng giá 45.000đ mọi suất chiếu 2D và miễn phụ thu ghế VIP.",
+    shortDesc: "Chương trình ưu đãi truyền thống được yêu thích nhất tại CineMax Cinemas. Đồng giá 45.000đ mọi suất chiếu 2D và miễn phụ thu ghế VIP.",
     validity: "Thứ 4 hàng tuần • Đến hết 31/12/2026",
     discountHighlight: "Đồng giá vé 45.000đ (Miễn phụ thu ghế VIP)",
-    promoCode: "CGVHAPPY45",
+    promoCode: "CINEMAXHAPPY45",
     conditions: [
       "Áp dụng vào tất cả các ngày Thứ Tư hàng tuần cho mọi suất chiếu phim 2D.",
       "Miễn hoàn toàn phụ thu ghế VIP (Ghế VIP đồng giá 45.000đ).",
@@ -58,8 +58,8 @@ const PROMO_DATA: PromoItem[] = [
     applicableNote: "Mẹo: Bạn có thể chọn suất chiếu Thứ 4 bất kỳ để hệ thống tự động áp dụng giá vé 45k."
   },
   {
-    id: "cgv-u22-pass",
-    badge: "CGV U22 Pass",
+    id: "cinemax-u22-pass",
+    badge: "CineMax U22 Pass",
     badgeBg: "bg-amber-50",
     badgeText: "text-amber-700",
     badgeBorder: "border-amber-200",
@@ -67,7 +67,7 @@ const PROMO_DATA: PromoItem[] = [
     shortDesc: "Dành riêng cho khán giả từ 12 đến 22 tuổi hoặc học sinh - sinh viên. Xem phim thả ga cả tuần với mức giá siêu ưu đãi.",
     validity: "Thứ 2 đến Thứ 6 • Đến hết 31/12/2026",
     discountHighlight: "Giá vé 45k (trước 17h) / 50k (sau 17h) + Giảm 20% Combo",
-    promoCode: "CGVU22",
+    promoCode: "CINEMAXU22",
     conditions: [
       "Áp dụng từ Thứ Hai đến Thứ Sáu cho đối tượng Học sinh, Sinh viên hoặc dưới 22 tuổi.",
       "Giá vé 45.000đ đối với các suất chiếu bắt đầu trước 17:00.",
@@ -75,26 +75,26 @@ const PROMO_DATA: PromoItem[] = [
       "Giảm thêm 20% khi mua kèm Combo Bắp Nước Solo (1 Bắp + 1 Nước).",
       "Vui lòng xuất trình thẻ HSSV hoặc CCCD khi nhân viên soát vé vào phòng chiếu."
     ],
-    applicableNote: "Áp dụng cho mọi phim 2D đang chiếu tại cụm rạp CGV."
+    applicableNote: "Áp dụng cho mọi phim 2D đang chiếu tại cụm rạp CineMax."
   },
   {
-    id: "cgv-anime-festival",
+    id: "cinemax-anime-festival",
     badge: "Lễ Hội Hoạt Hình",
     badgeBg: "bg-emerald-50",
     badgeText: "text-emerald-700",
     badgeBorder: "border-emerald-200",
-    title: "Đại Tiệc Hoạt Hình CGV - Tặng Quà Độc Quyền",
+    title: "Đại Tiệc Hoạt Hình CineMax - Tặng Quà Độc Quyền",
     shortDesc: "Thưởng thức các siêu phẩm hoạt hình Doraemon, Conan, Kung Fu Panda 4 và nhận thẻ sưu tầm hologram cùng ưu đãi bình nước Minions.",
     validity: "Tất cả các ngày trong tuần • Số lượng có hạn",
     discountHighlight: "Tặng thẻ Hologram + Giảm 30% Ly nước nhân vật",
-    promoCode: "CGVANIME",
+    promoCode: "CINEMAXANIME",
     conditions: [
       "Áp dụng khi đặt vé xem các bộ phim thuộc thể loại Hoạt hình.",
       "Nhận thẻ sưu tầm nhân vật bản quyền tại quầy vé trước giờ chiếu.",
       "Ưu đãi giảm giá trực tiếp combo ly nhân vật Minions / Doraemon.",
       "Áp dụng cho cả vé trẻ em và vé người lớn."
     ],
-    applicableNote: "Chương trình áp dụng tại tất cả các cụm rạp CGV trên toàn quốc."
+    applicableNote: "Chương trình áp dụng tại tất cả các cụm rạp CineMax trên toàn quốc."
   },
   {
     id: "sweetbox-couple",
@@ -508,11 +508,11 @@ export default function HomePage() {
 
                 <div className="flex items-center gap-2 text-xs text-neutral-500">
                   <span className="w-2 h-2 rounded-full bg-[#e71a0f] animate-ping" />
-                  <span>Cập nhật trực tiếp rạp CGV Cinemas</span>
+                  <span>Cập nhật trực tiếp hệ thống CineMax</span>
                 </div>
               </div>
 
-              {/* Lưới phim theo Tab đang chọn với card chuẩn CGV */}
+              {/* Lưới phim theo Tab đang chọn với card chuẩn cinema */}
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6 mt-8">
                 {(activeCommercialTab === "now_playing"
                   ? nowPlayingMovies
@@ -530,7 +530,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* CGV SPECIAL CINEMA - RẠP ĐẶC BIỆT ĐỘC QUYỀN CHUẨN CGV VIETNAM */}
+            {/* CINEMAX SPECIAL CINEMA - RẠP ĐẶC BIỆT ĐỘC QUYỀN */}
             <div id="special-cinema-section" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 scroll-mt-24">
               <div className="flex flex-col items-center justify-center mb-8">
                 <div className="flex items-center gap-3 sm:gap-6 w-full max-w-2xl justify-center">
@@ -538,7 +538,7 @@ export default function HomePage() {
                   <div className="flex items-center gap-2 px-5 py-1.5 rounded-full bg-[#1c1c1c] text-white shadow-lg border border-[#e71a0f]/30">
                     <span className="text-[#e71a0f] text-sm">✦</span>
                     <h2 className="text-xs sm:text-sm font-black tracking-widest uppercase text-white">
-                      CGV SPECIAL CINEMA
+                      CINEMAX SPECIAL CINEMA
                     </h2>
                     <span className="text-[#e71a0f] text-sm">✦</span>
                   </div>
@@ -709,7 +709,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* 3. Bảng Lịch Chiếu Trực Tiếp Theo Cụm Rạp CGV Cinemas */}
+            {/* 3. Bảng Lịch Chiếu Trực Tiếp Theo Cụm Rạp CineMax */}
             <div id="matrix-section" className="scroll-mt-24">
               <CinemaShowtimeMatrix
                 movies={movies}
@@ -728,7 +728,7 @@ export default function HomePage() {
                     Hôm nay tâm trạng bạn thế nào?
                   </h3>
                 </div>
-                <span className="text-[11px] text-neutral-500 font-mono">Gợi ý phim rạp CGV</span>
+                <span className="text-[11px] text-neutral-500 font-mono">Gợi ý phim rạp CineMax</span>
               </div>
 
               <div className="flex items-center gap-2.5 overflow-x-auto pb-2 scrollbar-none">
@@ -775,7 +775,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Banner Quyền Lợi Thành Viên & Trợ Lý CGV */}
+            {/* Banner Quyền Lợi Thành Viên & Trợ Lý CineMax */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
               <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-red-50 via-rose-50 to-amber-50 border border-[#e5e0d8] flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
                 <div className="flex items-center gap-3">
@@ -784,13 +784,13 @@ export default function HomePage() {
                   </div>
                   <div>
                     <h3 className="font-extrabold text-sm sm:text-base text-neutral-900 flex items-center gap-2">
-                      <span>Trải Nghiệm Điện Ảnh Đỉnh Cao Tại CGV Cinemas</span>
+                      <span>Trải Nghiệm Điện Ảnh Đỉnh Cao Tại CineMax</span>
                       <span className="text-[10px] px-2 py-0.5 rounded font-bold bg-rose-100 text-[#e71a0f] border border-rose-200">
-                        CGV Cultureplex
+                        CineMax Cultureplex
                       </span>
                     </h3>
                     <p className="text-xs text-neutral-600 mt-0.5">
-                      Cập nhật lịch chiếu sớm, tích điểm thành viên CGV Member và nhận tư vấn chọn suất chiếu, ghế đẹp chuẩn xác.
+                      Cập nhật lịch chiếu sớm, tích điểm thành viên CineMax Member và nhận tư vấn chọn suất chiếu, ghế đẹp chuẩn xác.
                     </p>
                   </div>
                 </div>
@@ -812,7 +812,7 @@ export default function HomePage() {
                 <div>
                   <span className="text-xs text-[#e71a0f] font-bold uppercase tracking-wider block">Bảng Giá Niêm Yết Toàn Hệ Thống</span>
                   <h3 className="text-2xl sm:text-3xl font-black text-neutral-900 tracking-tight flex items-center gap-2 mt-0.5">
-                    <span>BẢNG GIÁ VÉ & PHỤ THU RẠP CHIẾU CGV</span>
+                    <span>BẢNG GIÁ VÉ & PHỤ THU RẠP CHIẾU CINEMAX</span>
                     <Ticket className="w-6 h-6 text-[#e71a0f]" />
                   </h3>
                   <p className="text-xs sm:text-sm text-neutral-600 mt-1 max-w-2xl">

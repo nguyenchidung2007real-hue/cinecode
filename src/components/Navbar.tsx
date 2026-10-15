@@ -2,40 +2,30 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Film, Search, MapPin, Ticket, User, ShieldCheck, QrCode, Phone, ChevronDown, Bot } from "lucide-react";
+import { Film, Search, Ticket, User, Sparkles, MapPin, Compass, Bot, Phone } from "lucide-react";
 
 interface NavbarProps {
-  onSearchChange: (query: string) => void;
-  onOpenAiChat: () => void;
+  onOpenSearch: () => void;
   onOpenMyTickets: () => void;
-  onOpenSearch?: () => void;
   ticketCount: number;
+  onOpenAiChat: () => void;
+  customerInfo?: { name: string; phone: string } | null;
   selectedCity: string;
   onCityChange: (city: string) => void;
+  onSearchChange: (query: string) => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
-  onSearchChange,
-  onOpenAiChat,
-  onOpenMyTickets,
   onOpenSearch,
+  onOpenMyTickets,
   ticketCount,
+  onOpenAiChat,
+  customerInfo,
   selectedCity,
   onCityChange,
+  onSearchChange,
 }) => {
   const [searchValue, setSearchValue] = useState("");
-
-  const [customerInfo, setCustomerInfo] = useState<{ name: string; phone: string } | null>(null);
-
-  React.useEffect(() => {
-    try {
-      const phone = localStorage.getItem("cinemax_customer_phone");
-      const name = localStorage.getItem("cinemax_customer_name");
-      if (phone) {
-        setCustomerInfo({ phone, name: name || phone });
-      }
-    } catch {}
-  }, []);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
@@ -45,16 +35,16 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <header className="sticky top-0 z-40 w-full transition-all shadow-sm">
-      {/* 1. Top Utility Bar - CGV Dark Cinema Strip */}
+      {/* 1. Top Utility Bar - Dark Cinema Strip */}
       <div className="w-full bg-[#1c1c1c] text-neutral-300 text-[11px] py-1.5 px-4 sm:px-6 lg:px-8 border-b border-neutral-800 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <span className="flex items-center gap-1.5 text-neutral-300 font-medium">
             <Phone className="w-3.5 h-3.5 text-[#e71a0f]" />
-            Hotline CGV: <strong className="text-white">1900 6017</strong> (8:00 - 22:00)
+            Hotline CineMax: <strong className="text-white">1900 6017</strong> (8:00 - 22:00)
           </span>
           <span className="hidden md:inline text-neutral-600">|</span>
           <span className="hidden md:inline text-neutral-300">
-            Rạp trọng điểm: <strong className="text-[#e71a0f]">CGV Vincom Center Bà Triệu</strong> & <strong className="text-[#e71a0f]">CGV Landmark 81</strong>
+            Rạp trọng điểm: <strong className="text-[#e71a0f]">CineMax Bà Triệu</strong> & <strong className="text-[#e71a0f]">CineMax Landmark 81</strong>
           </span>
         </div>
 
@@ -71,7 +61,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             className="flex items-center gap-1.5 text-neutral-300 hover:text-[#e71a0f] font-medium transition-colors"
           >
             <User className="w-3.5 h-3.5 text-[#e71a0f]" />
-            <span>{customerInfo ? `Thành viên: ${customerInfo.name}` : "Đăng ký / Đăng nhập CGV"}</span>
+            <span>{customerInfo ? `Thành viên: ${customerInfo.name}` : "Đăng ký / Đăng nhập CineMax"}</span>
           </Link>
           <span className="text-neutral-600">•</span>
           <div className="flex items-center gap-1 text-neutral-300 cursor-pointer hover:text-[#e71a0f]">
@@ -80,30 +70,31 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
       </div>
 
-      {/* 2. Main Navigation Bar - CGV Vintage Cultureplex Style */}
+      {/* 2. Main Navigation Bar - CineMax Cultureplex Style */}
       <div className="w-full bg-[#fdfcf0]/95 backdrop-blur-md border-b border-[#e5e0d8] shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between gap-4">
           
-          {/* Logo CJ CGV VIETNAM */}
+          {/* Logo CINEMAX */}
           <div
-            className="flex items-center gap-3 cursor-pointer select-none group"
+            className="flex items-center gap-2.5 cursor-pointer select-none group"
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
           >
-            <div className="flex items-baseline gap-1">
-              <span className="font-black text-2xl tracking-tighter text-[#1c1c1c]">CJ</span>
-              <span className="font-black text-3xl tracking-tight text-[#e71a0f] drop-shadow-sm group-hover:scale-105 transition-transform">CGV</span>
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#e71a0f] to-amber-500 flex items-center justify-center text-white shadow-md shadow-[#e71a0f]/20 group-hover:scale-105 transition-transform">
+              <Film className="w-5 h-5 text-white" />
             </div>
-            <div className="border-l-2 border-[#e71a0f] pl-2.5 text-left hidden sm:block">
-              <span className="block text-[11px] font-black tracking-widest text-[#1c1c1c] uppercase leading-none">
-                CULTUREPLEX
-              </span>
+            <div className="text-left">
+              <div className="flex items-center gap-1 leading-none">
+                <span className="font-black text-2xl tracking-tighter text-[#1c1c1c]">CINE</span>
+                <span className="font-black text-2xl tracking-tight text-[#e71a0f]">MAX</span>
+                <span className="text-[10px] font-black text-white bg-[#e71a0f] px-1.5 py-0.5 rounded ml-0.5">AI</span>
+              </div>
               <span className="block text-[8px] text-neutral-500 font-bold uppercase tracking-wider mt-0.5">
-                Vượt xa điện ảnh
+                CULTUREPLEX • ĐIỆN ẢNH VƯỢT TRỘI
               </span>
             </div>
           </div>
 
-          {/* Chọn Cụm Rạp CGV */}
+          {/* Chọn Cụm Rạp CineMax */}
           <div className="hidden lg:flex items-center gap-2 bg-white border border-[#e5e0d8] px-3 py-1.5 rounded-xl text-xs text-slate-800 shadow-sm">
             <MapPin className="w-3.5 h-3.5 text-[#e71a0f]" />
             <select
@@ -111,15 +102,15 @@ export const Navbar: React.FC<NavbarProps> = ({
               onChange={(e) => onCityChange(e.target.value)}
               className="bg-transparent border-none text-slate-800 font-bold focus:outline-none cursor-pointer"
             >
-              <option value="Tất cả" className="bg-white text-slate-900">📍 Tất cả cụm rạp CGV</option>
-              <option value="Hà Nội" className="bg-white text-slate-900">📍 CGV Vincom Bà Triệu (Hà Nội)</option>
-              <option value="TP. Hồ Chí Minh" className="bg-white text-slate-900">📍 CGV Landmark 81 (TP. HCM)</option>
-              <option value="Hà Nội" className="bg-white text-slate-900">📍 CGV Metropolis Liễu Giai (Hà Nội)</option>
-              <option value="TP. Hồ Chí Minh" className="bg-white text-slate-900">📍 CGV Sư Vạn Hạnh (TP. HCM)</option>
+              <option value="Tất cả" className="bg-white text-slate-900">📍 Tất cả cụm rạp CineMax</option>
+              <option value="Hà Nội" className="bg-white text-slate-900">📍 CineMax Vincom Bà Triệu (Hà Nội)</option>
+              <option value="TP. Hồ Chí Minh" className="bg-white text-slate-900">📍 CineMax Landmark 81 (TP. HCM)</option>
+              <option value="Hà Nội" className="bg-white text-slate-900">📍 CineMax Metropolis (Hà Nội)</option>
+              <option value="TP. Hồ Chí Minh" className="bg-white text-slate-900">📍 CineMax Sư Vạn Hạnh (TP. HCM)</option>
             </select>
           </div>
 
-          {/* Menu Điều Hướng Rạp CGV Chuẩn CGV.VN */}
+          {/* Menu Điều Hướng Rạp CineMax */}
           <nav className="hidden xl:flex items-center gap-7 text-xs font-black text-slate-800 tracking-wider uppercase">
             <a
               href="#commercial-tabs"
@@ -131,7 +122,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               href="#matrix-section"
               className="hover:text-[#e71a0f] transition-colors py-1 border-b-2 border-transparent hover:border-[#e71a0f]"
             >
-              Rạp CGV
+              Lịch Chiếu
             </a>
             <a
               href="#special-cinema-section"
@@ -149,13 +140,13 @@ export const Navbar: React.FC<NavbarProps> = ({
               href="#promo-section"
               className="text-[#e71a0f] hover:text-[#c81007] transition-colors py-1 border-b-2 border-transparent hover:border-[#e71a0f]"
             >
-              Cultureplex & Combo
+              Ưu Đãi & Combo
             </a>
           </nav>
 
           {/* Search Spotlight & Actions */}
           <div className="flex items-center gap-2.5 sm:gap-3">
-            {/* Thanh tìm kiếm AI Spotlight */}
+            {/* Thanh tìm kiếm Spotlight */}
             <div className="w-40 sm:w-56 hidden md:block">
               <div
                 onClick={onOpenSearch}
@@ -163,7 +154,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               >
                 <Search className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#e71a0f] absolute left-2.5 top-1/2 -translate-y-1/2 transition-colors" />
                 <span className="truncate text-[11px] text-slate-600 group-hover:text-slate-900">
-                  Tìm phim, rạp CGV...
+                  Tìm phim, rạp CineMax...
                 </span>
                 <kbd className="inline-flex items-center text-[9px] font-mono font-bold text-slate-500 bg-slate-200/80 border border-slate-300 px-1 py-0.5 rounded">
                   Ctrl K
@@ -198,7 +189,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               onClick={onOpenAiChat}
               aria-label="Trợ lý"
-              title="Trợ lý"
+              title="Trợ lý đặt vé"
               className="flex items-center justify-center w-9 h-9 rounded-full bg-[#e71a0f] hover:bg-[#c81007] text-white shadow-md shadow-red-600/30 transition-all transform hover:scale-105 active:scale-95 cursor-pointer border border-white/20"
             >
               <Bot className="w-5 h-5 text-white" />

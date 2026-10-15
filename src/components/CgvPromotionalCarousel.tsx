@@ -48,16 +48,16 @@ export const CgvPromotionalCarousel: React.FC<CgvPromotionalCarouselProps> = ({
       style={{ minHeight: "440px" }}
     >
       {/* ============================================================ */}
-      {/* SLIDE 1: FAN C - CHÍNH SÁCH ĐỘC QUYỀN (CHÍNH XÁC NHƯ ẢNH MẪU CGV) */}
+      {/* SLIDE 1: CINEFAN - CHÍNH SÁCH ĐỘC QUYỀN THÀNH VIÊN CINEMAX */}
       {/* ============================================================ */}
       {currentSlide === 0 && (
         <div className="relative w-full h-[440px] sm:h-[460px] bg-gradient-to-br from-[#4b1d6f] via-[#c22055] to-[#f7941d] p-4 sm:p-7 flex flex-col justify-between overflow-hidden animate-in fade-in duration-500 text-white">
-          {/* Logo CGV ở góc trên bên trái */}
+          {/* Logo CineMax ở góc trên bên trái */}
           <div className="relative z-10 flex items-center justify-between">
-            <div className="flex items-center gap-1.5">
-              <span className="font-black text-2xl tracking-tighter text-white">CJ</span>
-              <span className="font-black text-3xl tracking-tight text-white drop-shadow">CGV</span>
+            <div className="flex items-center gap-2">
+              <span className="font-black text-2xl sm:text-3xl tracking-tight text-white drop-shadow">CINEMAX</span>
               <span className="text-amber-300 text-xs ml-0.5">✦</span>
+              <span className="text-[10px] font-bold text-amber-200 uppercase tracking-widest hidden sm:inline">CULTUREPLEX</span>
             </div>
             <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-white/20 backdrop-blur-md text-white border border-white/30 uppercase tracking-wider">
               Ưu Đãi Độc Quyền 2026
@@ -67,11 +67,11 @@ export const CgvPromotionalCarousel: React.FC<CgvPromotionalCarouselProps> = ({
           {/* Nội dung trung tâm: 3 khối (Card Trái - Phone Marquee - Card Phải) */}
           <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-3 sm:gap-4 items-center my-auto">
             
-            {/* Khối Trái: CGV BIRTHDAY COMBO */}
+            {/* Khối Trái: CINEMAX BIRTHDAY COMBO */}
             <div className="hidden md:flex md:col-span-3 bg-white/95 text-neutral-800 rounded-2xl p-3.5 shadow-xl border border-white/60 flex-col justify-center transform hover:scale-105 transition-all">
               <div className="text-center mb-2">
                 <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-black bg-[#e71a0f] text-white uppercase tracking-wider">
-                  CGV BIRTHDAY COMBO
+                  CINEMAX BIRTHDAY COMBO
                 </span>
               </div>
               <ul className="space-y-1.5 text-[11px] font-bold text-neutral-700">
@@ -86,15 +86,15 @@ export const CgvPromotionalCarousel: React.FC<CgvPromotionalCarouselProps> = ({
               </ul>
             </div>
 
-            {/* Khối Giữa: FAN C VÀ KHUNG VÀNG MARQUEE (TÂM ĐIỂM ẢNH MẪU) */}
+            {/* Khối Giữa: CINEFAN VÀ KHUNG VÀNG MARQUEE (TÂM ĐIỂM ƯU ĐÃI) */}
             <div className="col-span-1 md:col-span-6 flex flex-col items-center justify-center text-center">
-              {/* Logo Fan C cách điệu */}
+              {/* Logo CineFan cách điệu */}
               <div className="flex items-center gap-1 drop-shadow-lg mb-1">
                 <span className="text-4xl sm:text-6xl font-black tracking-tight text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.4)]">
-                  Fan
+                  Cine
                 </span>
                 <span className="text-5xl sm:text-7xl font-black text-rose-300 drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)]">
-                  C
+                  Fan
                 </span>
                 <Heart className="w-6 h-6 sm:w-8 sm:h-8 text-rose-300 fill-current animate-pulse ml-1" />
               </div>
@@ -143,7 +143,7 @@ export const CgvPromotionalCarousel: React.FC<CgvPromotionalCarouselProps> = ({
             </div>
           </div>
 
-          {/* Họa tiết trang trí nổi (Popcorn, Soda, Confetti) */}
+          {/* Họa tiết trang trí nổi */}
           <div className="absolute left-6 bottom-4 opacity-40 md:opacity-80 pointer-events-none flex items-center gap-2">
             <Popcorn className="w-12 h-12 text-amber-300 drop-shadow" />
             <div className="w-8 h-8 rounded-full bg-rose-500/50 blur-md" />
@@ -155,14 +155,14 @@ export const CgvPromotionalCarousel: React.FC<CgvPromotionalCarouselProps> = ({
       )}
 
       {/* ============================================================ */}
-      {/* SLIDE 2: CGV HAPPY WEDNESDAY - THỨ 4 VUI VẺ 45.000đ */}
+      {/* SLIDE 2: CINEMAX HAPPY WEDNESDAY - THỨ 4 VUI VẺ 45.000đ */}
       {/* ============================================================ */}
       {currentSlide === 1 && (
         <div className="relative w-full h-[440px] sm:h-[460px] bg-gradient-to-r from-[#e71a0f] via-[#b71007] to-[#800700] p-6 sm:p-10 flex flex-col justify-between overflow-hidden animate-in fade-in duration-500 text-white">
           <div className="relative z-10 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="font-black text-2xl tracking-tighter text-white">CJ</span>
-              <span className="font-black text-3xl tracking-tight text-amber-300">CGV</span>
+              <span className="font-black text-2xl tracking-tight text-white drop-shadow">CINEMAX</span>
+              <span className="font-black text-2xl tracking-tight text-amber-300">HAPPY DAY</span>
             </div>
             <span className="px-3 py-1 rounded-full text-xs font-black bg-amber-400 text-neutral-900 uppercase tracking-wider">
               Thứ 4 Hàng Tuần
@@ -174,7 +174,7 @@ export const CgvPromotionalCarousel: React.FC<CgvPromotionalCarouselProps> = ({
               Chương Trình Ưu Đãi Truyền Thống Được Yêu Thích Nhất
             </span>
             <h2 className="text-3xl sm:text-5xl font-black text-white leading-tight uppercase drop-shadow-md">
-              CGV HAPPY WEDNESDAY
+              CINEMAX HAPPY WEDNESDAY
             </h2>
             <div className="inline-block bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4">
               <div className="flex items-baseline gap-2">
@@ -189,7 +189,7 @@ export const CgvPromotionalCarousel: React.FC<CgvPromotionalCarouselProps> = ({
             <div className="pt-2">
               <a
                 href="#commercial-tabs"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-neutral-900 font-black text-xs uppercase tracking-wider shadow-lg transition-transform hover:scale-105"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-neutral-900 font-black text-xs uppercase tracking-wider shadow-lg transition-transform hover:scale-105 cursor-pointer"
               >
                 <span>Đặt vé thứ 4 ngay</span>
                 <ArrowRight className="w-4 h-4" />
@@ -206,8 +206,8 @@ export const CgvPromotionalCarousel: React.FC<CgvPromotionalCarouselProps> = ({
         <div className="relative w-full h-[440px] sm:h-[460px] bg-gradient-to-r from-[#1c1c1c] via-[#2d2538] to-[#1c1c1c] p-6 sm:p-10 flex flex-col justify-between overflow-hidden animate-in fade-in duration-500 text-white">
           <div className="relative z-10 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="font-black text-2xl tracking-tighter text-white">CJ</span>
-              <span className="font-black text-3xl tracking-tight text-[#e71a0f]">CGV</span>
+              <span className="font-black text-2xl tracking-tight text-white drop-shadow">CINEMAX</span>
+              <span className="font-black text-2xl tracking-tight text-[#ff4d42]">MEMBER</span>
             </div>
             <span className="px-3 py-1 rounded-full text-xs font-black bg-[#e71a0f] text-white uppercase tracking-wider">
               Dành Cho Khán Giả 12 - 22 Tuổi
@@ -219,12 +219,12 @@ export const CgvPromotionalCarousel: React.FC<CgvPromotionalCarouselProps> = ({
               Ưu Đãi Học Sinh - Sinh Viên & Gen Z
             </span>
             <h2 className="text-3xl sm:text-5xl font-black text-white leading-tight uppercase drop-shadow-md">
-              ĐẶC QUYỀN CGV U22 PASS
+              ĐẶC QUYỀN CINEMAX U22 PASS
             </h2>
             <div className="inline-block bg-neutral-800/80 backdrop-blur-md border border-neutral-700 rounded-2xl p-4">
               <div className="flex items-baseline gap-2">
                 <span className="text-xs uppercase text-neutral-300 font-bold">Giá Vé Chỉ Từ:</span>
-                <span className="text-3xl sm:text-4xl font-black text-[#e71a0f]">45k - 50k</span>
+                <span className="text-3xl sm:text-4xl font-black text-[#ff4d42]">45k - 50k</span>
                 <span className="text-xs text-neutral-300">+ Giảm 20% Combo Solo</span>
               </div>
               <p className="text-xs text-neutral-300 mt-1">
@@ -234,7 +234,7 @@ export const CgvPromotionalCarousel: React.FC<CgvPromotionalCarouselProps> = ({
             <div className="pt-2">
               <a
                 href="#promo-section"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#e71a0f] hover:bg-[#c81007] text-white font-black text-xs uppercase tracking-wider shadow-lg transition-transform hover:scale-105"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#e71a0f] hover:bg-[#c81007] text-white font-black text-xs uppercase tracking-wider shadow-lg transition-transform hover:scale-105 cursor-pointer"
               >
                 <span>Xem điều kiện & Đăng ký</span>
                 <ArrowRight className="w-4 h-4" />
@@ -251,8 +251,8 @@ export const CgvPromotionalCarousel: React.FC<CgvPromotionalCarouselProps> = ({
         <div className="relative w-full h-[440px] sm:h-[460px] bg-gradient-to-r from-[#0d5c3a] via-[#117a4e] to-[#0a422a] p-6 sm:p-10 flex flex-col justify-between overflow-hidden animate-in fade-in duration-500 text-white">
           <div className="relative z-10 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="font-black text-2xl tracking-tighter text-white">CJ</span>
-              <span className="font-black text-3xl tracking-tight text-emerald-300">CGV</span>
+              <span className="font-black text-2xl tracking-tight text-white drop-shadow">CINEMAX</span>
+              <span className="font-black text-2xl tracking-tight text-emerald-300">ANIMATION</span>
             </div>
             <span className="px-3 py-1 rounded-full text-xs font-black bg-emerald-400 text-neutral-900 uppercase tracking-wider">
               Lễ Hội Hoạt Hình 2026
@@ -299,8 +299,8 @@ export const CgvPromotionalCarousel: React.FC<CgvPromotionalCarouselProps> = ({
         <div className="relative w-full h-[440px] sm:h-[460px] bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] p-6 sm:p-10 flex flex-col justify-between overflow-hidden animate-in fade-in duration-500 text-white">
           <div className="relative z-10 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="font-black text-2xl tracking-tighter text-white">CJ</span>
-              <span className="font-black text-3xl tracking-tight text-[#e71a0f]">CGV</span>
+              <span className="font-black text-2xl tracking-tight text-white drop-shadow">CINEMAX</span>
+              <span className="font-black text-2xl tracking-tight text-[#ff4d42]">SPECIAL</span>
             </div>
             <span className="px-3 py-1 rounded-full text-xs font-black bg-[#e71a0f] text-white uppercase tracking-wider">
               Cultureplex
@@ -326,7 +326,7 @@ export const CgvPromotionalCarousel: React.FC<CgvPromotionalCarouselProps> = ({
             <div className="pt-2">
               <a
                 href="#special-cinema-section"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#e71a0f] hover:bg-[#c81007] text-white font-black text-xs uppercase tracking-wider shadow-lg transition-transform hover:scale-105"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#e71a0f] hover:bg-[#c81007] text-white font-black text-xs uppercase tracking-wider shadow-lg transition-transform hover:scale-105 cursor-pointer"
               >
                 <span>Khám phá rạp đặc biệt</span>
                 <ArrowRight className="w-4 h-4" />
@@ -356,7 +356,7 @@ export const CgvPromotionalCarousel: React.FC<CgvPromotionalCarouselProps> = ({
       </button>
 
       {/* ============================================================ */}
-      {/* HÀNG CHẤM TRÒN CHỈ SỐ SLIDE (DOTS CHUẨN CGV) */}
+      {/* HÀNG CHẤM TRÒN CHỈ SỐ SLIDE (DOTS) */}
       {/* ============================================================ */}
       <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 bg-black/40 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/20">
         {Array.from({ length: totalSlides }).map((_, idx) => (

@@ -1,81 +1,132 @@
 "use client";
 
-import React from "react";
-import { Popcorn, Sparkles, Gift, Ticket, ArrowRight, Star, Heart } from "lucide-react";
+import React, { useState } from "react";
+import { Popcorn, Gift, ArrowRight, Ticket, Film, Sparkles, Star } from "lucide-react";
 
 interface CgvLeftSkyscraperBannerProps {
   onSelectGenre?: (genre: string) => void;
+  onSelectMovie?: (movie: any) => void;
 }
 
-export const CgvLeftSkyscraperBanner: React.FC<CgvLeftSkyscraperBannerProps> = ({ onSelectGenre }) => {
+export const CgvLeftSkyscraperBanner: React.FC<CgvLeftSkyscraperBannerProps> = ({
+  onSelectGenre,
+  onSelectMovie,
+}) => {
+  const [imgSrc, setImgSrc] = useState("/images/posters/shaun-the-sheep.jpg");
+
+  const handleClick = () => {
+    if (onSelectGenre) onSelectGenre("Hoạt hình");
+    const el = document.getElementById("commercial-tabs");
+    if (el) el.scrollIntoView({ behavior: "smooth" });
+  };
+
   return (
     <div className="w-full flex flex-col gap-3 select-none">
-      {/* 1. Skyscraper Banner: Shaun the Sheep & Hoạt Hình (Chuẩn như ảnh mẫu CGV) */}
+      {/* 1. Skyscraper Banner: Poster Phim Thật - Shaun the Sheep: Quái Lạ Ghé Nhà */}
       <div
-        onClick={() => {
-          if (onSelectGenre) onSelectGenre("Hoạt hình");
-          const el = document.getElementById("commercial-tabs");
-          if (el) el.scrollIntoView({ behavior: "smooth" });
-        }}
-        className="w-full rounded-2xl overflow-hidden bg-gradient-to-b from-[#2d6a4f] via-[#40916c] to-[#1b4332] text-white border-2 border-[#52b788] shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] cursor-pointer group flex flex-col items-center text-center p-2.5"
+        onClick={handleClick}
+        className="w-full rounded-xl overflow-hidden bg-white border border-[#e5e0d8] shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer group flex flex-col"
+        title="Shaun the Sheep: Quái Lạ Ghé Nhà - Khởi chiếu tại CineMax"
       >
-        {/* Họa tiết đầu phim */}
-        <div className="w-full py-1 bg-black/30 rounded-lg mb-2">
-          <span className="text-[9px] font-black tracking-widest text-[#d8f3dc] uppercase block">
-            SIÊU PHẨM HOẠT HÌNH
+        {/* Banner header phong cách cinema */}
+        <div className="bg-[#244f3b] py-1 px-1.5 text-center border-b border-[#3b7a5e]">
+          <span className="text-[10px] font-black tracking-wider text-[#a7f3d0] uppercase block">
+            HOẠT HÌNH BOM TẤN
           </span>
         </div>
 
-        {/* Tiêu đề & Nhân vật */}
-        <h4 className="text-xs font-black uppercase text-[#95d5b2] leading-tight drop-shadow">
-          Shaun the Sheep
-        </h4>
-        <span className="text-sm font-black text-amber-300 uppercase tracking-tighter drop-shadow">
-          "QUÁI LẠ"
-        </span>
-        <span className="text-[9px] font-bold text-white uppercase tracking-wider">
-          GHÉ NHÀ
-        </span>
+        {/* Khung Poster Thật với Badges chuẩn cinema */}
+        <div className="relative w-full aspect-[2/3] bg-neutral-900 overflow-hidden">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={imgSrc}
+            alt="Shaun the Sheep Movie - Quái Lạ Ghé Nhà"
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            onError={() => {
+              // Fallback nếu ảnh nội bộ gặp lỗi
+              setImgSrc("https://upload.wikimedia.org/wikipedia/en/6/62/Shaun_the_Sheep_Movie_-_Farmageddon.jpg");
+            }}
+          />
 
-        {/* Minh họa chú cừu Shaun & phi thuyền */}
-        <div className="w-14 h-14 my-2 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center text-2xl shadow-inner group-hover:rotate-12 transition-transform">
-          🐑🛸
+          {/* Huy hiệu độ tuổi chuẩn cinema (P - Phổ thông cho mọi lứa tuổi) */}
+          <div className="absolute top-1.5 left-1.5 z-10 flex flex-col gap-1">
+            <span className="w-5 h-5 rounded bg-[#22c55e] text-white text-[10px] font-black flex items-center justify-center shadow-md border border-white/40">
+              P
+            </span>
+          </div>
+
+          {/* Huy hiệu định dạng 2D Lồng Tiếng */}
+          <div className="absolute top-1.5 right-1.5 z-10">
+            <span className="px-1.5 py-0.5 rounded bg-black/75 backdrop-blur-sm text-white text-[9px] font-black uppercase tracking-wider border border-white/20 shadow">
+              2D • LT
+            </span>
+          </div>
+
+          {/* Lớp gradient tối mờ bên dưới poster để chữ luôn rõ nét */}
+          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black via-black/70 to-transparent flex flex-col justify-end p-2 text-left">
+            <span className="text-[9px] font-bold text-amber-300 tracking-wider uppercase drop-shadow">
+              Aardman Animations
+            </span>
+            <h4 className="text-[12px] font-black text-white uppercase leading-tight line-clamp-1 drop-shadow-md">
+              Shaun the Sheep
+            </h4>
+            <p className="text-[10px] font-extrabold text-[#86efac] uppercase tracking-tight line-clamp-1">
+              "QUÁI LẠ" GHÉ NHÀ
+            </p>
+          </div>
         </div>
 
-        <span className="px-2 py-0.5 rounded-full text-[8px] font-black bg-amber-400 text-neutral-900 uppercase tracking-wider mb-1.5 shadow-sm">
-          Khởi Chiếu 2026
-        </span>
+        {/* Phần chân banner thông tin ngày chiếu & nút đặt vé */}
+        <div className="p-2 bg-gradient-to-b from-[#fdfcf9] to-[#f5f2eb] flex flex-col items-center text-center gap-1.5 border-t border-[#f0ece1]">
+          <div className="flex items-center gap-1 text-[10px] font-bold text-neutral-700">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span>KHỞI CHIẾU 2026</span>
+          </div>
 
-        <p className="text-[9px] text-[#d8f3dc] line-clamp-2 leading-tight">
-          Hài hước vui nhộn cho cả gia đình tại CGV!
-        </p>
+          <p className="text-[10px] text-neutral-600 line-clamp-2 leading-tight font-medium">
+            Siêu phẩm hài hước cho cả gia đình tại CineMax
+          </p>
 
-        <div className="w-full mt-2 py-1 px-2 rounded-lg bg-[#e71a0f] text-white text-[9px] font-black uppercase tracking-wider flex items-center justify-center gap-0.5 shadow-sm group-hover:bg-[#c81007]">
-          <span>Đặt vé</span>
-          <ArrowRight className="w-2.5 h-2.5" />
+          <button
+            type="button"
+            className="w-full py-1.5 px-2 rounded-lg bg-[#e71a0f] hover:bg-[#c81007] text-white text-[11px] font-extrabold uppercase tracking-wide flex items-center justify-center gap-1 shadow-md transition-all group-hover:shadow-lg active:scale-95 cursor-pointer"
+          >
+            <span>ĐẶT VÉ NGAY</span>
+            <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-0.5" />
+          </button>
         </div>
       </div>
 
-      {/* 2. Banner Phụ: CGV Combo Solo 59k */}
+      {/* 2. Banner Phụ: CineMax Combo Bắp Nước Solo */}
       <a
         href="#promo-section"
-        className="w-full rounded-2xl bg-[#fdfcf0] border-2 border-[#e71a0f] p-2.5 text-center text-neutral-800 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] cursor-pointer group block"
+        className="w-full rounded-xl bg-white border border-[#e5e0d8] p-2.5 text-center text-neutral-800 shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5 cursor-pointer group block"
       >
-        <div className="w-8 h-8 mx-auto rounded-full bg-rose-50 border border-rose-200 flex items-center justify-center text-[#e71a0f] mb-1 group-hover:rotate-12 transition-transform">
-          <Popcorn className="w-4 h-4 text-[#e71a0f]" />
+        <div className="flex items-center justify-between mb-1.5">
+          <span className="inline-block px-1.5 py-0.5 rounded text-[9px] font-black bg-[#e71a0f] text-white uppercase tracking-wider">
+            CINEMAX COMBO
+          </span>
+          <span className="text-[10px] font-extrabold text-[#e71a0f]">HOT DEAL</span>
         </div>
-        <span className="inline-block px-1.5 py-0.2 rounded text-[8px] font-black bg-[#e71a0f] text-white uppercase tracking-wider mb-1">
-          CGV COMBO
-        </span>
-        <div className="text-[11px] font-black uppercase text-neutral-900 leading-tight">
+
+        <div className="w-10 h-10 mx-auto rounded-full bg-red-50 border border-red-100 flex items-center justify-center text-[#e71a0f] my-1 group-hover:scale-110 transition-transform shadow-inner">
+          <Popcorn className="w-5 h-5 text-[#e71a0f]" />
+        </div>
+
+        <div className="text-[12px] font-black uppercase text-neutral-900 leading-tight">
           Combo Solo
         </div>
-        <div className="text-sm font-black text-[#e71a0f] mt-0.5">
+        <div className="text-base font-black text-[#e71a0f] mt-0.5 tracking-tight">
           59.000đ
         </div>
-        <p className="text-[9px] text-neutral-500 mt-0.5 line-clamp-1">
+        <p className="text-[10px] text-neutral-500 mt-0.5 line-clamp-1 font-medium">
           1 Bắp phô mai + 1 Nước
         </p>
+
+        <div className="mt-2 text-[10px] font-bold text-neutral-700 group-hover:text-[#e71a0f] flex items-center justify-center gap-0.5 transition-colors">
+          <span>Mua cùng vé</span>
+          <ArrowRight className="w-2.5 h-2.5" />
+        </div>
       </a>
     </div>
   );
@@ -90,73 +141,120 @@ export const CgvRightSkyscraperBanner: React.FC<CgvRightSkyscraperBannerProps> =
   onSelectMovie,
   onBookMovie,
 }) => {
+  const [imgSrc, setImgSrc] = useState("/images/posters/conan-movie-27.jpg");
+
+  const handleClick = () => {
+    const el = document.getElementById("commercial-tabs");
+    if (el) el.scrollIntoView({ behavior: "smooth" });
+  };
+
   return (
     <div className="w-full flex flex-col gap-3 select-none">
-      {/* 1. Skyscraper Banner: Thám Tử Lừng Danh Conan / Doraemon */}
+      {/* 1. Skyscraper Banner: Poster Phim Thật - Thám Tử Conan: Ngôi Sao 5 Cánh */}
       <div
-        onClick={() => {
-          const el = document.getElementById("commercial-tabs");
-          if (el) el.scrollIntoView({ behavior: "smooth" });
-        }}
-        className="w-full rounded-2xl overflow-hidden bg-gradient-to-b from-[#1e3a8a] via-[#2563eb] to-[#172554] text-white border-2 border-[#60a5fa] shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] cursor-pointer group flex flex-col items-center text-center p-2.5"
+        onClick={handleClick}
+        className="w-full rounded-xl overflow-hidden bg-white border border-[#e5e0d8] shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer group flex flex-col"
+        title="Thám Tử Lừng Danh Conan: Ngôi Sao 5 Cánh 1 Triệu Đô - Đang chiếu tại CineMax"
       >
-        {/* Họa tiết đầu phim */}
-        <div className="w-full py-1 bg-black/30 rounded-lg mb-2">
-          <span className="text-[9px] font-black tracking-widest text-[#dbeafe] uppercase block">
+        {/* Banner header phong cách cinema */}
+        <div className="bg-[#172554] py-1 px-1.5 text-center border-b border-[#1e40af]">
+          <span className="text-[10px] font-black tracking-wider text-[#93c5fd] uppercase block">
             ANIME BOM TẤN
           </span>
         </div>
 
-        {/* Tiêu đề & Nhân vật */}
-        <h4 className="text-xs font-black uppercase text-[#bfdbfe] leading-tight drop-shadow">
-          Thám Tử Conan
-        </h4>
-        <span className="text-xs font-black text-amber-300 uppercase tracking-tighter drop-shadow">
-          NGÔI SAO 5 CÁNH
-        </span>
-        <span className="text-[8px] font-bold text-white uppercase tracking-wider">
-          1 TRIỆU ĐÔ
-        </span>
+        {/* Khung Poster Thật với Badges chuẩn cinema */}
+        <div className="relative w-full aspect-[2/3] bg-neutral-900 overflow-hidden">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={imgSrc}
+            alt="Thám Tử Lừng Danh Conan: Ngôi Sao 5 Cánh 1 Triệu Đô"
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            onError={() => {
+              // Fallback nếu ảnh nội bộ gặp lỗi
+              setImgSrc("https://upload.wikimedia.org/wikipedia/en/1/16/Detective_Conan_The_Million_Dollar_Pentagram_Poster.jpg");
+            }}
+          />
 
-        {/* Minh họa bảo kiếm & kính thám tử */}
-        <div className="w-14 h-14 my-2 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center text-2xl shadow-inner group-hover:rotate-12 transition-transform">
-          🔍💎
+          {/* Huy hiệu độ tuổi (T13 - Khán giả từ 13 tuổi trở lên) */}
+          <div className="absolute top-1.5 left-1.5 z-10 flex flex-col gap-1">
+            <span className="w-6 h-5 rounded bg-amber-500 text-white text-[10px] font-black flex items-center justify-center shadow-md border border-white/40">
+              T13
+            </span>
+          </div>
+
+          {/* Huy hiệu định dạng IMAX / 2D */}
+          <div className="absolute top-1.5 right-1.5 z-10">
+            <span className="px-1.5 py-0.5 rounded bg-sky-950/85 backdrop-blur-sm text-sky-300 text-[9px] font-black uppercase tracking-wider border border-sky-400/30 shadow">
+              IMAX • 2D
+            </span>
+          </div>
+
+          {/* Lớp gradient tối mờ bên dưới poster để chữ luôn rõ nét */}
+          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black via-black/70 to-transparent flex flex-col justify-end p-2 text-left">
+            <span className="text-[9px] font-bold text-amber-300 tracking-wider uppercase drop-shadow">
+              Gōshō Aoyama
+            </span>
+            <h4 className="text-[12px] font-black text-white uppercase leading-tight line-clamp-1 drop-shadow-md">
+              Thám Tử Conan
+            </h4>
+            <p className="text-[10px] font-extrabold text-[#fde047] uppercase tracking-tight line-clamp-1">
+              NGÔI SAO 5 CÁNH
+            </p>
+          </div>
         </div>
 
-        <span className="px-2 py-0.5 rounded-full text-[8px] font-black bg-rose-500 text-white uppercase tracking-wider mb-1.5 shadow-sm">
-          Đang Chiếu
-        </span>
+        {/* Phần chân banner thông tin ngày chiếu & nút đặt vé */}
+        <div className="p-2 bg-gradient-to-b from-[#fdfcf9] to-[#f5f2eb] flex flex-col items-center text-center gap-1.5 border-t border-[#f0ece1]">
+          <div className="flex items-center gap-1 text-[10px] font-bold text-neutral-700">
+            <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping" />
+            <span className="text-[#e71a0f] font-black">ĐANG CHIẾU TẠI RẠP</span>
+          </div>
 
-        <p className="text-[9px] text-[#dbeafe] line-clamp-2 leading-tight">
-          Cuộc đối đầu kịch tính giữa Conan & Siêu đạo chích Kid!
-        </p>
+          <p className="text-[10px] text-neutral-600 line-clamp-2 leading-tight font-medium">
+            Đại chiến Hakodate: Conan, Heiji và Siêu Đạo Chích Kid
+          </p>
 
-        <div className="w-full mt-2 py-1 px-2 rounded-lg bg-[#e71a0f] text-white text-[9px] font-black uppercase tracking-wider flex items-center justify-center gap-0.5 shadow-sm group-hover:bg-[#c81007]">
-          <span>Xem suất</span>
-          <ArrowRight className="w-2.5 h-2.5" />
+          <button
+            type="button"
+            className="w-full py-1.5 px-2 rounded-lg bg-[#e71a0f] hover:bg-[#c81007] text-white text-[11px] font-extrabold uppercase tracking-wide flex items-center justify-center gap-1 shadow-md transition-all group-hover:shadow-lg active:scale-95 cursor-pointer"
+          >
+            <span>MUA VÉ NGAY</span>
+            <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-0.5" />
+          </button>
         </div>
       </div>
 
-      {/* 2. Banner Phụ: CGV U22 Pass */}
+      {/* 2. Banner Phụ: CineMax Member U22 Pass */}
       <a
         href="#promo-section"
-        className="w-full rounded-2xl bg-[#fdfcf0] border-2 border-amber-500 p-2.5 text-center text-neutral-800 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] cursor-pointer group block"
+        className="w-full rounded-xl bg-white border border-[#e5e0d8] p-2.5 text-center text-neutral-800 shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5 cursor-pointer group block"
       >
-        <div className="w-8 h-8 mx-auto rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600 mb-1 group-hover:rotate-12 transition-transform">
-          <Gift className="w-4 h-4 text-amber-600" />
+        <div className="flex items-center justify-between mb-1.5">
+          <span className="inline-block px-1.5 py-0.5 rounded text-[9px] font-black bg-amber-500 text-white uppercase tracking-wider">
+            CINEMAX MEMBER
+          </span>
+          <span className="text-[10px] font-extrabold text-amber-600">ƯU ĐÃI</span>
         </div>
-        <span className="inline-block px-1.5 py-0.2 rounded text-[8px] font-black bg-amber-500 text-white uppercase tracking-wider mb-1">
-          CGV MEMBER
-        </span>
-        <div className="text-[11px] font-black uppercase text-neutral-900 leading-tight">
+
+        <div className="w-10 h-10 mx-auto rounded-full bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600 my-1 group-hover:scale-110 transition-transform shadow-inner">
+          <Gift className="w-5 h-5 text-amber-600" />
+        </div>
+
+        <div className="text-[12px] font-black uppercase text-neutral-900 leading-tight">
           Đặc Quyền U22
         </div>
-        <div className="text-sm font-black text-[#e71a0f] mt-0.5">
+        <div className="text-base font-black text-[#e71a0f] mt-0.5 tracking-tight">
           45k - 50k
         </div>
-        <p className="text-[9px] text-neutral-500 mt-0.5 line-clamp-1">
-          Ưu đãi HSSV & Tặng bắp
+        <p className="text-[10px] text-neutral-500 mt-0.5 line-clamp-1 font-medium">
+          Dành riêng cho U22 & HSSV
         </p>
+
+        <div className="mt-2 text-[10px] font-bold text-neutral-700 group-hover:text-[#e71a0f] flex items-center justify-center gap-0.5 transition-colors">
+          <span>Xem điều kiện</span>
+          <ArrowRight className="w-2.5 h-2.5" />
+        </div>
       </a>
     </div>
   );
