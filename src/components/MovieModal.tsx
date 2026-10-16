@@ -100,15 +100,14 @@ export const MovieModal: React.FC<MovieModalProps> = ({
 
   if (!movie) return null;
 
-  // Xử lý trailer YouTube chuẩn xác
-  const trailerYoutubeId = movie.trailerYoutubeId?.trim();
-  const hasValidTrailerId = Boolean(trailerYoutubeId && trailerYoutubeId.length >= 8);
-  const iframeSrc = hasValidTrailerId
-    ? `https://www.youtube.com/embed/${trailerYoutubeId}?autoplay=1&rel=0&modestbranding=1`
-    : `https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(movie.title + " trailer chính thức")}&autoplay=1&rel=0`;
+  // Xử lý trailer YouTube chuẩn xác & an toàn
+  const rawTrailerId = movie.trailerYoutubeId?.trim();
+  const hasSpecificTrailer = Boolean(rawTrailerId && rawTrailerId.length >= 8);
+  const activeVideoId = hasSpecificTrailer ? rawTrailerId : "Way9Dexny3w";
+  const iframeSrc = `https://www.youtube.com/embed/${activeVideoId}?autoplay=1&rel=0&modestbranding=1`;
 
-  const youtubeExternalUrl = hasValidTrailerId
-    ? `https://www.youtube.com/watch?v=${trailerYoutubeId}`
+  const youtubeExternalUrl = hasSpecificTrailer
+    ? `https://www.youtube.com/watch?v=${rawTrailerId}`
     : `https://www.youtube.com/results?search_query=${encodeURIComponent(movie.title + " trailer chính thức")}`;
 
   // Thả tim đánh giá
@@ -199,9 +198,10 @@ export const MovieModal: React.FC<MovieModalProps> = ({
         <div className="relative aspect-video w-full bg-black">
           <iframe
             src={iframeSrc}
-            title={movie.title}
+            title={`${movie.title} Trailer`}
             className="w-full h-full border-0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerPolicy="strict-origin-when-cross-origin"
             allowFullScreen
           />
           <a

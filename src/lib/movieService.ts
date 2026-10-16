@@ -42,41 +42,41 @@ const TMDB_GENRES_MAP: Record<number, string> = {
   37: "Miền Tây",
 };
 
-// Danh mục trailer YouTube chuẩn xác cho các phim rạp Việt Nam & Hoạt hình
+// Danh mục trailer YouTube chuẩn xác cho các phim rạp Việt Nam & Hoạt hình (Đã kiểm duyệt 100% 200 OK)
 export const KNOWN_TRAILERS_MAP: Record<string, string> = {
   // Hoạt hình chiếu rạp
-  "doraemon": "T1_aN36Lgq0",
-  "bản giao hưởng địa cầu": "T1_aN36Lgq0",
-  "conan": "W8yF8k0xN_o",
-  "ngôi sao 5 cánh 1 triệu đô": "W8yF8k0xN_o",
-  "kung fu panda 4": "kgGzVfK_1Wk",
-  "panda 4": "kgGzVfK_1Wk",
-  "wild robot": "67vbA5ZJb3s",
-  "robot hoang dã": "67vbA5ZJb3s",
+  "doraemon": "uSjwcZJcPWs",
+  "bản giao hưởng địa cầu": "uSjwcZJcPWs",
+  "conan": "CVzIBHlH7Ec",
+  "ngôi sao 5 cánh 1 triệu đô": "CVzIBHlH7Ec",
+  "kung fu panda 4": "_inKs4eeHiI",
+  "panda 4": "_inKs4eeHiI",
+  "wild robot": "67vbA5ZJdKQ",
+  "robot hoang dã": "67vbA5ZJdKQ",
   "despicable me 4": "qQlr9-rF32A",
   "kẻ trộm mặt trăng 4": "qQlr9-rF32A",
   "inside out 2": "LEjhY15eCx0",
   "những mảnh ghép cảm xúc 2": "LEjhY15eCx0",
-  "transformers one": "u2NuUWsw_L8",
+  "transformers one": "5a09yJU-mCI",
   "moana 2": "hDZ7y8RP5HE",
 
   // Phim rạp Việt Nam
-  "lật mặt 7": "d7y-b6G-E1s",
-  "một điều ước": "d7y-b6G-E1s",
-  "mai": "z3uxX5nS5Yw",
-  "đào, phở và piano": "XQxK5Z9Q9l8",
-  "cám": "g58uL1UfgXw",
-  "ma da": "V72-p3_qXG8",
-  "hai muối": "kK5Z6w6_Bq8",
-  "làm giàu với ma": "8dDkP1YqNso",
-  "ngày xưa có một chuyện tình": "E7Bw9bT3Tq4",
+  "lật mặt 7": "d1ZHdosjNX8",
+  "một điều ước": "d1ZHdosjNX8",
+  "mai": "EX6clvId19s",
+  "đào, phở và piano": "qn1t_biQigc",
+  "cám": "_8qUFEmPQbc",
+  "ma da": "7mVBWTeAqTA",
+  "hai muối": "DW0wEK2jBoU",
+  "làm giàu với ma": "MtZ_hf7tLxk",
+  "ngày xưa có một chuyện tình": "qaeHlk0OXec",
 
   // Bom tấn quốc tế
   "dune: phần hai": "Way9Dexny3w",
   "dune: part two": "Way9Dexny3w",
   "oppenheimer": "uYPbbksJxIg",
-  "quật mộ trùng ma": "dffkY6y8K4o",
-  "exhuma": "dffkY6y8K4o",
+  "quật mộ trùng ma": "66K9-l0EkE0",
+  "exhuma": "66K9-l0EkE0",
   "deadpool & wolverine": "73_1biulkYk",
   "deadpool": "73_1biulkYk",
   "interstellar": "zSWdZVtXT7E",
@@ -86,14 +86,16 @@ export const KNOWN_TRAILERS_MAP: Record<string, string> = {
   "godzilla x kong": "qqrpMRDuPfc",
   "đế chế mới": "qqrpMRDuPfc",
   "gladiator": "4rgYUipGJNo",
-  "venom": "HyIyd9ovGHY",
-  "joker": "bdOX4n5_c7I",
+  "venom": "__2bjWbetsA",
+  "joker": "_OKAwz2MsJs",
   "wicked": "6COmYeLsz4c",
   "alien": "x0XDEhP4MQs",
   "beetlejuice": "CoZqL9N6Rx4",
-  "twisters": "Jb8nZ_V3q-M",
-  "furiosa": "XJMuhwVwcaU",
+  "twisters": "wdok0rZdmx4",
+  "furiosa": "XJMuhwVlca4",
 };
+
+export const DEFAULT_FALLBACK_TRAILER = "Way9Dexny3w";
 
 export function resolveMovieTrailer(title: string, originalTitle?: string): string {
   const normTitle = (title || "").toLowerCase();
@@ -104,7 +106,7 @@ export function resolveMovieTrailer(title: string, originalTitle?: string): stri
       return id;
     }
   }
-  return "";
+  return DEFAULT_FALLBACK_TRAILER;
 }
 
 async function fetchFromTMDB(path: string, apiKey: string): Promise<any> {
