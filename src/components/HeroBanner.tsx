@@ -22,7 +22,9 @@ interface DesignedBanner {
   formatTag: string;
   bgGradient: string;
   bgImage: string;
+  posterImage: string;
   accentColor: string;
+  ageRating?: string;
 }
 
 export const HeroBanner: React.FC<HeroBannerProps> = ({
@@ -47,7 +49,9 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
       formatTag: "IMAX Laser 4K • 2D Digital",
       bgGradient: "from-[#1a0f07] via-[#3b1d08] to-[#120a05]",
       bgImage: "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=1600&auto=format&fit=crop&q=80",
+      posterImage: "/images/posters/dune-2.jpg",
       accentColor: "#e5a93b",
+      ageRating: "T16",
     },
     {
       id: "b-godzilla-kong",
@@ -60,7 +64,9 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
       formatTag: "4DX Motion • IMAX 3D",
       bgGradient: "from-[#08151f] via-[#122e3d] to-[#0a1b24]",
       bgImage: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1600&auto=format&fit=crop&q=80",
+      posterImage: "/images/posters/godzilla-x-kong.jpg",
       accentColor: "#38bdf8",
+      ageRating: "T13",
     },
     {
       id: "b-conan",
@@ -73,7 +79,9 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
       formatTag: "2D Lồng Tiếng • Phụ Đề",
       bgGradient: "from-[#1a0a2a] via-[#351457] to-[#140624]",
       bgImage: "https://images.unsplash.com/photo-1563089145-599997674d42?w=1600&auto=format&fit=crop&q=80",
+      posterImage: "/images/posters/conan-movie-27.jpg",
       accentColor: "#c084fc",
+      ageRating: "T13",
     },
     {
       id: "b-doraemon",
@@ -86,7 +94,9 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
       formatTag: "2D Lồng Tiếng Chuẩn Rạp",
       bgGradient: "from-[#051c2c] via-[#0b3c5d] to-[#041624]",
       bgImage: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1600&auto=format&fit=crop&q=80",
+      posterImage: "/images/posters/doraemon-earth-symphony.jpg",
       accentColor: "#38bdf8",
+      ageRating: "P",
     },
     {
       id: "b-happy-wednesday",
@@ -99,7 +109,9 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
       formatTag: "Áp dụng toàn bộ hệ thống CineMax",
       bgGradient: "from-[#660c07] via-[#a8140a] to-[#450502]",
       bgImage: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1600&auto=format&fit=crop&q=80",
+      posterImage: "/images/posters/shaun-the-sheep.jpg",
       accentColor: "#facc15",
+      ageRating: "P",
     },
   ];
 
@@ -151,15 +163,21 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
             <img
               src={activeBanner.bgImage}
               alt={activeBanner.movieTitle}
-              className="absolute inset-0 w-full h-full object-cover opacity-45 mix-blend-overlay scale-105 group-hover:scale-100 transition-transform duration-700"
+              className="absolute inset-0 w-full h-full object-cover opacity-35 mix-blend-overlay scale-105 group-hover:scale-100 transition-transform duration-700"
+            />
+            {/* Ảnh poster mờ lấp đầy góc phải để tạo không gian phim */}
+            <img
+              src={activeBanner.posterImage}
+              alt=""
+              className="absolute right-0 top-0 w-1/2 h-full object-cover opacity-20 blur-md mix-blend-screen pointer-events-none hidden sm:block"
             />
             {/* Lớp phủ điện ảnh sâu lắng */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/30" />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/20 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/20" />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/60 to-transparent" />
           </div>
 
           {/* NỘI DUNG NGHỆ THUẬT TÍCH HỢP TRONG BANNER (POSTER KEY VISUAL ART) */}
-          <div className="relative z-10 w-full h-full p-5 sm:p-8 lg:p-10 flex flex-col justify-between text-white">
+          <div className="relative z-10 w-full h-full p-4 sm:p-7 lg:p-9 flex flex-col justify-between text-white">
             {/* Top Bar Banner: Logo & Badge sự kiện */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -182,23 +200,67 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
               </div>
             </div>
 
-            {/* Middle: Typography nghệ thuật tên phim chuẩn Key Visual rạp */}
-            <div className="max-w-2xl space-y-1.5 sm:space-y-2 my-auto">
-              <span className="text-[11px] sm:text-xs font-bold tracking-widest uppercase drop-shadow block" style={{ color: activeBanner.accentColor }}>
-                {activeBanner.tagline}
-              </span>
+            {/* Middle: Bố cục gồm Thông tin tên phim bên trái và Poster phim nổi bật ở giữa/bên phải */}
+            <div className="my-auto flex items-center justify-between gap-4 sm:gap-6 lg:gap-10">
+              {/* Cột Trái: Typography nghệ thuật tên phim chuẩn Key Visual rạp */}
+              <div className="flex-1 min-w-0 space-y-1 sm:space-y-2">
+                <span
+                  className="text-[10px] sm:text-xs font-bold tracking-widest uppercase drop-shadow block truncate"
+                  style={{ color: activeBanner.accentColor }}
+                >
+                  {activeBanner.tagline}
+                </span>
 
-              <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight uppercase leading-none drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)]">
-                {activeBanner.movieTitle}
-              </h1>
+                <h1 className="text-xl sm:text-3xl lg:text-4xl xl:text-5xl font-black text-white tracking-tight uppercase leading-tight drop-shadow-[0_4px_16px_rgba(0,0,0,0.9)] line-clamp-2">
+                  {activeBanner.movieTitle}
+                </h1>
 
-              <p className="text-[11px] sm:text-xs text-neutral-200 line-clamp-2 max-w-xl font-medium drop-shadow leading-relaxed">
-                {activeBanner.releaseNote}
-              </p>
+                <p className="text-[10px] sm:text-xs text-neutral-200 line-clamp-2 max-w-lg font-medium drop-shadow leading-relaxed">
+                  {activeBanner.releaseNote}
+                </p>
+              </div>
+
+              {/* Cột Phải: POSTER PHIM NỔI BẬT CHUẨN ĐIỆN ẢNH */}
+              <div className="relative shrink-0 flex items-center justify-center mr-1 sm:mr-4 lg:mr-8 my-auto">
+                {/* Glow điện ảnh đằng sau poster khớp màu chủ đạo của phim */}
+                <div
+                  className="absolute -inset-3 rounded-2xl opacity-50 blur-xl transition-all duration-500 group-hover:opacity-80"
+                  style={{ backgroundColor: activeBanner.accentColor }}
+                />
+
+                {/* Khung Poster nổi khối tỷ lệ 2/3 viền sáng đổ bóng sâu */}
+                <div className="relative w-20 sm:w-32 md:w-40 lg:w-44 aspect-[2/3] rounded-xl overflow-hidden border-2 border-white/30 shadow-2xl shadow-black/95 transform rotate-2 group-hover:rotate-0 group-hover:scale-105 transition-all duration-500 bg-neutral-900">
+                  <img
+                    src={activeBanner.posterImage}
+                    alt={activeBanner.movieTitle}
+                    className="w-full h-full object-cover"
+                  />
+                  {/* Badge độ tuổi trên góc poster */}
+                  {activeBanner.ageRating && (
+                    <div className="absolute top-1.5 left-1.5 z-10">
+                      <span
+                        className={`px-1.5 py-0.5 rounded text-[8px] sm:text-[9px] font-black uppercase text-white shadow-md ${
+                          activeBanner.ageRating === "T18"
+                            ? "bg-red-600"
+                            : activeBanner.ageRating === "T16"
+                            ? "bg-amber-600"
+                            : activeBanner.ageRating === "T13"
+                            ? "bg-yellow-500 text-neutral-900"
+                            : "bg-sky-600"
+                        }`}
+                      >
+                        {activeBanner.ageRating}
+                      </span>
+                    </div>
+                  )}
+                  {/* Lớp phủ phản quang nhẹ */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
+                </div>
+              </div>
             </div>
 
             {/* Bottom: Nút bấm trực quan & Hướng dẫn bấm */}
-            <div className="flex items-center justify-between pt-2">
+            <div className="flex items-center justify-between pt-1">
               <div className="flex items-center gap-2.5">
                 <button
                   type="button"
@@ -206,7 +268,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
                     e.stopPropagation();
                     if (targetMovie) onBookTicket(targetMovie);
                   }}
-                  className="px-5 py-2.5 rounded-xl bg-[#e71a0f] hover:bg-[#c81007] text-white font-black text-xs uppercase tracking-wider shadow-lg shadow-rose-600/40 flex items-center gap-1.5 transform hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                  className="px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-[#e71a0f] hover:bg-[#c81007] text-white font-black text-xs uppercase tracking-wider shadow-lg shadow-rose-600/40 flex items-center gap-1.5 transform hover:scale-105 active:scale-95 transition-all cursor-pointer"
                 >
                   <Ticket className="w-3.5 h-3.5" />
                   <span>ĐẶT VÉ NGAY</span>
@@ -218,7 +280,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
                     e.stopPropagation();
                     if (targetMovie) onWatchTrailer(targetMovie);
                   }}
-                  className="px-4 py-2.5 rounded-xl bg-white/15 hover:bg-white/25 text-white font-bold text-xs backdrop-blur-md border border-white/30 flex items-center gap-1.5 transition-all cursor-pointer"
+                  className="px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-white/15 hover:bg-white/25 text-white font-bold text-xs backdrop-blur-md border border-white/30 flex items-center gap-1.5 transition-all cursor-pointer"
                 >
                   <Play className="w-3.5 h-3.5 fill-white" />
                   <span className="hidden sm:inline">Xem Trailer</span>
