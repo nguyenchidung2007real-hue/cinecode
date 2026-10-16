@@ -94,13 +94,13 @@ const BOOKING_TOOLS: Groq.Chat.Completions.ChatCompletionTool[] = [
     function: {
       name: "prepare_booking_draft",
       description:
-        "Chuẩn bị bản nháp đặt vé rạp và điền sẵn ghế/bắp nước vào BookingModal khi người dùng muốn đặt vé. Đặt autoExecute: true khi người dùng ra lệnh trực tiếp như 'đặt vé hộ', 'mua vé hộ', 'book vé', 'chọn ghế cho mình' để AI tự động mở modal và chọn ghế hộ.",
+        "Chuẩn bị bản nháp đặt vé rạp và gợi ý ghế cho phim. CHỈ đặt autoExecute: true khi và chỉ khi trong tin nhắn HIỆN TẠI (mới nhất) của người dùng có mệnh lệnh yêu cầu đặt vé hộ trực tiếp ('đặt hộ', 'mua hộ', 'book hộ', 'chọn ghế hộ'). Nếu tin nhắn hiện tại chỉ hỏi thông tin, hỏi giá, chào hỏi, đổi phim, hỏi lịch chiếu hoặc trò chuyện: BẮT BUỘC đặt autoExecute: false.",
       parameters: {
         type: "object",
         properties: {
           movieId: { type: "string", description: "ID của bộ phim" },
           movieTitle: { type: "string", description: "Tên bộ phim khách muốn xem" },
-          cinemaName: { type: "string", description: "Tên rạp chiếu (VD: Beta Xuân Thủy, CineMax Vincom)" },
+          cinemaName: { type: "string", description: "Tên rạp chiếu (VD: CineMax Vincom Bà Triệu)" },
           showtimeId: { type: "string", description: "ID suất chiếu nếu có" },
           showtimeLabel: { type: "string", description: "Giờ chiếu (VD: 19:30 - Hôm nay)" },
           format: { type: "string", enum: ["2D", "IMAX Laser", "3D"], description: "Định dạng phòng chiếu" },
@@ -109,7 +109,7 @@ const BOOKING_TOOLS: Groq.Chat.Completions.ChatCompletionTool[] = [
             enum: ["standard", "vip", "couple"],
             description: "Hạng ghế ('standard' | 'vip' | 'couple')",
           },
-          seatCount: { type: "number", description: "Số lượng ghế muốn đặt (1-8)" },
+          seatCount: { type: "number", description: "Số lượng ghế muốn đặt (1-8). Dựa trên tin nhắn hiện tại, mặc định 1 nếu không nói rõ." },
           suggestedSeatIds: {
             type: "array",
             items: { type: "string" },
@@ -119,7 +119,7 @@ const BOOKING_TOOLS: Groq.Chat.Completions.ChatCompletionTool[] = [
           comboQuantity: { type: "number", description: "Số lượng combo bắp nước" },
           autoExecute: {
             type: "boolean",
-            description: "Đặt true nếu người dùng ra lệnh 'đặt hộ', 'mua hộ', 'book ngay' để giao diện web tự động mở modal và chọn ghế.",
+            description: "CHỈ đặt true nếu tin nhắn HIỆN TẠI của người dùng ra lệnh 'đặt hộ', 'mua hộ', 'book ngay'. Nếu người dùng chỉ đang trò chuyện, hỏi thông tin, hoặc đổi phim, BẮT BUỘC đặt false.",
           },
         },
         required: ["movieTitle", "seatType", "seatCount", "suggestedSeatIds"],
@@ -399,7 +399,10 @@ function buildSystemPrompt(params: {
     "- Luôn trả lời bằng tiếng Việt, thân thiện, ngắn gọn (tối đa khoảng 120 từ), không dùng markdown nặng.",
     "- Chỉ gợi ý phim có trong danh mục CineMax bên dưới; ghi đúng tên phim.",
     "- Không bịa suất chiếu, giá vé hay thông tin không có trong dữ liệu.",
-    "- Khi người dùng thể hiện ý định đặt vé hoặc yêu cầu đặt hộ (ví dụ: 'Đặt hộ mình 2 vé...', 'Mua vé hộ tôi...', 'Cho mình 2 ghế...'), hãy gọi tool prepare_booking_draft với autoExecute: true để website tự động mở giao diện chọn ghế và điền sẵn thông tin hộ người dùng.",
+    "- QUY TẮC ĐẶT VÉ VÀ AUTO-EXECUTE (TUYỆT ĐỐI TUÂN THỦ):",
+    "  + CHỈ gọi tool prepare_booking_draft với autoExecute: true KHI VÀ CHỈ KHI tin nhắn MỚI NHẤT của người dùng (tin nhắn hiện tại) có mệnh lệnh yêu cầu đặt hộ trực tiếp (như 'đặt hộ', 'mua hộ', 'book hộ', 'chọn ghế hộ', 'mua vé hộ', 'đặt cho tôi').",
+    "  + Nếu tin nhắn mới nhất của người dùng là câu hỏi thông tin, hỏi lịch chiếu, hỏi giá vé, chào hỏi, đổi phim, hỏi ý kiến hoặc trò chuyện bình thường (ví dụ: 'đổi sang phim lật mặt 7', 'phim này có hay không', 'giá vé bao nhiêu', 'chiếu lúc mấy giờ', 'chào bạn'): TUYỆT ĐỐI KHÔNG được đặt autoExecute: true và KHÔNG được tự động chuyển vào phần đặt vé. Hãy trả lời câu hỏi và chỉ đề xuất thẻ phim bằng tin nhắn trong cửa sổ chat.",
+    "  + Về số lượng vé (seatCount): Phải bóc tách số lượng theo tin nhắn MỚI NHẤT của người dùng (VD: '1 vé', '2 vé', '3 vé'). Nếu tin nhắn hiện tại không nói rõ số vé, mặc định là 1 vé (hoặc 2 vé nếu nói đi đôi/hẹn hò). KHÔNG tự ý giữ nguyên 2 vé từ yêu cầu cũ của các lượt chat trước nếu ở lượt này người dùng không yêu cầu đặt tiếp.",
     "- Khi người dùng muốn xem lịch chiếu, mở ví vé, tìm kiếm phim hoặc lọc tâm trạng, hãy gọi tool control_website để trực tiếp điều khiển giao diện trang web (cuộn trang, mở modal tương ứng).",
     "- Khi gợi ý phim, nêu lý do ngắn gọn và mời người dùng trải nghiệm.",
     "",
@@ -599,16 +602,35 @@ export async function POST(request: NextRequest): Promise<Response> {
             try {
               const draft = JSON.parse(toolCallArgs) as BookingDraftPayload;
               const lowerUser = stripDiacritics(userText);
-              const explicitAuto =
-                draft.autoExecute ||
+
+              // KIỂM TRA CHẶT CHẼ: Auto-book CHỈ được kích hoạt khi tin nhắn HIỆN TẠI (userText) có lệnh đặt hộ
+              const hasExplicitBookingCommand =
                 lowerUser.includes("dat ho") ||
                 lowerUser.includes("mua ho") ||
                 lowerUser.includes("book ho") ||
                 lowerUser.includes("dat giup") ||
+                lowerUser.includes("mua giup") ||
+                lowerUser.includes("book giup") ||
                 lowerUser.includes("dat cho toi") ||
-                lowerUser.includes("dat ngay") ||
-                lowerUser.includes("mua ve ho");
-              draft.autoExecute = explicitAuto;
+                lowerUser.includes("mua cho toi") ||
+                lowerUser.includes("chon ghe ho") ||
+                lowerUser.includes("mua ve ho") ||
+                lowerUser.includes("dat luon") ||
+                lowerUser.includes("mua luon");
+
+              // Nếu tin nhắn hiện tại không có lệnh đặt hộ rõ ràng, tuyệt đối KHÔNG tự động chuyển modal
+              draft.autoExecute = Boolean(draft.autoExecute && hasExplicitBookingCommand);
+
+              // Bóc tách chính xác số vé theo tin nhắn HIỆN TẠI của người dùng
+              const currentPartySize = extractPartySize(userText);
+              if (currentPartySize !== null && currentPartySize > 0) {
+                draft.seatCount = currentPartySize;
+                draft.suggestedSeatIds = suggestSeats(userText, mood);
+              } else if (!hasExplicitBookingCommand && draft.seatCount > 1) {
+                // Nếu người dùng không hề yêu cầu đặt vé ở lượt này, không giữ 2 ghế của lượt trước
+                draft.seatCount = 1;
+                draft.suggestedSeatIds = suggestSeats(userText, mood);
+              }
 
               send({
                 type: "booking_draft",
@@ -616,7 +638,7 @@ export async function POST(request: NextRequest): Promise<Response> {
                 payload: draft,
               });
 
-              if (explicitAuto) {
+              if (draft.autoExecute) {
                 send({
                   type: "web_action",
                   action: {
@@ -724,7 +746,7 @@ export async function POST(request: NextRequest): Promise<Response> {
             const draft: BookingDraftPayload = {
               movieId: String(pick.movie.id),
               movieTitle: pick.movie.title,
-              cinemaName: "Beta Cinemas Xuân Thủy",
+              cinemaName: "CineMax Vincom Bà Triệu",
               showtimeLabel: "19:30 - Hôm nay",
               format: "2D",
               seatType,

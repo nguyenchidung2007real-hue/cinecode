@@ -17,6 +17,7 @@ import SemanticSearchModal from "@/components/SemanticSearchModal";
 import { CgvQuickIconBar } from "@/components/CgvQuickIconBar";
 import { MovieCarousel } from "@/components/MovieCarousel";
 import { Footer } from "@/components/Footer";
+import { useBookingStore } from "@/store/useBookingStore";
 
 import { Sparkles, Flame, Film, Clapperboard, Award, SearchX, Smile, Compass, Brain, Heart, Tag, Gift, Percent, Ticket, CheckCircle2, X, Clock, Calendar, Check, Copy, ArrowRight, Info, Armchair, Popcorn, Bot, Star } from "lucide-react";
 
@@ -1170,6 +1171,7 @@ export default function HomePage() {
           setActiveBookingMovie(null);
           setBookingInitialSeats([]);
           setBookingInitialShowtimeId(undefined);
+          useBookingStore.getState().resetBooking();
         }}
         onBookingSuccess={handleBookingSuccess}
       />

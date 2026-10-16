@@ -3,10 +3,10 @@
 @tailwind utilities;
 
 :root {
-  --background: #fdfcf0;
-  --foreground: #1c1c1c;
-  --cgv-red: #e71a0f;
-  --cgv-gold: #c5a059;
+  --background: #0B0C10;
+  --foreground: #FFFFFF;
+  --cinema-red: #E50914;
+  --cinema-gold: #F5C518;
 }
 
 body {
@@ -16,39 +16,39 @@ body {
   overflow-x: hidden;
 }
 
-/* Custom scrollbar - CGV Vintage Cinema theme */
+/* Custom scrollbar - Dark Mode Cinematic theme */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f5f2e8;
+  background: #0B0C10;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #dcd6c8;
+  background: #1E222D;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #e71a0f;
+  background: #E50914;
 }
 
-/* Cinema screen glow effect - CGV Crimson Red & Vintage Gold */
+/* Cinema screen glow effect - Cinematic Red & Gold */
 .cinema-screen-glow {
-  box-shadow: 0 -10px 35px -5px rgba(231, 26, 15, 0.25);
+  box-shadow: 0 -10px 45px -5px rgba(229, 9, 20, 0.35);
 }
 
 .cinema-screen-glow-warm {
-  box-shadow: 0 -10px 35px -5px rgba(197, 160, 89, 0.25);
+  box-shadow: 0 -10px 45px -5px rgba(245, 197, 24, 0.3);
 }
 
-/* Glassmorphism styling - Light Clean Vintage Panel */
+/* Glassmorphism styling - Dark Cinematic Panel */
 .glass-panel {
-  background: rgba(253, 252, 240, 0.95);
+  background: rgba(18, 20, 28, 0.85);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid #e5e0d8;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5);
 }

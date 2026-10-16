@@ -20,14 +20,14 @@ const INITIAL_MESSAGES: ChatMessage[] = [
   {
     id: "welcome-1",
     role: "assistant",
-    content: "Chào bạn! Tôi là **CineBot AI Agent** 🤖🎬.\nTôi có thể **trực tiếp điều khiển trang web** và **đặt vé hộ bạn**: Hãy thử bảo tôi: *\"Đặt hộ tôi 2 vé phim Dune tối nay\"*, *\"Xem lịch chiếu rạp Beta\"*, hoặc *\"Mở ví vé của tôi\"*!",
+    content: "Chào bạn! Tôi là **CineBot AI Agent** 🤖🎬.\nTôi có thể **trực tiếp tư vấn phim, lịch chiếu** hoặc **đặt vé hộ bạn**: Hãy thử bảo tôi: *\"Đặt hộ tôi 2 vé phim Dune tối nay\"*, *\"Xem lịch chiếu rạp CineMax\"*, hoặc *\"Mở ví vé của tôi\"*!",
     timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
   },
 ];
 
 const SUGGESTIONS = [
   "🎟️ Đặt hộ tôi 2 vé phim Dune tối nay",
-  "📅 Cuộn xuống xem lịch chiếu rạp Beta hôm nay",
+  "📅 Cuộn xuống xem lịch chiếu rạp CineMax hôm nay",
   "🎫 Mở ví vé của tôi",
   "🔥 Mình đang stress quá, cần phim xả hơi",
 ];
@@ -69,8 +69,8 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
         useBookingStore.getState().prefillFromAiTool({
           movieId: draft.movieId || "dune-2",
           movieTitle: draft.movieTitle,
-          cinemaName: draft.cinemaName || "Beta Cinemas Xuân Thủy",
-          showtimeId: draft.showtimeId || "st-beta-today-1",
+          cinemaName: draft.cinemaName || "CineMax Vincom Bà Triệu",
+          showtimeId: draft.showtimeId || "st-cinemax-today-1",
           showtimeLabel: draft.showtimeLabel || "19:00",
           format: draft.format || "2D",
           suggestedSeats: draft.suggestedSeatIds.map((id: string) => ({
@@ -268,6 +268,7 @@ export const AiChatWidget: React.FC<AiChatWidgetProps> = ({
   const handleClear = () => {
     setMessages(INITIAL_MESSAGES);
     setActiveActionBanner(null);
+    useBookingStore.getState().resetBooking();
   };
 
   return (

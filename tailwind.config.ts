@@ -9,39 +9,30 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Bảng màu CGV Cinemas - Đỏ Burgundy / Crimson & Rạp chiếu cổ điển
-        void: "#fdfcf0",          // Nền kem vintage rạp chiếu
-        surface: "#ffffff",       // Bề mặt card/modal trắng
-        panel: "#faf8f2",         // Panel phụ rạp phim ấm áp
-        "border-navy": "#e5e0d8", // Viền ấm
-        borderNavy: "#e5e0d8",
-        background: "#fdfcf0",
-        surfaceBorder: "#e5e0d8",
+        // Dark Mode Cinematic Palette - Netflix & Modern Cinema
+        void: "#0B0C10",          // Nền chính tối điện ảnh
+        surface: "#12141C",       // Bề mặt khối phụ / card
+        panel: "#161922",         // Khối panel / bar
+        "border-navy": "rgba(255, 255, 255, 0.1)",
+        borderNavy: "rgba(255, 255, 255, 0.1)",
+        background: "#0B0C10",
+        surfaceBorder: "rgba(255, 255, 255, 0.1)",
         accent: {
-          red: "#e71a0f",         // CGV Crimson Red chuẩn rạp chiếu
-          redHover: "#c81007",    // CGV Dark Red hover
-          gold: "#c5a059",        // Vàng kim vintage cinema
-          cyan: "#e71a0f",        // Primary red
-          purple: "#ec4899",      // Sweetbox hồng đôi
+          red: "#E50914",         // Đỏ điện ảnh Cinematic Red
+          redHover: "#B80710",    // Đỏ đậm hover
+          gold: "#F5C518",        // Vàng kim điện ảnh IMDb/Cinema Gold
+          cyan: "#E50914",
+          purple: "#ec4899",
         },
-        "gold-text": "#c5a059",
-        goldText: "#c5a059",
+        "gold-text": "#F5C518",
+        goldText: "#F5C518",
         sweetbox: "#ec4899",
-        // CGV Cultureplex tokens
-        cgvRed: "#e71a0f",
-        cgvRedDark: "#c81007",
-        cgvDark: "#1c1c1c",
-        cgvParchment: "#fdfcf0",
-        cgvGold: "#c5a059",
-        cgvBorder: "#e5e0d8",
-        betaNavy: "#1c1c1c",
-        betaBlue: "#ffffff",
-        betaBlueLight: "#faf8f2",
-        betaCyan: "#e71a0f",
-        betaOrange: "#e71a0f",
-        betaPink: "#ec4899",
-        betaGray: "#faf8f2",
-        betaBorder: "#e5e0d8",
+        cgvRed: "#E50914",
+        cgvRedDark: "#B80710",
+        cgvDark: "#0B0C10",
+        cgvParchment: "#12141C",
+        cgvGold: "#F5C518",
+        cgvBorder: "rgba(255, 255, 255, 0.1)",
       },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
