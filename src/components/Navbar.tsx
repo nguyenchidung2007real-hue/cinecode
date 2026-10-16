@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Film, Search, Ticket, User, MapPin, Phone } from "lucide-react";
 
@@ -26,6 +26,18 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const [searchValue, setSearchValue] = useState("");
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Phím tắt bí mật cho Quản trị viên: Ctrl + Shift + A (hoặc Cmd + Shift + A trên Mac)
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === "A" || e.key === "a")) {
+        e.preventDefault();
+        window.location.href = "/admin";
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setSearchValue(val);
@@ -33,9 +45,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full transition-all">
+    <header className="sticky top-0 z-40 w-full -mb-[97px] transition-all">
       {/* 1. Top Utility Bar - Dark Cinema Strip */}
-      <div className="w-full bg-[#0B0C10] text-[#9CA3AF] text-[11px] py-1.5 px-4 sm:px-6 lg:px-8 border-b border-white/10 flex items-center justify-between">
+      <div className="w-full bg-black/50 backdrop-blur-sm text-[#9CA3AF] text-[11px] py-1.5 px-4 sm:px-6 lg:px-8 border-b border-white/5 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <span className="flex items-center gap-1.5 text-[#9CA3AF] font-medium">
             <Phone className="w-3.5 h-3.5 text-[#E50914]" />

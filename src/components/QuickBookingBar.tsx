@@ -39,7 +39,7 @@ export const QuickBookingBar: React.FC<QuickBookingBarProps> = ({ movies, onQuic
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedShowtimeId, setSelectedShowtimeId] = useState<string>("");
 
-  // 10 ngày liên tiếp
+  // 8 ngày liên tiếp
   const dateOptions = useMemo(() => {
     return Array.from({ length: 8 }, (_, i) => {
       const val = getVnDateString(i);
@@ -50,7 +50,7 @@ export const QuickBookingBar: React.FC<QuickBookingBarProps> = ({ movies, onQuic
     });
   }, []);
 
-  // Khi người dùng chọn phim, kích hoạt bước 2 và tự động cascade
+  // Khi chọn phim
   const handleMovieChange = (movieId: string) => {
     setSelectedMovieId(movieId);
     if (!selectedCinemaId) {
@@ -85,7 +85,6 @@ export const QuickBookingBar: React.FC<QuickBookingBarProps> = ({ movies, onQuic
     );
   }, [selectedMovieId, selectedCinemaId, selectedDate]);
 
-  // Tự động gán suất chiếu đầu tiên khi có danh sách suất chiếu mới
   useEffect(() => {
     if (availableShowtimes.length > 0 && !selectedShowtimeId) {
       setSelectedShowtimeId(availableShowtimes[0].id);
@@ -112,44 +111,48 @@ export const QuickBookingBar: React.FC<QuickBookingBarProps> = ({ movies, onQuic
   );
 
   const handleBookNow = () => {
-    if (!isComplete || !currentMovie || !currentCinema) return;
+    const movie = currentMovie || movies[0];
+    const cinema = currentCinema || MOCK_CINEMAS[0];
+    const date = selectedDate || dateOptions[0]?.value;
     const st = currentShowtime || availableShowtimes[0];
-    onQuickBook(
-      currentMovie,
-      currentCinema.name,
-      selectedDate,
-      st?.time || "19:00",
-      st?.format || "2D Phụ Đề",
-      st?.id
-    );
+    if (movie && cinema && date) {
+      onQuickBook(
+        movie,
+        cinema.name,
+        date,
+        st?.time || "19:00",
+        st?.format || "2D Phụ Đề",
+        st?.id
+      );
+    }
   };
 
   return (
     <section className="relative w-full z-20" aria-label="Thanh đặt vé nhanh CineMax">
-      <div className="bg-white border border-neutral-200/90 rounded-2xl p-4 sm:p-5 shadow-[0_4px_25px_rgba(0,0,0,0.08)] backdrop-blur-md transition-all">
-        {/* Header nhỏ thanh đặt vé nhanh */}
+      <div className="bg-[#161922]/90 backdrop-blur-xl border border-white/10 rounded-xl p-4 sm:p-5 shadow-2xl shadow-black/80 transition-all">
+        {/* Header thanh đặt vé nhanh */}
         <div className="flex flex-wrap items-center justify-between gap-2 mb-3.5 px-1">
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-rose-50 border border-rose-200 flex items-center justify-center text-[#e71a0f]">
+            <div className="w-7 h-7 rounded-lg bg-[#E50914]/20 border border-[#E50914]/40 flex items-center justify-center text-[#E50914]">
               <Ticket className="w-4 h-4" />
             </div>
             <div>
-              <span className="text-xs sm:text-sm font-black text-neutral-900 tracking-wide uppercase">
+              <span className="text-xs sm:text-sm font-black text-white tracking-wide uppercase">
                 ĐẶT VÉ NHANH CINEMAX
               </span>
-              <span className="hidden sm:inline-block ml-2 text-[11px] text-neutral-500 font-medium">
+              <span className="hidden sm:inline-block ml-2 text-[11px] text-[#9CA3AF] font-medium">
                 • 4 bước chọn nhanh vào thẳng sơ đồ ghế
               </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 text-[11px] text-neutral-500">
+          <div className="flex items-center gap-1.5 text-[11px]">
             {isComplete ? (
-              <span className="inline-flex items-center gap-1 font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+              <span className="inline-flex items-center gap-1 font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-md border border-emerald-500/30">
                 <CheckCircle2 className="w-3.5 h-3.5" /> Sẵn sàng đặt vé
               </span>
             ) : (
-              <span className="font-medium text-neutral-400">
+              <span className="font-medium text-[#9CA3AF]">
                 Vui lòng hoàn tất {selectedMovieId ? (selectedCinemaId ? (selectedDate ? "chọn suất chiếu" : "chọn ngày") : "chọn rạp") : "chọn phim"}
               </span>
             )}
@@ -160,28 +163,28 @@ export const QuickBookingBar: React.FC<QuickBookingBarProps> = ({ movies, onQuic
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-center">
           {/* 1. Chọn Phim */}
           <div
-            className={`rounded-xl px-3 py-2.5 border transition-all ${
+            className={`rounded-lg px-3 py-2.5 border transition-all ${
               selectedMovieId
-                ? "bg-neutral-50/80 border-neutral-300 hover:border-[#e71a0f]"
-                : "bg-white border-neutral-200 hover:border-neutral-400 ring-2 ring-rose-500/10"
+                ? "bg-[#12141C] border-white/20 hover:border-[#E50914]"
+                : "bg-[#0B0C10]/80 border-white/10 hover:border-white/30"
             }`}
           >
-            <span className="text-[10px] text-neutral-500 font-bold uppercase tracking-wider flex items-center gap-1.5 mb-0.5">
-              <span className="w-4 h-4 rounded-full bg-rose-100 text-[#e71a0f] text-[10px] font-black flex items-center justify-center">
+            <span className="text-[10px] text-[#9CA3AF] font-bold uppercase tracking-wider flex items-center gap-1.5 mb-0.5">
+              <span className="w-4 h-4 rounded bg-[#E50914] text-white text-[10px] font-black flex items-center justify-center">
                 1
               </span>
-              <Film className="w-3 h-3 text-[#e71a0f]" /> Chọn Phim
+              <Film className="w-3 h-3 text-[#E50914]" /> Chọn Phim
             </span>
             <select
               value={selectedMovieId}
               onChange={(e) => handleMovieChange(e.target.value)}
-              className="w-full bg-transparent border-none text-neutral-900 text-xs font-bold focus:outline-none cursor-pointer truncate"
+              className="w-full bg-transparent border-none text-white text-xs font-bold focus:outline-none cursor-pointer truncate"
             >
-              <option value="" disabled className="text-neutral-400">
+              <option value="" disabled className="bg-[#12141C] text-neutral-400">
                 -- Chọn bộ phim --
               </option>
               {movies.map((m) => (
-                <option key={m.id} value={m.id} className="text-neutral-800">
+                <option key={m.id} value={m.id} className="bg-[#12141C] text-white">
                   [{m.ageRating}] {m.title}
                 </option>
               ))}
@@ -190,31 +193,31 @@ export const QuickBookingBar: React.FC<QuickBookingBarProps> = ({ movies, onQuic
 
           {/* 2. Chọn Rạp */}
           <div
-            className={`rounded-xl px-3 py-2.5 border transition-all ${
+            className={`rounded-lg px-3 py-2.5 border transition-all ${
               !selectedMovieId
-                ? "opacity-60 bg-neutral-100 border-neutral-200 cursor-not-allowed"
+                ? "opacity-50 bg-[#0B0C10] border-white/5 cursor-not-allowed"
                 : selectedCinemaId
-                ? "bg-neutral-50/80 border-neutral-300 hover:border-[#e71a0f]"
-                : "bg-white border-neutral-300 ring-2 ring-rose-500/10"
+                ? "bg-[#12141C] border-white/20 hover:border-[#E50914]"
+                : "bg-[#0B0C10]/80 border-white/10"
             }`}
           >
-            <span className="text-[10px] text-neutral-500 font-bold uppercase tracking-wider flex items-center gap-1.5 mb-0.5">
-              <span className="w-4 h-4 rounded-full bg-neutral-200 text-neutral-700 text-[10px] font-black flex items-center justify-center">
+            <span className="text-[10px] text-[#9CA3AF] font-bold uppercase tracking-wider flex items-center gap-1.5 mb-0.5">
+              <span className="w-4 h-4 rounded bg-white/20 text-white text-[10px] font-black flex items-center justify-center">
                 2
               </span>
-              <MapPin className="w-3 h-3 text-[#e71a0f]" /> Chọn Rạp
+              <MapPin className="w-3 h-3 text-[#E50914]" /> Chọn Rạp
             </span>
             <select
               disabled={!selectedMovieId}
               value={selectedCinemaId}
               onChange={(e) => handleCinemaChange(e.target.value)}
-              className="w-full bg-transparent border-none text-neutral-900 text-xs font-bold focus:outline-none cursor-pointer truncate disabled:cursor-not-allowed"
+              className="w-full bg-transparent border-none text-white text-xs font-bold focus:outline-none cursor-pointer truncate disabled:cursor-not-allowed"
             >
-              <option value="" disabled className="text-neutral-400">
+              <option value="" disabled className="bg-[#12141C] text-neutral-400">
                 -- Chọn cụm rạp CineMax --
               </option>
               {MOCK_CINEMAS.map((c) => (
-                <option key={c.id} value={c.id} className="text-neutral-800">
+                <option key={c.id} value={c.id} className="bg-[#12141C] text-white">
                   {c.name}
                 </option>
               ))}
@@ -223,31 +226,31 @@ export const QuickBookingBar: React.FC<QuickBookingBarProps> = ({ movies, onQuic
 
           {/* 3. Chọn Ngày */}
           <div
-            className={`rounded-xl px-3 py-2.5 border transition-all ${
+            className={`rounded-lg px-3 py-2.5 border transition-all ${
               !selectedCinemaId
-                ? "opacity-60 bg-neutral-100 border-neutral-200 cursor-not-allowed"
+                ? "opacity-50 bg-[#0B0C10] border-white/5 cursor-not-allowed"
                 : selectedDate
-                ? "bg-neutral-50/80 border-neutral-300 hover:border-[#e71a0f]"
-                : "bg-white border-neutral-300 ring-2 ring-rose-500/10"
+                ? "bg-[#12141C] border-white/20 hover:border-[#E50914]"
+                : "bg-[#0B0C10]/80 border-white/10"
             }`}
           >
-            <span className="text-[10px] text-neutral-500 font-bold uppercase tracking-wider flex items-center gap-1.5 mb-0.5">
-              <span className="w-4 h-4 rounded-full bg-neutral-200 text-neutral-700 text-[10px] font-black flex items-center justify-center">
+            <span className="text-[10px] text-[#9CA3AF] font-bold uppercase tracking-wider flex items-center gap-1.5 mb-0.5">
+              <span className="w-4 h-4 rounded bg-white/20 text-white text-[10px] font-black flex items-center justify-center">
                 3
               </span>
-              <Calendar className="w-3 h-3 text-[#e71a0f]" /> Chọn Ngày
+              <Calendar className="w-3 h-3 text-[#E50914]" /> Chọn Ngày
             </span>
             <select
               disabled={!selectedCinemaId}
               value={selectedDate}
               onChange={(e) => handleDateChange(e.target.value)}
-              className="w-full bg-transparent border-none text-neutral-900 text-xs font-bold focus:outline-none cursor-pointer disabled:cursor-not-allowed"
+              className="w-full bg-transparent border-none text-white text-xs font-bold focus:outline-none cursor-pointer disabled:cursor-not-allowed"
             >
-              <option value="" disabled className="text-neutral-400">
+              <option value="" disabled className="bg-[#12141C] text-neutral-400">
                 -- Chọn ngày chiếu --
               </option>
               {dateOptions.map((d) => (
-                <option key={d.value} value={d.value} className="text-neutral-800">
+                <option key={d.value} value={d.value} className="bg-[#12141C] text-white">
                   {d.label}
                 </option>
               ))}
@@ -256,33 +259,33 @@ export const QuickBookingBar: React.FC<QuickBookingBarProps> = ({ movies, onQuic
 
           {/* 4. Chọn Suất Chiếu */}
           <div
-            className={`rounded-xl px-3 py-2.5 border transition-all ${
+            className={`rounded-lg px-3 py-2.5 border transition-all ${
               !selectedDate || availableShowtimes.length === 0
-                ? "opacity-60 bg-neutral-100 border-neutral-200 cursor-not-allowed"
+                ? "opacity-50 bg-[#0B0C10] border-white/5 cursor-not-allowed"
                 : selectedShowtimeId
-                ? "bg-neutral-50/80 border-neutral-300 hover:border-[#e71a0f]"
-                : "bg-white border-neutral-300 ring-2 ring-rose-500/10"
+                ? "bg-[#12141C] border-white/20 hover:border-[#E50914]"
+                : "bg-[#0B0C10]/80 border-white/10"
             }`}
           >
-            <span className="text-[10px] text-neutral-500 font-bold uppercase tracking-wider flex items-center gap-1.5 mb-0.5">
-              <span className="w-4 h-4 rounded-full bg-neutral-200 text-neutral-700 text-[10px] font-black flex items-center justify-center">
+            <span className="text-[10px] text-[#9CA3AF] font-bold uppercase tracking-wider flex items-center gap-1.5 mb-0.5">
+              <span className="w-4 h-4 rounded bg-white/20 text-white text-[10px] font-black flex items-center justify-center">
                 4
               </span>
-              <Clock className="w-3 h-3 text-[#e71a0f]" /> Suất Chiếu
+              <Clock className="w-3 h-3 text-[#E50914]" /> Suất Chiếu
             </span>
             <select
               disabled={!selectedDate || availableShowtimes.length === 0}
               value={selectedShowtimeId}
               onChange={(e) => setSelectedShowtimeId(e.target.value)}
-              className="w-full bg-transparent border-none text-neutral-900 text-xs font-bold focus:outline-none cursor-pointer disabled:cursor-not-allowed truncate"
+              className="w-full bg-transparent border-none text-white text-xs font-bold focus:outline-none cursor-pointer disabled:cursor-not-allowed truncate"
             >
               {availableShowtimes.length === 0 ? (
-                <option value="" disabled className="text-neutral-400">
+                <option value="" disabled className="bg-[#12141C] text-neutral-400">
                   {selectedDate ? "Hết suất cho ngày này" : "-- Chọn suất --"}
                 </option>
               ) : (
                 availableShowtimes.map((st) => (
-                  <option key={st.id} value={st.id} className="text-neutral-800">
+                  <option key={st.id} value={st.id} className="bg-[#12141C] text-white">
                     {st.time} - {st.format} ({st.roomName})
                   </option>
                 ))
@@ -290,20 +293,19 @@ export const QuickBookingBar: React.FC<QuickBookingBarProps> = ({ movies, onQuic
             </select>
           </div>
 
-          {/* 5. Nút Mua Vé Nhanh */}
+          {/* 5. Nút Mua Vé Nhanh (CTA) */}
           <div className="sm:col-span-2 lg:col-span-1">
             <button
               type="button"
-              disabled={!isComplete}
               onClick={handleBookNow}
-              className={`w-full py-3.5 px-4 rounded-xl font-black text-xs tracking-wider uppercase flex items-center justify-center gap-2 transition-all duration-200 ${
+              className={`w-full py-3.5 px-4 rounded-lg font-heading font-bold text-sm tracking-wider uppercase flex items-center justify-center gap-2 transition-all duration-300 transform active:scale-95 cursor-pointer ${
                 isComplete
-                  ? "bg-[#e71a0f] hover:bg-[#c81007] text-white shadow-lg shadow-rose-600/30 transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
-                  : "bg-neutral-200 text-neutral-400 cursor-not-allowed opacity-60 shadow-none"
+                  ? "bg-gradient-to-r from-[#E50914] to-[#B80710] hover:from-[#f01a24] hover:to-[#cf0812] text-white shadow-xl shadow-red-600/40 hover:-translate-y-0.5 border border-red-500/50"
+                  : "bg-gradient-to-r from-red-950/80 via-red-900/40 to-neutral-900/90 hover:from-red-900/80 hover:to-neutral-800 text-red-200 border border-red-600/40 shadow-lg shadow-red-950/40 hover:border-red-500"
               }`}
             >
               <span>MUA VÉ NGAY</span>
-              <ArrowRight className={`w-4 h-4 ${isComplete ? "text-white" : "text-neutral-400"}`} />
+              <ArrowRight className="w-4 h-4 text-white" />
             </button>
           </div>
         </div>

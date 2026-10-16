@@ -27,7 +27,7 @@ export const maxDuration = 60;
 // Hằng số & kiểu dữ liệu
 // ---------------------------------------------------------------------------
 
-const GROQ_MODEL = "llama-3.3-70b-versatile";
+const GROQ_MODEL = "qwen/qwen3.8-27b";
 const MAX_HISTORY_MESSAGES = 12;
 const MAX_MESSAGE_LENGTH = 2000;
 const MAX_RAG_CONTEXT_CHARS = 6000;
@@ -553,13 +553,15 @@ export async function POST(request: NextRequest): Promise<Response> {
 
         if (useGroq && apiKey) {
           const groq = new Groq({ apiKey });
-          const modelsToTry = [
-            process.env.GROQ_MODEL,
-            "llama-3.3-70b-versatile",
-            "llama-3.1-70b-versatile",
-            "openai/gpt-oss-120b",
-            "qwen/qwen3.8-27b",
-          ].filter(Boolean) as string[];
+          const modelsToTry = Array.from(
+            new Set([
+              process.env.GROQ_MODEL || "qwen/qwen3.8-27b",
+              "qwen/qwen3.8-27b",
+              "openai/gpt-oss-120b",
+              "openai/gpt-oss-20b",
+              "llama-3.3-70b-versatile",
+            ])
+          ).filter(Boolean) as string[];
 
           let toolCallName = "";
           let toolCallArgs = "";

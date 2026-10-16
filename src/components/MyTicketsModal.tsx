@@ -189,7 +189,7 @@ export const MyTicketsModal: React.FC<MyTicketsModalProps> = ({ isOpen, onClose 
                     <div className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/40 to-transparent pointer-events-none" />
 
                     <div className="flex items-center gap-1.5 font-bold tracking-wider uppercase text-[10px]">
-                      <Sparkles className="w-3.5 h-3.5 text-amber-500 animate-spin" style={{ animationDuration: '6s' }} />
+                      <ShieldCheck className="w-3.5 h-3.5 text-amber-500" />
                       <span className="text-sky-700 font-extrabold">
                         CINEMAX VERIFIED E-TICKET
                       </span>

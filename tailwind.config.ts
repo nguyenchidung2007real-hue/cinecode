@@ -8,6 +8,10 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        heading: ["var(--font-heading)", "Oswald", "sans-serif"],
+        sans: ["var(--font-sans)", "Be Vietnam Pro", "-apple-system", "sans-serif"],
+      },
       colors: {
         // Dark Mode Cinematic Palette - Netflix & Modern Cinema
         void: "#0B0C10",          // Nền chính tối điện ảnh

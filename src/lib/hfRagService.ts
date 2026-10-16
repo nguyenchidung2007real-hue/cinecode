@@ -67,9 +67,9 @@ const DEFAULT_RELATIVE_CUTOFF = 0.6;
 const MAX_QUERY_LENGTH = 300;
 
 const BATCH_SIZE = 16;
-const REQUEST_TIMEOUT_MS = 6000;
-const MAX_RETRY_WAIT_MS = 3000;
-const CIRCUIT_BREAKER_MS = 60_000;
+const REQUEST_TIMEOUT_MS = 1500;
+const MAX_RETRY_WAIT_MS = 1500;
+const CIRCUIT_BREAKER_MS = 600_000;
 const MAX_EMBEDDED_MOVIES = 80;
 const MAX_CACHED_DOCUMENTS = 2000;
 const MAX_CACHED_QUERIES = 100;
@@ -299,6 +299,10 @@ async function requestEmbeddings(
     }
 
     if (!response.ok) {
+      if (response.status === 401 || response.status === 402 || response.status === 403) {
+        // Token hết hạn hoặc hết credits (402) -> ngưng gọi HF trong 24 giờ để không làm chậm chat
+        getState().disabledUntil = Date.now() + 24 * 60 * 60 * 1000;
+      }
       throw new Error(`HF embedding API trả về HTTP ${response.status}`);
     }
 

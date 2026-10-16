@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Seat, Movie } from "@/types";
-import { X, Sparkles, Volume2, Eye, ShieldCheck, Check } from "lucide-react";
+import { X, Star, Volume2, Eye, ShieldCheck, Check } from "lucide-react";
 
 interface ViewFromSeatModalProps {
   seat: Seat | null;
@@ -80,7 +80,7 @@ export const ViewFromSeatModal: React.FC<ViewFromSeatModalProps> = ({
                 </h3>
                 {data.isSweetSpot && (
                   <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 flex items-center gap-1">
-                    <Sparkles className="w-3 h-3 text-amber-500" /> Sweet Spot
+                    <Star className="w-3 h-3 fill-amber-500 text-amber-500" /> Sweet Spot
                   </span>
                 )}
               </div>

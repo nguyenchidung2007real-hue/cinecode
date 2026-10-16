@@ -276,12 +276,12 @@ export function VietQRPaymentModal({
               {isSimulating ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  Đang chốt ghế trên máy chủ Redis...
+                  Đang xử lý xuất vé điện tử...
                 </>
               ) : (
                 <>
-                  <Sparkles className="w-5 h-5 text-amber-300" />
-                  Giả lập đã chuyển khoản thành công (Demo)
+                  <CheckCircle2 className="w-5 h-5 text-amber-300" />
+                  Xác nhận đã chuyển khoản thành công (Demo)
                 </>
               )}
             </button>

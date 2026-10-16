@@ -32,7 +32,7 @@ import {
   Copy,
   CreditCard,
   Eye,
-  Sparkles,
+  Star,
   AlertTriangle,
   Info,
   Utensils,
@@ -950,14 +950,14 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                     onClick={() => setPreviewSeat(selectedSeats[0])}
                     className="px-3.5 py-1.5 rounded-xl text-xs font-semibold text-amber-800 bg-amber-50 border border-amber-200 hover:bg-amber-100 flex items-center gap-1.5 transition-colors"
                   >
-                    <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                    <Eye className="w-3.5 h-3.5 text-amber-600" />
                     <span>Góc nhìn ghế {selectedSeats[0].id}</span>
                   </button>
                 )}
               </div>
 
               <div className="flex items-center gap-1.5 text-[11px] text-amber-700 font-medium">
-                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
                 <span>Hàng F - G: Vị trí vàng Sweet Spot (Dolby Atmos & THX)</span>
               </div>
             </div>
@@ -1478,7 +1478,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   <div className="space-y-2.5 text-xs text-slate-700">
                     <div className="p-3 bg-white rounded-xl border border-slate-200 space-y-1">
                       <p className="font-semibold text-slate-800 flex items-center gap-1.5">
-                        <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                        <CreditCard className="w-3.5 h-3.5 text-amber-500" />
                         <span>Phương thức hỗ trợ qua VNPay:</span>
                       </p>
                       <ul className="list-disc list-inside text-slate-600 space-y-0.5 text-[11px] pt-1">

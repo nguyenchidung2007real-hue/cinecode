@@ -14,12 +14,11 @@ import { AiChatWidget } from "@/components/AiChatWidget";
 import { QuickBookingBar } from "@/components/QuickBookingBar";
 import { CinemaShowtimeMatrix } from "@/components/CinemaShowtimeMatrix";
 import SemanticSearchModal from "@/components/SemanticSearchModal";
-import { CgvQuickIconBar } from "@/components/CgvQuickIconBar";
 import { MovieCarousel } from "@/components/MovieCarousel";
 import { Footer } from "@/components/Footer";
 import { useBookingStore } from "@/store/useBookingStore";
 
-import { Sparkles, Flame, Film, Clapperboard, Award, SearchX, Smile, Compass, Brain, Heart, Tag, Gift, Percent, Ticket, CheckCircle2, X, Clock, Calendar, Check, Copy, ArrowRight, Info, Armchair, Popcorn, Bot, Star } from "lucide-react";
+import { Sparkles, Flame, Film, Clapperboard, Award, SearchX, Smile, Compass, Brain, Heart, Tag, Gift, Percent, Ticket, CheckCircle2, X, Clock, Calendar, Check, Copy, ArrowRight, Info, Armchair, Popcorn, Headphones, Crown, Star } from "lucide-react";
 
 interface PromoItem {
   id: string;
@@ -41,9 +40,9 @@ const PROMO_DATA: PromoItem[] = [
   {
     id: "cinemax-happy-wednesday",
     badge: "CineMax Happy Wednesday",
-    badgeBg: "bg-rose-50",
-    badgeText: "text-[#e71a0f]",
-    badgeBorder: "border-rose-200",
+    badgeBg: "bg-[#E50914]/20",
+    badgeText: "text-[#E50914]",
+    badgeBorder: "border-[#E50914]/40",
     image: "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=800&auto=format&fit=crop&q=80",
     title: "Thứ Tư Vui Vẻ - Đồng Giá Vé 45.000đ",
     shortDesc: "Chương trình ưu đãi truyền thống được yêu thích nhất tại CineMax Cinemas. Đồng giá 45.000đ mọi suất chiếu 2D và miễn phụ thu ghế VIP.",
@@ -62,9 +61,9 @@ const PROMO_DATA: PromoItem[] = [
   {
     id: "cinemax-u22-pass",
     badge: "CineMax U22 Pass",
-    badgeBg: "bg-amber-50",
-    badgeText: "text-amber-700",
-    badgeBorder: "border-amber-200",
+    badgeBg: "bg-amber-500/20",
+    badgeText: "text-[#F5C518]",
+    badgeBorder: "border-amber-500/40",
     image: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800&auto=format&fit=crop&q=80",
     title: "Đặc Quyền Thành Viên U22 - Giá Vé 45k - 50k",
     shortDesc: "Dành riêng cho khán giả từ 12 đến 22 tuổi hoặc học sinh - sinh viên. Xem phim thả ga cả tuần với mức giá siêu ưu đãi.",
@@ -83,9 +82,9 @@ const PROMO_DATA: PromoItem[] = [
   {
     id: "cinemax-anime-festival",
     badge: "Lễ Hội Hoạt Hình",
-    badgeBg: "bg-emerald-50",
-    badgeText: "text-emerald-700",
-    badgeBorder: "border-emerald-200",
+    badgeBg: "bg-emerald-500/20",
+    badgeText: "text-emerald-400",
+    badgeBorder: "border-emerald-500/40",
     image: "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=800&auto=format&fit=crop&q=80",
     title: "Đại Tiệc Hoạt Hình CineMax - Tặng Quà Độc Quyền",
     shortDesc: "Thưởng thức các siêu phẩm hoạt hình Doraemon, Conan, Kung Fu Panda 4 và nhận thẻ sưu tầm hologram cùng ưu đãi bình nước Minions.",
@@ -103,9 +102,9 @@ const PROMO_DATA: PromoItem[] = [
   {
     id: "sweetbox-couple",
     badge: "Sweetbox Couple",
-    badgeBg: "bg-rose-50",
-    badgeText: "text-[#e71a0f]",
-    badgeBorder: "border-rose-200",
+    badgeBg: "bg-rose-500/20",
+    badgeText: "text-rose-400",
+    badgeBorder: "border-rose-500/40",
     image: "https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=800&auto=format&fit=crop&q=80",
     title: "Sweetbox Ghế Đôi - Tặng Kèm Bắp Phô Mai",
     shortDesc: "Thưởng thức không gian ghế đôi nỉ nhung riêng tư và nhận ngay 1 bắp phô mai thơm giòn nóng hổi cho buổi hẹn hò lãng mạn.",
@@ -125,11 +124,11 @@ const PROMO_DATA: PromoItem[] = [
 const GENRE_FILTERS = ["Tất cả", "Hành động", "Khoa học viễn tưởng", "Kinh dị", "Hoạt hình", "Chính kịch"];
 
 const MOOD_FILTERS = [
-  { id: "all", label: "✨ Tất cả tâm trạng", icon: Compass, color: "from-blue-500/20 to-cyan-500/20 text-cyan-300" },
-  { id: "blockbuster", label: "🔥 Bom tấn hành động", icon: Flame, color: "from-red-500/20 to-orange-500/20 text-orange-300" },
-  { id: "mindblown", label: "🧠 Căng não viễn tưởng", icon: Brain, color: "from-purple-500/20 to-indigo-500/20 text-purple-300" },
-  { id: "chill", label: "🍿 Thư giãn cuối tuần", icon: Smile, color: "from-emerald-500/20 to-teal-500/20 text-emerald-300" },
-  { id: "emotional", label: "😢 Cảm động sâu lắng", icon: Heart, color: "from-pink-500/20 to-rose-500/20 text-pink-300" },
+  { id: "all", label: "Tất cả phim", icon: Compass, color: "from-blue-500/20 to-cyan-500/20 text-cyan-300" },
+  { id: "blockbuster", label: "Bom tấn hành động", icon: Flame, color: "from-red-500/20 to-orange-500/20 text-orange-300" },
+  { id: "mindblown", label: "Khoa học viễn tưởng", icon: Film, color: "from-purple-500/20 to-indigo-500/20 text-purple-300" },
+  { id: "chill", label: "Hoạt hình & Hài", icon: Smile, color: "from-emerald-500/20 to-teal-500/20 text-emerald-300" },
+  { id: "emotional", label: "Tâm lý & Tình cảm", icon: Heart, color: "from-pink-500/20 to-rose-500/20 text-pink-300" },
 ];
 
 export default function HomePage() {
@@ -328,7 +327,7 @@ export default function HomePage() {
               }`}
             >
               <div className="flex items-center gap-2.5">
-                <Sparkles className="w-5 h-5 shrink-0" />
+                <CheckCircle2 className="w-5 h-5 shrink-0" />
                 <span className="font-semibold">{vnpayNotice.message}</span>
               </div>
               <button
@@ -347,14 +346,14 @@ export default function HomePage() {
           <div className="max-w-[1040px] 2xl:max-w-[1080px] mx-auto px-2 sm:px-4 py-10">
             <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2">
+                <h1 className="text-2xl font-black text-white flex items-center gap-2">
                   {searchQuery ? (
-                    <>Kết quả tìm kiếm cho: <span className="text-sky-600">"{searchQuery}"</span></>
+                    <>Kết quả tìm kiếm cho: <span className="text-[#E50914]">"{searchQuery}"</span></>
                   ) : (
-                    <>Khám phá theo: <span className="text-sky-600">{MOOD_FILTERS.find(m => m.id === selectedMood)?.label || selectedGenre}</span></>
+                    <>Khám phá theo: <span className="text-[#E50914]">{MOOD_FILTERS.find(m => m.id === selectedMood)?.label || selectedGenre}</span></>
                   )}
                 </h1>
-                <p className="text-xs text-slate-500 mt-1">
+                <p className="text-xs text-[#9CA3AF] mt-1">
                   Tìm thấy {filteredMovies.length} bộ phim phù hợp với sở thích của bạn
                 </p>
               </div>
@@ -365,7 +364,7 @@ export default function HomePage() {
                   setSelectedMood("all");
                   setSelectedGenre("Tất cả");
                 }}
-                className="text-xs text-sky-600 hover:underline font-semibold self-start sm:self-auto"
+                className="text-xs text-[#E50914] hover:underline font-semibold self-start sm:self-auto cursor-pointer"
               >
                 Đặt lại tất cả bộ lọc
               </button>
@@ -384,29 +383,26 @@ export default function HomePage() {
               </div>
             ) : (
               <div className="py-20 text-center flex flex-col items-center justify-center space-y-3">
-                <SearchX className="w-12 h-12 text-neutral-400" />
-                <h3 className="text-lg font-bold text-neutral-800">Không tìm thấy bộ phim phù hợp</h3>
-                <p className="text-xs text-neutral-500 max-w-sm">
-                  Thử tìm kiếm với từ khóa khác hoặc bấm trợ lý bên dưới để được hỗ trợ tìm phim và suất chiếu nhanh nhất.
+                <SearchX className="w-12 h-12 text-[#9CA3AF]" />
+                <h3 className="text-lg font-bold text-white">Không tìm thấy bộ phim phù hợp</h3>
+                <p className="text-xs text-[#9CA3AF] max-w-sm">
+                  Thử tìm kiếm với từ khóa khác hoặc bấm nút hỗ trợ bên dưới để được tư vấn chọn phim và suất chiếu nhanh nhất.
                 </p>
                 <button
                   onClick={() => setIsAiChatOpen(true)}
-                  className="px-4 py-2.5 rounded-xl bg-[#e71a0f] text-white hover:bg-[#c81007] text-xs font-bold flex items-center gap-2 mt-2 transition-all shadow-md shadow-[#e71a0f]/20 cursor-pointer"
+                  className="px-4 py-2.5 rounded-lg bg-[#E50914] text-white hover:bg-[#b80710] text-xs font-bold flex items-center gap-2 mt-2 transition-all shadow-lg shadow-red-600/30 cursor-pointer"
                 >
-                  <Bot className="w-4 h-4 text-white" />
-                  <span>Trợ lý đặt vé</span>
+                  <Headphones className="w-4 h-4 text-white" />
+                  <span>Hỗ trợ đặt vé</span>
                 </button>
               </div>
             )}
           </div>
         ) : (
-          /* GIAO DIỆN TRANG CHỦ TIÊU CHUẨN CGV & CINEMAX CULTUREPLEX */
+          /* GIAO DIỆN TRANG CHỦ CINEMATIC DARK MODE (NETFLIX & CGV HYBRID) */
           <>
-            {/* 1. THANH ICON TRUY CẬP NHANH CHUẨN CGV (QUICK LINKS / WIDGET BAR) */}
-            <CgvQuickIconBar />
-
-            {/* 2. BANNER ĐÓNG KHUNG Ở GIỮA (BOXED CONTAINER ~1080px, TỶ LỆ ~980x448) */}
-            <section className="w-full pt-4 pb-1">
+            {/* 1. HERO BANNER TRÀN VIỀN 100% CHIỀU NGANG */}
+            <section className="w-full relative">
               <HeroBanner
                 movies={movies}
                 onWatchTrailer={setActiveDetailMovie}
@@ -414,8 +410,8 @@ export default function HomePage() {
               />
             </section>
 
-            {/* 3. THANH ĐẶT VÉ NHANH NẰM GỌN TRONG KHUNG 1080px */}
-            <section className="max-w-[1040px] 2xl:max-w-[1080px] mx-auto px-2 sm:px-4 mt-3">
+            {/* 2. THANH ĐẶT VÉ NHANH NẰM ĐÈ LÊN RANH GIỚI HERO BANNER (-mt-12) */}
+            <section className="max-w-6xl mx-auto px-4 -mt-12 relative z-20">
               <QuickBookingBar
                 movies={movies}
                 onQuickBook={(movie, cinemaName, date, time, format, showtimeId) => {
@@ -425,77 +421,71 @@ export default function HomePage() {
               />
             </section>
 
-            {/* 4. KHU VỰC "MOVIE SELECTION" CHUẨN CGV: TIÊU ĐỀ KẺ ĐÔI & TRƯỢT 4 PHIM */}
-            <div id="commercial-tabs" className="max-w-[1040px] 2xl:max-w-[1080px] mx-auto px-2 sm:px-4 mt-10 scroll-mt-24">
+            {/* 3. KHU VỰC "MOVIE SELECTION": TIÊU ĐỀ KẺ ĐÔI & TRƯỢT 4 PHIM */}
+            {/* 3. KHU VỰC "MOVIE SELECTION": DANH SÁCH PHIM ĐANG CHIẾU & SẮP CHIẾU */}
+            <div id="commercial-tabs" className="max-w-[1040px] 2xl:max-w-[1080px] mx-auto px-2 sm:px-4 mt-16 scroll-mt-24">
               
-              {/* Tiêu Đề Có Đường Kẻ Đôi 2 Bên Chuẩn CGV */}
-              <div className="relative text-center my-8">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t-2 border-b border-neutral-800" />
-                </div>
-                <div className="relative inline-block bg-[#fdfcf0] px-6">
-                  <h2 className="text-2xl sm:text-3xl font-black tracking-widest uppercase text-neutral-900 font-sans">
-                    MOVIE SELECTION
+              {/* Tiêu đề Section chuẩn Điện Ảnh: Căn trái, thanh dọc đỏ */}
+              <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-6 gap-3">
+                <div className="border-l-4 border-[#E50914] pl-4">
+                  <span className="text-xs font-bold text-[#E50914] uppercase tracking-wider block mb-1">
+                    Danh Sách Phim Chiếu Rạp
+                  </span>
+                  <h2 className="font-heading text-2xl sm:text-4xl font-bold uppercase text-white tracking-tight">
+                    PHIM ĐIỆN ẢNH CINEMAX
                   </h2>
                 </div>
               </div>
 
-              {/* Thanh Chuyển Tab Phim Chuẩn Rạp Chiếu Phim */}
-              <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#e5e0d8] pb-4">
-                <div className="flex items-center gap-4 sm:gap-8">
-                  <button
-                    type="button"
-                    onClick={() => setActiveCommercialTab("now_playing")}
-                    className={`text-base sm:text-lg font-bold transition-all flex items-center gap-2 pb-3 -mb-4.5 border-b-2 cursor-pointer ${
-                      activeCommercialTab === "now_playing"
-                        ? "text-[#e71a0f] border-[#e71a0f] font-black"
-                        : "text-neutral-500 border-transparent hover:text-neutral-900"
-                    }`}
-                  >
-                    <Film className="w-4 h-4" />
-                    <span>PHIM ĐANG CHIẾU</span>
-                    <span className="text-xs px-2.5 py-0.5 rounded-full bg-rose-50 text-[#e71a0f] font-bold border border-rose-200">
-                      {nowPlayingMovies.length}
-                    </span>
-                  </button>
+              {/* Thanh Chuyển Tab Phim (Khử hoàn toàn dấu vết AI giám sát server) */}
+              <div className="flex items-center gap-4 sm:gap-8 border-b border-white/10 pb-4 overflow-x-auto scrollbar-none">
+                <button
+                  type="button"
+                  onClick={() => setActiveCommercialTab("now_playing")}
+                  className={`font-heading text-base sm:text-xl font-bold tracking-wide transition-all flex items-center gap-2 pb-3 -mb-4.5 border-b-2 cursor-pointer uppercase ${
+                    activeCommercialTab === "now_playing"
+                      ? "text-[#E50914] border-[#E50914]"
+                      : "text-[#9CA3AF] border-transparent hover:text-white"
+                  }`}
+                >
+                  <Film className="w-4 h-4" />
+                  <span>PHIM ĐANG CHIẾU</span>
+                  <span className="text-xs px-2.5 py-0.5 rounded-md bg-[#E50914]/20 text-[#E50914] font-bold border border-[#E50914]/30">
+                    {nowPlayingMovies.length}
+                  </span>
+                </button>
 
-                  <button
-                    type="button"
-                    onClick={() => setActiveCommercialTab("upcoming")}
-                    className={`text-base sm:text-lg font-bold transition-all flex items-center gap-2 pb-3 -mb-4.5 border-b-2 cursor-pointer ${
-                      activeCommercialTab === "upcoming"
-                        ? "text-[#e71a0f] border-[#e71a0f] font-black"
-                        : "text-neutral-500 border-transparent hover:text-neutral-900"
-                    }`}
-                  >
-                    <Clock className="w-4 h-4" />
-                    <span>PHIM SẮP CHIẾU</span>
-                    <span className="text-xs px-2.5 py-0.5 rounded-full bg-neutral-100 text-neutral-600 font-bold border border-neutral-200">
-                      {upcomingMovies.length}
-                    </span>
-                  </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveCommercialTab("upcoming")}
+                  className={`font-heading text-base sm:text-xl font-bold tracking-wide transition-all flex items-center gap-2 pb-3 -mb-4.5 border-b-2 cursor-pointer uppercase ${
+                    activeCommercialTab === "upcoming"
+                      ? "text-[#E50914] border-[#E50914]"
+                      : "text-[#9CA3AF] border-transparent hover:text-white"
+                  }`}
+                >
+                  <Clock className="w-4 h-4" />
+                  <span>PHIM SẮP CHIẾU</span>
+                  <span className="text-xs px-2.5 py-0.5 rounded-md bg-white/10 text-[#9CA3AF] font-bold border border-white/15">
+                    {upcomingMovies.length}
+                  </span>
+                </button>
 
-                  <button
-                    type="button"
-                    onClick={() => setActiveCommercialTab("trending")}
-                    className={`text-base sm:text-lg font-bold transition-all hidden sm:flex items-center gap-2 pb-3 -mb-4.5 border-b-2 cursor-pointer ${
-                      activeCommercialTab === "trending"
-                        ? "text-[#e71a0f] border-[#e71a0f] font-black"
-                        : "text-neutral-500 border-transparent hover:text-neutral-900"
-                    }`}
-                  >
-                    <Sparkles className="w-4 h-4" />
-                    <span>SUẤT CHIẾU ĐẶC BIỆT</span>
-                    <span className="text-xs px-2.5 py-0.5 rounded-full bg-rose-50 text-[#e71a0f] font-bold border border-rose-200">
-                      HOT
-                    </span>
-                  </button>
-                </div>
-
-                <div className="flex items-center gap-2 text-xs text-neutral-500">
-                  <span className="w-2 h-2 rounded-full bg-[#e71a0f] animate-ping" />
-                  <span>Cập nhật trực tiếp hệ thống CineMax</span>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setActiveCommercialTab("trending")}
+                  className={`font-heading text-base sm:text-xl font-bold tracking-wide transition-all hidden sm:flex items-center gap-2 pb-3 -mb-4.5 border-b-2 cursor-pointer uppercase ${
+                    activeCommercialTab === "trending"
+                      ? "text-[#E50914] border-[#E50914]"
+                      : "text-[#9CA3AF] border-transparent hover:text-white"
+                  }`}
+                >
+                  <Flame className="w-4 h-4 text-[#E50914]" />
+                  <span>SUẤT CHIẾU ĐẶC BIỆT</span>
+                  <span className="text-xs px-2.5 py-0.5 rounded-md bg-[#E50914]/20 text-[#E50914] font-bold border border-[#E50914]/30">
+                    HOT
+                  </span>
+                </button>
               </div>
 
               {/* LƯỚI CAROUSEL TRƯỢT 4 PHIM TRÊN 1 HÀNG CHUẨN CGV */}
@@ -514,186 +504,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* CINEMAX SPECIAL CINEMA - RẠP ĐẶC BIỆT ĐỘC QUYỀN */}
-            <div id="special-cinema-section" className="max-w-[1040px] 2xl:max-w-[1080px] mx-auto px-2 sm:px-4 mt-16 scroll-mt-24">
-              <div className="flex flex-col items-center justify-center mb-8">
-                <div className="flex items-center gap-3 sm:gap-6 w-full max-w-2xl justify-center">
-                  <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-[#e71a0f]/50 to-[#e71a0f]" />
-                  <div className="flex items-center gap-2 px-5 py-1.5 rounded-full bg-[#1c1c1c] text-white shadow-lg border border-[#e71a0f]/30">
-                    <span className="text-[#e71a0f] text-sm">✦</span>
-                    <h2 className="text-xs sm:text-sm font-black tracking-widest uppercase text-white">
-                      CINEMAX SPECIAL CINEMA
-                    </h2>
-                    <span className="text-[#e71a0f] text-sm">✦</span>
-                  </div>
-                  <div className="h-[2px] flex-1 bg-gradient-to-l from-transparent via-[#e71a0f]/50 to-[#e71a0f]" />
-                </div>
-                <p className="text-[11px] text-neutral-500 font-bold uppercase tracking-wider mt-1.5">
-                  Trải Nghiệm Điện Ảnh Đỉnh Cao Vượt Xa Khung Hình Tiêu Chuẩn
-                </p>
-              </div>
-
-              {/* 6 Khối Định Dạng Rạp Đặc Biệt Độc Quyền CineMax */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
-                {/* 1. IMAX Laser */}
-                <div
-                  onClick={() => {
-                    const el = document.getElementById("matrix-section");
-                    if (el) el.scrollIntoView({ behavior: "smooth" });
-                  }}
-                  className="bg-white rounded-2xl border-2 border-neutral-200 hover:border-[#e71a0f] p-4 flex flex-col justify-between text-center group cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
-                >
-                  <div>
-                    <div className="h-10 flex items-center justify-center">
-                      <span className="font-black text-lg tracking-tighter text-[#1c1c1c] group-hover:text-[#e71a0f] transition-colors">
-                        IMAX Laser
-                      </span>
-                    </div>
-                    <span className="inline-block px-2 py-0.5 rounded text-[9px] font-black bg-neutral-900 text-white uppercase tracking-wider mb-2">
-                      Laser 4K
-                    </span>
-                    <p className="text-[10px] text-neutral-600 line-clamp-3 leading-tight">
-                      Màn hình 7 tầng nhà và âm thanh kỹ thuật số đa chiều rung chuyển.
-                    </p>
-                  </div>
-                  <div className="mt-3 text-[10px] font-bold text-[#e71a0f] group-hover:underline">
-                    Khám phá & Xem lịch →
-                  </div>
-                </div>
-
-                {/* 2. 4DX Motion */}
-                <div
-                  onClick={() => {
-                    const el = document.getElementById("matrix-section");
-                    if (el) el.scrollIntoView({ behavior: "smooth" });
-                  }}
-                  className="bg-white rounded-2xl border-2 border-neutral-200 hover:border-[#e71a0f] p-4 flex flex-col justify-between text-center group cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
-                >
-                  <div>
-                    <div className="h-10 flex items-center justify-center">
-                      <span className="font-black text-lg tracking-tighter text-[#e71a0f]">
-                        4DX Motion
-                      </span>
-                    </div>
-                    <span className="inline-block px-2 py-0.5 rounded text-[9px] font-black bg-rose-50 text-[#e71a0f] border border-rose-200 uppercase tracking-wider mb-2">
-                      Motion Seat
-                    </span>
-                    <p className="text-[10px] text-neutral-600 line-clamp-3 leading-tight">
-                      Ghế chuyển động đa chiều, hiệu ứng gió, nước, mùi hương và sương mù.
-                    </p>
-                  </div>
-                  <div className="mt-3 text-[10px] font-bold text-[#e71a0f] group-hover:underline">
-                    Khám phá & Xem lịch →
-                  </div>
-                </div>
-
-                {/* 3. CineMax Luxe Lounge */}
-                <div
-                  onClick={() => {
-                    const el = document.getElementById("matrix-section");
-                    if (el) el.scrollIntoView({ behavior: "smooth" });
-                  }}
-                  className="bg-white rounded-2xl border-2 border-neutral-200 hover:border-amber-500 p-4 flex flex-col justify-between text-center group cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
-                >
-                  <div>
-                    <div className="h-10 flex items-center justify-center">
-                      <span className="font-black text-xs sm:text-sm tracking-wider text-amber-600 uppercase">
-                        LUXE LOUNGE
-                      </span>
-                    </div>
-                    <span className="inline-block px-2 py-0.5 rounded text-[9px] font-black bg-amber-100 text-amber-800 uppercase tracking-wider mb-2">
-                      Luxury VIP
-                    </span>
-                    <p className="text-[10px] text-neutral-600 line-clamp-3 leading-tight">
-                      Sofa da ngả 180°, phục vụ trà cà phê và phòng chờ riêng thượng hạng.
-                    </p>
-                  </div>
-                  <div className="mt-3 text-[10px] font-bold text-amber-600 group-hover:underline">
-                    Khám phá & Xem lịch →
-                  </div>
-                </div>
-
-                {/* 4. CineMax Velvet Suite */}
-                <div
-                  onClick={() => {
-                    const el = document.getElementById("matrix-section");
-                    if (el) el.scrollIntoView({ behavior: "smooth" });
-                  }}
-                  className="bg-white rounded-2xl border-2 border-neutral-200 hover:border-rose-400 p-4 flex flex-col justify-between text-center group cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
-                >
-                  <div>
-                    <div className="h-10 flex items-center justify-center">
-                      <span className="font-black text-xs sm:text-sm tracking-widest text-rose-600 uppercase">
-                        VELVET SUITE
-                      </span>
-                    </div>
-                    <span className="inline-block px-2 py-0.5 rounded text-[9px] font-black bg-rose-100 text-rose-700 uppercase tracking-wider mb-2">
-                      Giường Nằm
-                    </span>
-                    <p className="text-[10px] text-neutral-600 line-clamp-3 leading-tight">
-                      Phòng chiếu giường nhung êm ái, gối nỉ cao cấp không gian riêng tư.
-                    </p>
-                  </div>
-                  <div className="mt-3 text-[10px] font-bold text-rose-600 group-hover:underline">
-                    Khám phá & Xem lịch →
-                  </div>
-                </div>
-
-                {/* 5. CineMax Eco Cinema */}
-                <div
-                  onClick={() => {
-                    const el = document.getElementById("matrix-section");
-                    if (el) el.scrollIntoView({ behavior: "smooth" });
-                  }}
-                  className="bg-white rounded-2xl border-2 border-neutral-200 hover:border-emerald-500 p-4 flex flex-col justify-between text-center group cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
-                >
-                  <div>
-                    <div className="h-10 flex items-center justify-center">
-                      <span className="font-black text-xs tracking-tight text-emerald-700 uppercase">
-                        ECO CINEMA
-                      </span>
-                    </div>
-                    <span className="inline-block px-2 py-0.5 rounded text-[9px] font-black bg-emerald-100 text-emerald-800 uppercase tracking-wider mb-2">
-                      Rừng Sinh Thái
-                    </span>
-                    <p className="text-[10px] text-neutral-600 line-clamp-3 leading-tight">
-                      Bầu trời sao đêm rực rỡ và ghế lười êm ái hòa cùng thiên nhiên.
-                    </p>
-                  </div>
-                  <div className="mt-3 text-[10px] font-bold text-emerald-600 group-hover:underline">
-                    Khám phá & Xem lịch →
-                  </div>
-                </div>
-
-                {/* 6. CineMax Sweetbox */}
-                <div
-                  onClick={() => {
-                    const el = document.getElementById("matrix-section");
-                    if (el) el.scrollIntoView({ behavior: "smooth" });
-                  }}
-                  className="bg-white rounded-2xl border-2 border-neutral-200 hover:border-[#e71a0f] p-4 flex flex-col justify-between text-center group cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
-                >
-                  <div>
-                    <div className="h-10 flex items-center justify-center">
-                      <span className="font-black text-xs sm:text-sm tracking-wider text-[#e71a0f] uppercase">
-                        SWEETBOX
-                      </span>
-                    </div>
-                    <span className="inline-block px-2 py-0.5 rounded text-[9px] font-black bg-rose-50 text-[#e71a0f] border border-rose-200 uppercase tracking-wider mb-2">
-                      Ghế Đôi Cặp
-                    </span>
-                    <p className="text-[10px] text-neutral-600 line-clamp-3 leading-tight">
-                      Vách ngăn riêng tư cao cấp tạo không gian ngọt ngào cho 2 người.
-                    </p>
-                  </div>
-                  <div className="mt-3 text-[10px] font-bold text-[#e71a0f] group-hover:underline">
-                    Khám phá & Xem lịch →
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* 3. Bảng Lịch Chiếu Trực Tiếp Theo Cụm Rạp CineMax */}
+            {/* 4. LỊCH CHIẾU PHIM TRỰC TIẾP (ĐƯỢC ĐẶT NGAY SAU DANH SÁCH PHIM ĐỂ TIỆN CHỌN SUẤT) */}
             <div id="matrix-section" className="scroll-mt-24">
               <CinemaShowtimeMatrix
                 movies={movies}
@@ -703,16 +514,409 @@ export default function HomePage() {
               />
             </div>
 
-            {/* 4. Khám Phá Phim Theo Tâm Trạng (Mood-Based Discovery) */}
+            {/* 5. VỊ TRÍ VÀNG: SỰ KIỆN & ƯU ĐÃI (EVENTS & COMBOS) - NẰM NGAY SAU LỊCH CHIẾU */}
+            <section id="promo-section" className="max-w-[1040px] 2xl:max-w-[1080px] mx-auto px-2 sm:px-4 py-12 scroll-mt-24">
+              {/* Tiêu đề Section chuẩn Điện Ảnh */}
+              <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-3 border-b border-white/10 pb-4">
+                <div className="border-l-4 border-[#E50914] pl-4">
+                  <span className="text-xs font-bold text-[#E50914] uppercase tracking-wider block mb-1">
+                    Ưu Đãi & Bắp Nước Độc Quyền
+                  </span>
+                  <h2 className="font-heading text-2xl sm:text-4xl font-bold uppercase text-white tracking-tight">
+                    SỰ KIỆN & KHUYẾN MÃI CINEMAX
+                  </h2>
+                  <p className="text-xs sm:text-sm text-[#9CA3AF] mt-1">
+                    Săn vé đồng giá 45k, combo bắp nước phiên bản giới hạn và quà tặng độc quyền từ các siêu phẩm điện ảnh
+                  </p>
+                </div>
+              </div>
+
+              {/* NHÁNH 1: KHỐI NỔI BẬT (FEATURED MERCHANDISE & EXCLUSIVE COMBO BANNER) */}
+              <div className="relative rounded-2xl overflow-hidden border border-white/10 bg-gradient-to-r from-[#12141C] via-[#161922] to-[#12141C] shadow-2xl mb-8 group">
+                <div className="grid grid-cols-1 lg:grid-cols-12 items-center">
+                  {/* Cột trái: Thông tin Combo & Giá trị lớn */}
+                  <div className="lg:col-span-7 p-6 sm:p-8 lg:p-10 z-10 space-y-4">
+                    <div className="flex items-center gap-2">
+                      <span className="px-3 py-1 rounded-md text-[11px] font-heading font-bold bg-[#E50914] text-white uppercase tracking-wider shadow-md">
+                        COMBO BOM TẤN GIỚI HẠN
+                      </span>
+                      <span className="text-xs font-bold text-[#F5C518] uppercase tracking-wider">
+                        • Số lượng có hạn
+                      </span>
+                    </div>
+
+                    <h3 className="font-heading text-3xl sm:text-5xl font-bold text-white uppercase leading-tight tracking-tight">
+                      DUNE: POPCORN BUCKET SA MẠC & BÌNH NƯỚC CONAN 2024
+                    </h3>
+
+                    <p className="text-xs sm:text-sm text-[#9CA3AF] max-w-xl leading-relaxed">
+                      Sở hữu ngay mẫu xô bắp tạo hình Sandworm sa mạc Arrakis cùng bình nước phiên bản kỷ niệm Conan Movie 27 độc quyền tại cụm rạp CineMax.
+                    </p>
+
+                    <div className="flex flex-wrap items-baseline gap-3 pt-2">
+                      <span className="font-heading text-3xl sm:text-4xl font-bold text-[#F5C518]">
+                        CHỈ 139.000đ
+                      </span>
+                      <span className="text-sm text-[#9CA3AF] line-through">
+                        Giá gốc: 215.000đ
+                      </span>
+                      <span className="px-2.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-xs font-bold border border-emerald-500/30">
+                        Tiết kiệm 35% khi đặt vé
+                      </span>
+                    </div>
+
+                    <div className="pt-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const target = movies.find((m) => m.status === "now_playing") || movies[0];
+                          if (target) setActiveBookingMovie(target);
+                        }}
+                        className="px-7 py-3.5 rounded-lg bg-[#E50914] hover:bg-[#b80710] text-white font-heading font-bold text-sm uppercase tracking-wider shadow-xl shadow-red-600/40 flex items-center gap-2.5 transform hover:scale-105 active:scale-95 transition-all cursor-pointer border border-red-500/40"
+                      >
+                        <Popcorn className="w-4 h-4" />
+                        <span>ĐẶT COMBO KÈM VÉ NGAY</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Cột phải: Hình ảnh Merchandise thực tế */}
+                  <div className="lg:col-span-5 relative h-64 lg:h-full min-h-[280px] overflow-hidden">
+                    <img
+                      src="https://images.unsplash.com/photo-1585647347483-22b66260dfff?w=1000&auto=format&fit=crop&q=80"
+                      alt="Combo Bắp Nước CineMax Giới Hạn"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t lg:bg-gradient-to-l from-transparent via-[#12141C]/40 to-[#12141C]" />
+                  </div>
+                </div>
+              </div>
+
+              {/* NHÁNH 2: DANH SÁCH CUỘN VÉ ƯU ĐÃI (TICKET VOUCHER CARDS) */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                {/* Voucher 1: Thứ 4 Đồng Giá 45k */}
+                <div
+                  onClick={() => {
+                    setSelectedPromo(PROMO_DATA[0]);
+                    setCopiedPromoCode(false);
+                  }}
+                  className="relative bg-[#161922] rounded-xl border border-white/10 p-5 flex flex-col justify-between hover:border-[#E50914] hover:shadow-[0_15px_30px_rgba(229,9,20,0.2)] transition-all duration-300 group cursor-pointer overflow-hidden"
+                >
+                  {/* Đường cắt vé bán nguyệt 2 bên mép */}
+                  <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-[#0B0C10] border-r border-white/10" />
+                  <div className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-[#0B0C10] border-l border-white/10" />
+
+                  <div className="px-2">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="px-2.5 py-0.5 rounded text-[10px] font-heading font-bold uppercase tracking-wider bg-[#E50914]/20 text-[#E50914] border border-[#E50914]/30">
+                        THỨ 4 HÀNG TUẦN
+                      </span>
+                      <Tag className="w-4 h-4 text-[#F5C518]" />
+                    </div>
+
+                    {/* Con số giá trị cực lớn */}
+                    <div className="my-3">
+                      <span className="font-heading text-4xl sm:text-5xl font-bold text-[#F5C518] tracking-tight block">
+                        ĐỒNG GIÁ 45K
+                      </span>
+                      <span className="text-xs font-bold text-white uppercase tracking-wider mt-1 block">
+                        THỨ TƯ VUI VẺ - CINEMAX HAPPY DAY
+                      </span>
+                    </div>
+
+                    <p className="text-xs text-[#9CA3AF] line-clamp-2 leading-relaxed">
+                      Đồng giá 45.000đ mọi suất chiếu 2D và miễn hoàn toàn phụ thu ghế VIP cho tất cả khán giả.
+                    </p>
+                  </div>
+
+                  {/* Phần chân cuộn vé có đường kẻ đứt nét */}
+                  <div className="mt-4 pt-4 border-t border-dashed border-white/20 px-2 flex items-center justify-between text-xs">
+                    <span className="font-mono text-[11px] text-[#9CA3AF] bg-white/5 px-2 py-1 rounded border border-white/10">
+                      MÃ: CINEMAXHAPPY45
+                    </span>
+                    <span className="font-heading font-bold text-[#E50914] group-hover:translate-x-1 transition-transform flex items-center gap-1">
+                      Chi tiết →
+                    </span>
+                  </div>
+                </div>
+
+                {/* Voucher 2: Giảm 50% U22 */}
+                <div
+                  onClick={() => {
+                    setSelectedPromo(PROMO_DATA[1] || PROMO_DATA[0]);
+                    setCopiedPromoCode(false);
+                  }}
+                  className="relative bg-[#161922] rounded-xl border border-white/10 p-5 flex flex-col justify-between hover:border-[#E50914] hover:shadow-[0_15px_30px_rgba(229,9,20,0.2)] transition-all duration-300 group cursor-pointer overflow-hidden"
+                >
+                  <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-[#0B0C10] border-r border-white/10" />
+                  <div className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-[#0B0C10] border-l border-white/10" />
+
+                  <div className="px-2">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="px-2.5 py-0.5 rounded text-[10px] font-heading font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                        HỌC SINH - SINH VIÊN
+                      </span>
+                      <Percent className="w-4 h-4 text-emerald-400" />
+                    </div>
+
+                    <div className="my-3">
+                      <span className="font-heading text-4xl sm:text-5xl font-bold text-[#E50914] tracking-tight block">
+                        GIẢM 50%
+                      </span>
+                      <span className="text-xs font-bold text-white uppercase tracking-wider mt-1 block">
+                        HAPPY U22 & THÀNH VIÊN TRẺ
+                      </span>
+                    </div>
+
+                    <p className="text-xs text-[#9CA3AF] line-clamp-2 leading-relaxed">
+                      Ưu đãi giảm nửa giá vé cho học sinh sinh viên trước 17h hàng ngày, nhận thêm voucher bắp nước.
+                    </p>
+                  </div>
+
+                  <div className="mt-4 pt-4 border-t border-dashed border-white/20 px-2 flex items-center justify-between text-xs">
+                    <span className="font-mono text-[11px] text-[#9CA3AF] bg-white/5 px-2 py-1 rounded border border-white/10">
+                      MÃ: U22MEMBER50
+                    </span>
+                    <span className="font-heading font-bold text-[#E50914] group-hover:translate-x-1 transition-transform flex items-center gap-1">
+                      Chi tiết →
+                    </span>
+                  </div>
+                </div>
+
+                {/* Voucher 3: Mua 1 Tặng 1 Đối Tác */}
+                <div
+                  onClick={() => {
+                    setSelectedPromo(PROMO_DATA[2] || PROMO_DATA[0]);
+                    setCopiedPromoCode(false);
+                  }}
+                  className="relative bg-[#161922] rounded-xl border border-white/10 p-5 flex flex-col justify-between hover:border-[#E50914] hover:shadow-[0_15px_30px_rgba(229,9,20,0.2)] transition-all duration-300 group cursor-pointer overflow-hidden"
+                >
+                  <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-[#0B0C10] border-r border-white/10" />
+                  <div className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-[#0B0C10] border-l border-white/10" />
+
+                  <div className="px-2">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="px-2.5 py-0.5 rounded text-[10px] font-heading font-bold uppercase tracking-wider bg-[#F5C518]/20 text-[#F5C518] border border-[#F5C518]/30">
+                        ĐỐI TÁC NGÂN HÀNG
+                      </span>
+                      <Gift className="w-4 h-4 text-[#F5C518]" />
+                    </div>
+
+                    <div className="my-3">
+                      <span className="font-heading text-4xl sm:text-5xl font-bold text-[#F5C518] tracking-tight block">
+                        MUA 1 TẶNG 1
+                      </span>
+                      <span className="text-xs font-bold text-white uppercase tracking-wider mt-1 block">
+                        VIETCOMBANK & TECHCOMBANK & VPBANK
+                      </span>
+                    </div>
+
+                    <p className="text-xs text-[#9CA3AF] line-clamp-2 leading-relaxed">
+                      Mua 1 vé tặng 1 vé vào mỗi cuối tuần khi thanh toán bằng thẻ đối tác hoặc ví điện tử.
+                    </p>
+                  </div>
+
+                  <div className="mt-4 pt-4 border-t border-dashed border-white/20 px-2 flex items-center justify-between text-xs">
+                    <span className="font-mono text-[11px] text-[#9CA3AF] bg-white/5 px-2 py-1 rounded border border-white/10">
+                      MÃ: BANKPARTNER11
+                    </span>
+                    <span className="font-heading font-bold text-[#E50914] group-hover:translate-x-1 transition-transform flex items-center gap-1">
+                      Chi tiết →
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* 6. CINEMAX SPECIAL CINEMA - BỐ CỤC BENTO GRID & HÌNH ẢNH THỰC TẾ KHÔNG GIAN PHÒNG CHIẾU */}
+            <section id="special-cinema-section" className="max-w-[1040px] 2xl:max-w-[1080px] mx-auto px-2 sm:px-4 py-12 scroll-mt-24">
+              {/* Tiêu đề Section chuẩn Điện Ảnh: Căn trái, thanh dọc đỏ */}
+              <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-3 border-b border-white/10 pb-4">
+                <div className="border-l-4 border-[#E50914] pl-4">
+                  <span className="text-xs font-bold text-[#E50914] uppercase tracking-wider block mb-1">
+                    Trải Nghiệm Đẳng Cấp Thượng Hạng
+                  </span>
+                  <h2 className="font-heading text-2xl sm:text-4xl font-bold uppercase text-white tracking-tight">
+                    CINEMAX SPECIAL CINEMA
+                  </h2>
+                  <p className="text-xs sm:text-sm text-[#9CA3AF] mt-1 max-w-xl">
+                    Khám phá không gian phòng chiếu hiện đại bậc nhất với màn hình khổng lồ, ghế sofa da ngả 180° và dịch vụ phục vụ 5 sao.
+                  </p>
+                </div>
+              </div>
+
+              {/* BỐ CỤC BENTO GRID 2 HÀNG VỚI HÌNH ẢNH PHÒNG CHIẾU CHÂN THỰC */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+                
+                {/* BENTO 1 (LỚN): IMAX LASER 4K - Hero Box chiếm 2 cột */}
+                <div
+                  onClick={() => {
+                    const el = document.getElementById("matrix-section");
+                    if (el) el.scrollIntoView({ behavior: "smooth" });
+                  }}
+                  className="relative lg:col-span-2 h-72 sm:h-80 rounded-2xl overflow-hidden border border-white/10 group cursor-pointer shadow-2xl transition-all duration-500 hover:border-[#E50914] hover:shadow-[0_20px_45px_rgba(229,9,20,0.3)]"
+                >
+                  <img
+                    src="https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1200&auto=format&fit=crop&q=80"
+                    alt="Phòng chiếu IMAX Laser CineMax"
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent" />
+                  
+                  <div className="absolute inset-x-0 bottom-0 p-6 sm:p-7 z-10 flex flex-col justify-end">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="px-2.5 py-0.5 rounded text-[10px] font-heading font-bold bg-[#E50914] text-white uppercase tracking-wider">
+                        CÔNG NGHỆ ĐỈNH CAO
+                      </span>
+                      <span className="text-xs font-bold text-[#F5C518]">IMAX Laser 4K Dual</span>
+                    </div>
+
+                    <h3 className="font-heading text-2xl sm:text-4xl font-bold text-white uppercase tracking-tight group-hover:text-[#F5C518] transition-colors">
+                      IMAX LASER 4K
+                    </h3>
+
+                    <p className="text-xs sm:text-sm text-[#9CA3AF] max-w-lg mt-1 line-clamp-2 leading-relaxed">
+                      Màn hình cong 7 tầng nhà cực đại cùng hệ thống máy chiếu Laser đôi 4K và dàn âm thanh kỹ thuật số 12 kênh rung chuyển toàn khán phòng.
+                    </p>
+
+                    <div className="mt-3 flex items-center gap-2 text-xs font-bold text-[#E50914] group-hover:translate-x-1 transition-transform">
+                      <span>Xem lịch chiếu IMAX Laser</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* BENTO 2: LUXE LOUNGE - Sofa VIP ngả 180° */}
+                <div
+                  onClick={() => {
+                    const el = document.getElementById("matrix-section");
+                    if (el) el.scrollIntoView({ behavior: "smooth" });
+                  }}
+                  className="relative h-72 sm:h-80 rounded-2xl overflow-hidden border border-white/10 group cursor-pointer shadow-2xl transition-all duration-500 hover:border-[#F5C518] hover:shadow-[0_20px_45px_rgba(245,197,24,0.25)]"
+                >
+                  <img
+                    src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&auto=format&fit=crop&q=80"
+                    alt="Phòng chiếu CineMax Luxe Lounge"
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/75 to-transparent" />
+
+                  <div className="absolute inset-x-0 bottom-0 p-6 z-10 flex flex-col justify-end">
+                    <span className="px-2.5 py-0.5 rounded text-[10px] font-heading font-bold bg-[#F5C518] text-neutral-900 uppercase tracking-wider self-start mb-2">
+                      THƯỢNG HẠNG VIP
+                    </span>
+                    <h3 className="font-heading text-2xl font-bold text-white uppercase tracking-tight group-hover:text-[#F5C518] transition-colors">
+                      LUXE LOUNGE
+                    </h3>
+                    <p className="text-xs text-[#9CA3AF] mt-1 line-clamp-2">
+                      Ghế sofa da ngả 180° chỉnh điện, phục vụ Welcome Drink & Snack cao cấp tại phòng chờ riêng biệt.
+                    </p>
+                    <div className="mt-3 flex items-center gap-2 text-xs font-bold text-[#F5C518] group-hover:translate-x-1 transition-transform">
+                      <span>Khám phá Luxe Lounge</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* BENTO 3: 4DX MOTION EXPERIENCE */}
+                <div
+                  onClick={() => {
+                    const el = document.getElementById("matrix-section");
+                    if (el) el.scrollIntoView({ behavior: "smooth" });
+                  }}
+                  className="relative h-64 rounded-2xl overflow-hidden border border-white/10 group cursor-pointer shadow-xl transition-all duration-500 hover:border-[#E50914]"
+                >
+                  <img
+                    src="https://images.unsplash.com/photo-1595769816263-9b910be24d5f?w=800&auto=format&fit=crop&q=80"
+                    alt="Phòng chiếu 4DX Motion CineMax"
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent" />
+
+                  <div className="absolute inset-x-0 bottom-0 p-5 z-10 flex flex-col justify-end">
+                    <span className="px-2 py-0.5 rounded text-[10px] font-heading font-bold bg-[#E50914]/20 text-[#E50914] border border-[#E50914]/40 uppercase tracking-wider self-start mb-1.5">
+                      ĐA GIÁC QUAN
+                    </span>
+                    <h3 className="font-heading text-xl font-bold text-white uppercase tracking-tight group-hover:text-[#E50914] transition-colors">
+                      4DX MOTION
+                    </h3>
+                    <p className="text-xs text-[#9CA3AF] mt-1 line-clamp-2">
+                      Ghế chuyển động đa chiều kết hợp hiệu ứng gió, mưa, mùi hương và tuyết rơi chân thực.
+                    </p>
+                  </div>
+                </div>
+
+                {/* BENTO 4: VELVET SUITE - Giường Nằm */}
+                <div
+                  onClick={() => {
+                    const el = document.getElementById("matrix-section");
+                    if (el) el.scrollIntoView({ behavior: "smooth" });
+                  }}
+                  className="relative h-64 rounded-2xl overflow-hidden border border-white/10 group cursor-pointer shadow-xl transition-all duration-500 hover:border-[#E50914]"
+                >
+                  <img
+                    src="https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=800&auto=format&fit=crop&q=80"
+                    alt="Phòng chiếu Velvet Suite Giường Nằm"
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent" />
+
+                  <div className="absolute inset-x-0 bottom-0 p-5 z-10 flex flex-col justify-end">
+                    <span className="px-2 py-0.5 rounded text-[10px] font-heading font-bold bg-white/10 text-white uppercase tracking-wider self-start mb-1.5 border border-white/10">
+                      GIƯỜNG NHUNG HOÀNG GIA
+                    </span>
+                    <h3 className="font-heading text-xl font-bold text-white uppercase tracking-tight group-hover:text-[#F5C518] transition-colors">
+                      VELVET SUITE
+                    </h3>
+                    <p className="text-xs text-[#9CA3AF] mt-1 line-clamp-2">
+                      Phòng chiếu giường nhung êm ái, gối nỉ cao cấp và chăn ấm mang lại sự thoải mái tuyệt đối.
+                    </p>
+                  </div>
+                </div>
+
+                {/* BENTO 5: SWEETBOX - Ghế Đôi Riêng Tư */}
+                <div
+                  onClick={() => {
+                    const el = document.getElementById("matrix-section");
+                    if (el) el.scrollIntoView({ behavior: "smooth" });
+                  }}
+                  className="relative h-64 rounded-2xl overflow-hidden border border-white/10 group cursor-pointer shadow-xl transition-all duration-500 hover:border-[#E50914]"
+                >
+                  <img
+                    src="https://images.unsplash.com/photo-1518173946687-a4c8a383392e?w=800&auto=format&fit=crop&q=80"
+                    alt="Ghế Đôi Sweetbox CineMax"
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent" />
+
+                  <div className="absolute inset-x-0 bottom-0 p-5 z-10 flex flex-col justify-end">
+                    <span className="px-2 py-0.5 rounded text-[10px] font-heading font-bold bg-[#E50914]/20 text-[#E50914] border border-[#E50914]/40 uppercase tracking-wider self-start mb-1.5">
+                      LÃNG MẠN 2 NGƯỜI
+                    </span>
+                    <h3 className="font-heading text-xl font-bold text-white uppercase tracking-tight group-hover:text-[#E50914] transition-colors">
+                      SWEETBOX
+                    </h3>
+                    <p className="text-xs text-[#9CA3AF] mt-1 line-clamp-2">
+                      Vách ngăn cao bọc nỉ tạo không gian riêng tư hoàn hảo cho các cặp đôi hẹn hò xem phim.
+                    </p>
+                  </div>
+                </div>
+
+              </div>
+            </section>
+
+            {/* 5. Khám Phá Phim Theo Tâm Trạng (Mood-Based Discovery) */}
+            {/* 5. Gợi Ý Phim Theo Trải Nghiệm Điện Ảnh & Bộ Lọc Nhanh */}
             <div className="max-w-[1040px] 2xl:max-w-[1080px] mx-auto px-2 sm:px-4 mt-10">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <Compass className="w-4 h-4 text-[#e71a0f]" />
-                  <h3 className="text-sm font-extrabold text-neutral-900 tracking-wide">
-                    Hôm nay tâm trạng bạn thế nào?
+                  <Compass className="w-4 h-4 text-[#E50914]" />
+                  <h3 className="text-sm font-extrabold text-white tracking-wide">
+                    Gợi ý phim theo trải nghiệm điện ảnh
                   </h3>
                 </div>
-                <span className="text-[11px] text-neutral-500 font-mono">Gợi ý phim rạp CineMax</span>
+                <span className="text-[11px] text-[#9CA3AF] uppercase tracking-wider font-bold">CineMax Selection</span>
               </div>
 
               <div className="flex items-center gap-2.5 overflow-x-auto pb-2 scrollbar-none">
@@ -723,10 +927,10 @@ export default function HomePage() {
                     <button
                       key={mood.id}
                       onClick={() => setSelectedMood(mood.id)}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all flex-shrink-0 border cursor-pointer ${
+                      className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all flex-shrink-0 border cursor-pointer ${
                         isActive
-                          ? "bg-[#e71a0f] border-[#e71a0f] text-white shadow-md shadow-[#e71a0f]/30 scale-105"
-                          : "bg-white border-[#e5e0d8] text-neutral-700 hover:border-[#e71a0f] hover:text-[#e71a0f]"
+                          ? "bg-[#E50914] border-[#E50914] text-white shadow-lg shadow-red-600/30 scale-105"
+                          : "bg-[#12141C] border-white/10 text-[#9CA3AF] hover:border-[#E50914] hover:text-white"
                       }`}
                     >
                       <Icon className="w-3.5 h-3.5" />
@@ -740,17 +944,17 @@ export default function HomePage() {
             {/* Thanh Tab bộ lọc thể loại nhanh */}
             <div className="max-w-[1040px] 2xl:max-w-[1080px] mx-auto px-2 sm:px-4 mt-4">
               <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-                <span className="text-xs font-bold text-neutral-500 uppercase tracking-wider mr-2 flex-shrink-0">
+                <span className="text-xs font-bold text-[#9CA3AF] uppercase tracking-wider mr-2 flex-shrink-0">
                   Thể loại:
                 </span>
                 {GENRE_FILTERS.map((genre) => (
                   <button
                     key={genre}
                     onClick={() => setSelectedGenre(genre)}
-                    className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-all flex-shrink-0 cursor-pointer ${
+                    className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all flex-shrink-0 cursor-pointer ${
                       selectedGenre === genre
-                        ? "bg-[#e71a0f] text-white shadow-md font-bold"
-                        : "bg-white border border-[#e5e0d8] text-neutral-600 hover:text-neutral-900 hover:border-neutral-400"
+                        ? "bg-[#E50914] text-white shadow-md font-bold"
+                        : "bg-[#12141C] border border-white/10 text-[#9CA3AF] hover:text-white"
                     }`}
                   >
                     {genre}
@@ -759,53 +963,53 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Banner Quyền Lợi Thành Viên & Trợ Lý CineMax */}
+            {/* Banner Quyền Lợi Thành Viên & Hỗ Trợ Đặt Vé */}
             <div className="max-w-[1040px] 2xl:max-w-[1080px] mx-auto px-2 sm:px-4 mt-8">
-              <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-red-50 via-rose-50 to-amber-50 border border-[#e5e0d8] flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
+              <div className="p-4 sm:p-5 rounded-xl bg-gradient-to-r from-[#12141C] via-[#161922] to-[#12141C] border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-[#e71a0f] flex items-center justify-center text-white shadow-md shadow-[#e71a0f]/30 flex-shrink-0">
-                    <Bot className="w-5 h-5" />
+                  <div className="w-10 h-10 rounded-lg bg-[#E50914] flex items-center justify-center text-white shadow-lg shadow-red-600/30 flex-shrink-0">
+                    <Crown className="w-5 h-5 text-[#F5C518]" />
                   </div>
                   <div>
-                    <h3 className="font-extrabold text-sm sm:text-base text-neutral-900 flex items-center gap-2">
-                      <span>Trải Nghiệm Điện Ảnh Đỉnh Cao Tại CineMax</span>
-                      <span className="text-[10px] px-2 py-0.5 rounded font-bold bg-rose-100 text-[#e71a0f] border border-rose-200">
-                        CineMax Cultureplex
+                    <h3 className="font-extrabold text-sm sm:text-base text-white flex items-center gap-2">
+                      <span>Đặc Quyền Hội Viên CineMax VIP Club</span>
+                      <span className="text-[10px] px-2 py-0.5 rounded font-bold bg-[#E50914]/20 text-[#E50914] border border-[#E50914]/30">
+                        CineMax Passport
                       </span>
                     </h3>
-                    <p className="text-xs text-neutral-600 mt-0.5">
-                      Cập nhật lịch chiếu sớm, tích điểm thành viên CineMax Member và nhận tư vấn chọn suất chiếu, ghế đẹp chuẩn xác.
+                    <p className="text-xs text-[#9CA3AF] mt-0.5">
+                      Cập nhật lịch chiếu sớm, tích điểm thành viên đổi vé miễn phí và nhận tư vấn chọn suất chiếu, ghế đẹp chuẩn xác.
                     </p>
                   </div>
                 </div>
 
                 <button
                   onClick={() => setIsAiChatOpen(true)}
-                  className="w-10 h-10 rounded-xl bg-[#e71a0f] text-white shadow-md shadow-[#e71a0f]/30 hover:bg-[#c81007] transition-all flex items-center justify-center flex-shrink-0 transform hover:scale-105 active:scale-95 cursor-pointer"
-                  title="Trợ lý đặt vé"
+                  className="w-10 h-10 rounded-lg bg-[#E50914] text-white shadow-lg shadow-red-600/30 hover:bg-[#b80710] transition-all flex items-center justify-center flex-shrink-0 transform hover:scale-105 active:scale-95 cursor-pointer"
+                  title="Hỗ trợ đặt vé 24/7"
                 >
-                  <Bot className="w-5 h-5" />
+                  <Headphones className="w-5 h-5" />
                 </button>
               </div>
             </div>
 
-            {/* 5. Bảng Giá Vé Niêm Yết Rạp Chiếu (Official Price Table) */}
-            <section id="price-table" className="max-w-[1040px] 2xl:max-w-[1080px] mx-auto px-2 sm:px-4 py-12 scroll-mt-24 border-t border-[#e5e0d8]">
+            {/* 6. Bảng Giá Vé Niêm Yết Rạp Chiếu (Official Price Table) */}
+            <section id="price-table" className="max-w-[1040px] 2xl:max-w-[1080px] mx-auto px-2 sm:px-4 py-12 scroll-mt-24 border-t border-white/10">
               {/* Header */}
               <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
                 <div>
-                  <span className="text-xs text-[#e71a0f] font-bold uppercase tracking-wider block">Bảng Giá Niêm Yết Toàn Hệ Thống</span>
-                  <h3 className="text-2xl sm:text-3xl font-black text-neutral-900 tracking-tight flex items-center gap-2 mt-0.5">
+                  <span className="text-xs text-[#E50914] font-bold uppercase tracking-wider block">Bảng Giá Niêm Yết Toàn Hệ Thống</span>
+                  <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-2 mt-0.5">
                     <span>BẢNG GIÁ VÉ & PHỤ THU RẠP CHIẾU CINEMAX</span>
-                    <Ticket className="w-6 h-6 text-[#e71a0f]" />
+                    <Ticket className="w-6 h-6 text-[#E50914]" />
                   </h3>
-                  <p className="text-xs sm:text-sm text-neutral-600 mt-1 max-w-2xl">
+                  <p className="text-xs sm:text-sm text-[#9CA3AF] mt-1 max-w-2xl">
                     Giá vé minh bạch, đồng nhất cho mọi phòng chiếu tiêu chuẩn 2D. Đặt vé trực tuyến nhanh chóng, thanh toán VietQR tức thì và nhận vé QR điện tử vào thẳng phòng chiếu.
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
                     Miễn phí đổi suất chiếu trước 60p
                   </span>
                 </div>
@@ -814,38 +1018,38 @@ export default function HomePage() {
               {/* 4 Pricing Cards Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
                 {/* Card 1: Ghế Tiêu Chuẩn */}
-                <div className="bg-white rounded-2xl border border-[#e5e0d8] p-5 flex flex-col justify-between hover:border-[#e71a0f]/40 hover:shadow-md transition-all group">
+                <div className="bg-[#12141C] rounded-xl border border-white/10 p-5 flex flex-col justify-between hover:border-[#E50914]/40 hover:shadow-xl transition-all group">
                   <div>
                     <div className="flex items-center justify-between mb-3">
-                      <span className="px-2.5 py-1 rounded-full text-[10px] font-black bg-neutral-100 text-neutral-700 uppercase tracking-wider">
+                      <span className="px-2.5 py-1 rounded-md text-[10px] font-black bg-white/10 text-white uppercase tracking-wider border border-white/10">
                         Hàng A - D
                       </span>
-                      <Armchair className="w-5 h-5 text-neutral-400 group-hover:text-[#e71a0f] transition-colors" />
+                      <Armchair className="w-5 h-5 text-[#9CA3AF] group-hover:text-[#E50914] transition-colors" />
                     </div>
-                    <h4 className="text-lg font-black text-neutral-900">Ghế Tiêu Chuẩn</h4>
-                    <p className="text-xs text-neutral-500 mt-1">Standard Seat • Dãy đầu & giữa</p>
+                    <h4 className="text-lg font-black text-white">Ghế Tiêu Chuẩn</h4>
+                    <p className="text-xs text-[#9CA3AF] mt-1">Standard Seat • Dãy đầu & giữa</p>
 
-                    <div className="mt-4 mb-4 pb-4 border-b border-neutral-100">
+                    <div className="mt-4 mb-4 pb-4 border-b border-white/10">
                       <div className="flex items-baseline gap-1">
-                        <span className="text-3xl font-black text-neutral-900">55.000</span>
-                        <span className="text-sm font-bold text-neutral-600">đ/vé</span>
+                        <span className="text-3xl font-black text-white">55.000</span>
+                        <span className="text-sm font-bold text-[#9CA3AF]">đ/vé</span>
                       </div>
-                      <p className="text-[11px] text-emerald-600 font-medium mt-1">
+                      <p className="text-[11px] text-emerald-400 font-medium mt-1">
                         HSSV / Trẻ em: chỉ từ 45.000đ (trước 17h)
                       </p>
                     </div>
 
-                    <ul className="space-y-2 text-xs text-neutral-600">
+                    <ul className="space-y-2 text-xs text-[#9CA3AF]">
                       <li className="flex items-center gap-2">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-[#e71a0f] flex-shrink-0" />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#E50914] flex-shrink-0" />
                         <span>Khoảng cách màn hình tiêu chuẩn</span>
                       </li>
                       <li className="flex items-center gap-2">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-[#e71a0f] flex-shrink-0" />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#E50914] flex-shrink-0" />
                         <span>Ghế nỉ cao cấp đệm êm ái</span>
                       </li>
                       <li className="flex items-center gap-2">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-[#e71a0f] flex-shrink-0" />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#E50914] flex-shrink-0" />
                         <span>Âm thanh Dolby 7.1 trung thực</span>
                       </li>
                     </ul>
@@ -856,7 +1060,7 @@ export default function HomePage() {
                       const target = movies.find((m) => m.status === "now_playing") || movies[0];
                       if (target) setActiveBookingMovie(target);
                     }}
-                    className="w-full mt-5 py-2.5 rounded-xl bg-neutral-100 hover:bg-[#e71a0f] hover:text-white text-neutral-800 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="w-full mt-5 py-2.5 rounded-lg bg-white/10 hover:bg-[#E50914] text-white font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer border border-white/10 hover:border-[#E50914]"
                   >
                     <span>Chọn Suất Chiếu</span>
                     <ArrowRight className="w-3.5 h-3.5" />
@@ -864,41 +1068,41 @@ export default function HomePage() {
                 </div>
 
                 {/* Card 2: Ghế VIP (Sweet Spot) */}
-                <div className="bg-white rounded-2xl border-2 border-[#e71a0f] p-5 flex flex-col justify-between shadow-sm relative group">
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#e71a0f] text-white text-[10px] font-black uppercase tracking-wider px-3 py-0.5 rounded-full shadow-sm">
+                <div className="bg-[#12141C] rounded-xl border-2 border-[#E50914] p-5 flex flex-col justify-between shadow-xl shadow-red-900/20 relative group">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#E50914] text-white text-[10px] font-black uppercase tracking-wider px-3 py-0.5 rounded-md shadow-md">
                     Được Chọn Nhiều Nhất
                   </div>
                   <div>
                     <div className="flex items-center justify-between mb-3">
-                      <span className="px-2.5 py-1 rounded-full text-[10px] font-black bg-rose-50 text-[#e71a0f] uppercase tracking-wider border border-rose-200">
+                      <span className="px-2.5 py-1 rounded-md text-[10px] font-black bg-[#E50914]/20 text-[#E50914] uppercase tracking-wider border border-[#E50914]/40">
                         Hàng E - H
                       </span>
-                      <Star className="w-5 h-5 fill-amber-500 text-amber-500" />
+                      <Star className="w-5 h-5 fill-[#F5C518] text-[#F5C518]" />
                     </div>
-                    <h4 className="text-lg font-black text-neutral-900">Ghế VIP Sweet Spot</h4>
-                    <p className="text-xs text-neutral-500 mt-1">VIP Seat • Tầm nhìn trung tâm rạp</p>
+                    <h4 className="text-lg font-black text-white">Ghế VIP Sweet Spot</h4>
+                    <p className="text-xs text-[#9CA3AF] mt-1">VIP Seat • Tầm nhìn trung tâm rạp</p>
 
-                    <div className="mt-4 mb-4 pb-4 border-b border-neutral-100">
+                    <div className="mt-4 mb-4 pb-4 border-b border-white/10">
                       <div className="flex items-baseline gap-1">
-                        <span className="text-3xl font-black text-[#e71a0f]">75.000</span>
-                        <span className="text-sm font-bold text-neutral-600">đ/vé</span>
+                        <span className="text-3xl font-black text-[#E50914]">75.000</span>
+                        <span className="text-sm font-bold text-[#9CA3AF]">đ/vé</span>
                       </div>
-                      <p className="text-[11px] text-[#e71a0f] font-medium mt-1">
+                      <p className="text-[11px] text-[#E50914] font-medium mt-1">
                         Phụ thu +20k so với ghế thường
                       </p>
                     </div>
 
-                    <ul className="space-y-2 text-xs text-neutral-600">
+                    <ul className="space-y-2 text-xs text-[#9CA3AF]">
                       <li className="flex items-center gap-2">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-[#e71a0f] flex-shrink-0" />
-                        <span className="font-semibold text-neutral-800">Tầm nhìn 100% diện tích màn chiếu</span>
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#E50914] flex-shrink-0" />
+                        <span className="font-semibold text-white">Tầm nhìn 100% diện tích màn chiếu</span>
                       </li>
                       <li className="flex items-center gap-2">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-[#e71a0f] flex-shrink-0" />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#E50914] flex-shrink-0" />
                         <span>Khoảng để chân rộng rãi thoải mái</span>
                       </li>
                       <li className="flex items-center gap-2">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-[#e71a0f] flex-shrink-0" />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#E50914] flex-shrink-0" />
                         <span>Trục âm thanh vòm hoàn hảo nhất</span>
                       </li>
                     </ul>
@@ -909,7 +1113,7 @@ export default function HomePage() {
                       const target = movies.find((m) => m.status === "now_playing") || movies[0];
                       if (target) setActiveBookingMovie(target);
                     }}
-                    className="w-full mt-5 py-2.5 rounded-xl bg-[#e71a0f] hover:bg-[#c81007] text-white font-bold text-xs transition-colors flex items-center justify-center gap-1.5 shadow-md shadow-[#e71a0f]/20 cursor-pointer"
+                    className="w-full mt-5 py-2.5 rounded-lg bg-[#E50914] hover:bg-[#b80710] text-white font-bold text-xs transition-colors flex items-center justify-center gap-1.5 shadow-lg shadow-red-600/40 cursor-pointer"
                   >
                     <span>Đặt Vé Ghế VIP</span>
                     <ArrowRight className="w-3.5 h-3.5" />
@@ -917,38 +1121,38 @@ export default function HomePage() {
                 </div>
 
                 {/* Card 3: Ghế Đôi Sweetbox */}
-                <div className="bg-white rounded-2xl border border-[#e5e0d8] p-5 flex flex-col justify-between hover:border-[#e71a0f]/40 hover:shadow-md transition-all group">
+                <div className="bg-[#12141C] rounded-xl border border-white/10 p-5 flex flex-col justify-between hover:border-[#E50914]/40 hover:shadow-xl transition-all group">
                   <div>
                     <div className="flex items-center justify-between mb-3">
-                      <span className="px-2.5 py-1 rounded-full text-[10px] font-black bg-rose-50 text-rose-600 uppercase tracking-wider border border-rose-200">
+                      <span className="px-2.5 py-1 rounded-md text-[10px] font-black bg-pink-500/20 text-pink-400 uppercase tracking-wider border border-pink-500/40">
                         Hàng K (Ghế Đôi)
                       </span>
-                      <Heart className="w-5 h-5 text-rose-500" />
+                      <Heart className="w-5 h-5 text-pink-500" />
                     </div>
-                    <h4 className="text-lg font-black text-neutral-900">Sweetbox Ghế Đôi</h4>
-                    <p className="text-xs text-neutral-500 mt-1">Couple Sweetbox • Trọn gói 2 người</p>
+                    <h4 className="text-lg font-black text-white">Sweetbox Ghế Đôi</h4>
+                    <p className="text-xs text-[#9CA3AF] mt-1">Couple Sweetbox • Trọn gói 2 người</p>
 
-                    <div className="mt-4 mb-4 pb-4 border-b border-neutral-100">
+                    <div className="mt-4 mb-4 pb-4 border-b border-white/10">
                       <div className="flex items-baseline gap-1">
-                        <span className="text-3xl font-black text-neutral-900">130.000</span>
-                        <span className="text-sm font-bold text-neutral-600">đ/cặp</span>
+                        <span className="text-3xl font-black text-white">130.000</span>
+                        <span className="text-sm font-bold text-[#9CA3AF]">đ/cặp</span>
                       </div>
-                      <p className="text-[11px] text-rose-600 font-medium mt-1">
+                      <p className="text-[11px] text-pink-400 font-medium mt-1">
                         Chỉ 65.000đ/người • Bao gồm 2 vé
                       </p>
                     </div>
 
-                    <ul className="space-y-2 text-xs text-neutral-600">
+                    <ul className="space-y-2 text-xs text-[#9CA3AF]">
                       <li className="flex items-center gap-2">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-[#e71a0f] flex-shrink-0" />
-                        <span className="font-semibold text-neutral-800">Vách ngăn riêng tư cao cấp</span>
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#E50914] flex-shrink-0" />
+                        <span className="font-semibold text-white">Vách ngăn riêng tư cao cấp</span>
                       </li>
                       <li className="flex items-center gap-2">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-[#e71a0f] flex-shrink-0" />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#E50914] flex-shrink-0" />
                         <span>Ghế sofa đôi bọc nhung liền khối</span>
                       </li>
                       <li className="flex items-center gap-2">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-[#e71a0f] flex-shrink-0" />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#E50914] flex-shrink-0" />
                         <span>Tặng bắp phô mai suất chiếu sau 20h</span>
                       </li>
                     </ul>
@@ -959,7 +1163,7 @@ export default function HomePage() {
                       const target = movies.find((m) => m.status === "now_playing") || movies[0];
                       if (target) setActiveBookingMovie(target);
                     }}
-                    className="w-full mt-5 py-2.5 rounded-xl bg-neutral-100 hover:bg-[#e71a0f] hover:text-white text-neutral-800 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="w-full mt-5 py-2.5 rounded-lg bg-white/10 hover:bg-[#E50914] text-white font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer border border-white/10 hover:border-[#E50914]"
                   >
                     <span>Đặt Ghế Đôi</span>
                     <ArrowRight className="w-3.5 h-3.5" />
@@ -967,39 +1171,39 @@ export default function HomePage() {
                 </div>
 
                 {/* Card 4: Combo Bắp Nước Concession */}
-                <div className="bg-white rounded-2xl border border-[#e5e0d8] p-5 flex flex-col justify-between hover:border-[#e71a0f]/40 hover:shadow-md transition-all group">
+                <div className="bg-[#12141C] rounded-xl border border-white/10 p-5 flex flex-col justify-between hover:border-[#E50914]/40 hover:shadow-xl transition-all group">
                   <div>
                     <div className="flex items-center justify-between mb-3">
-                      <span className="px-2.5 py-1 rounded-full text-[10px] font-black bg-amber-50 text-amber-700 uppercase tracking-wider border border-amber-200">
+                      <span className="px-2.5 py-1 rounded-md text-[10px] font-black bg-amber-500/20 text-[#F5C518] uppercase tracking-wider border border-amber-500/40">
                         Bắp & Nước Uống
                       </span>
-                      <Popcorn className="w-5 h-5 text-amber-500" />
+                      <Popcorn className="w-5 h-5 text-[#F5C518]" />
                     </div>
-                    <h4 className="text-lg font-black text-neutral-900">Combo Bắp Nước Rạp</h4>
-                    <p className="text-xs text-neutral-500 mt-1">Concession • Solo & Couple & Party</p>
+                    <h4 className="text-lg font-black text-white">Combo Bắp Nước Rạp</h4>
+                    <p className="text-xs text-[#9CA3AF] mt-1">Concession • Solo & Couple & Party</p>
 
-                    <div className="mt-4 mb-4 pb-4 border-b border-neutral-100">
+                    <div className="mt-4 mb-4 pb-4 border-b border-white/10">
                       <div className="flex items-baseline gap-1">
-                        <span className="text-xs font-bold text-neutral-500">Từ</span>
-                        <span className="text-3xl font-black text-neutral-900">59.000</span>
-                        <span className="text-sm font-bold text-neutral-600">đ</span>
+                        <span className="text-xs font-bold text-[#9CA3AF]">Từ</span>
+                        <span className="text-3xl font-black text-white">59.000</span>
+                        <span className="text-sm font-bold text-[#9CA3AF]">đ</span>
                       </div>
-                      <p className="text-[11px] text-amber-700 font-medium mt-1">
+                      <p className="text-[11px] text-[#F5C518] font-medium mt-1">
                         Tiết kiệm tới 30% so với mua trực tiếp
                       </p>
                     </div>
 
-                    <ul className="space-y-2 text-xs text-neutral-600">
+                    <ul className="space-y-2 text-xs text-[#9CA3AF]">
                       <li className="flex items-center gap-2">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-[#e71a0f] flex-shrink-0" />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#E50914] flex-shrink-0" />
                         <span>Bắp rang bơ phô mai / caramel giòn rụm</span>
                       </li>
                       <li className="flex items-center gap-2">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-[#e71a0f] flex-shrink-0" />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#E50914] flex-shrink-0" />
                         <span>Nước ngọt tươi có ga hoặc trà hoa quả</span>
                       </li>
                       <li className="flex items-center gap-2">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-[#e71a0f] flex-shrink-0" />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#E50914] flex-shrink-0" />
                         <span>Tùy biến vị bắp và cỡ ly khi đặt vé</span>
                       </li>
                     </ul>
@@ -1007,7 +1211,7 @@ export default function HomePage() {
 
                   <a
                     href="#promo-section"
-                    className="w-full mt-5 py-2.5 rounded-xl bg-neutral-100 hover:bg-[#e71a0f] hover:text-white text-neutral-800 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer text-center"
+                    className="w-full mt-5 py-2.5 rounded-lg bg-white/10 hover:bg-[#E50914] text-white font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer text-center border border-white/10 hover:border-[#E50914]"
                   >
                     <span>Xem Menu Combo 68k</span>
                     <ArrowRight className="w-3.5 h-3.5" />
@@ -1016,20 +1220,20 @@ export default function HomePage() {
               </div>
 
               {/* Comparison Table */}
-              <div className="bg-white rounded-2xl border border-[#e5e0d8] overflow-hidden shadow-sm">
-                <div className="px-5 py-3.5 bg-neutral-50 border-b border-[#e5e0d8] flex items-center justify-between">
-                  <span className="text-xs font-extrabold text-neutral-800 uppercase tracking-wider flex items-center gap-1.5">
-                    <Info className="w-4 h-4 text-[#e71a0f]" />
+              <div className="bg-[#12141C] rounded-xl border border-white/10 overflow-hidden shadow-xl">
+                <div className="px-5 py-3.5 bg-[#161922] border-b border-white/10 flex items-center justify-between">
+                  <span className="text-xs font-extrabold text-white uppercase tracking-wider flex items-center gap-1.5">
+                    <Info className="w-4 h-4 text-[#E50914]" />
                     Bảng Chi Tiết Giá Vé Theo Khung Giờ & Đối Tượng
                   </span>
-                  <span className="text-[11px] text-neutral-500 hidden sm:inline">
+                  <span className="text-[11px] text-[#9CA3AF] hidden sm:inline">
                     Đơn vị tính: VNĐ / vé
                   </span>
                 </div>
 
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs text-left">
-                    <thead className="bg-neutral-50/70 text-neutral-700 font-bold border-b border-[#e5e0d8]">
+                    <thead className="bg-[#161922]/80 text-[#9CA3AF] font-bold border-b border-white/10">
                       <tr>
                         <th className="py-3 px-4">Loại Vé & Đối Tượng</th>
                         <th className="py-3 px-4 text-center">Thứ 2 - Thứ 6 (Trước 17:00)</th>
@@ -1037,115 +1241,44 @@ export default function HomePage() {
                         <th className="py-3 px-4 text-center">Thứ 7, CN & Ngày Lễ</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-neutral-100 text-neutral-600">
-                      <tr className="hover:bg-neutral-50/50 transition-colors">
-                        <td className="py-3 px-4 font-semibold text-neutral-900">
+                    <tbody className="divide-y divide-white/5 text-[#9CA3AF]">
+                      <tr className="hover:bg-white/5 transition-colors">
+                        <td className="py-3 px-4 font-semibold text-white">
                           Học Sinh - Sinh Viên / Trẻ Em (U22)
                         </td>
-                        <td className="py-3 px-4 text-center font-bold text-emerald-600">45.000đ</td>
-                        <td className="py-3 px-4 text-center font-bold text-emerald-600">50.000đ</td>
-                        <td className="py-3 px-4 text-center font-bold text-neutral-700">55.000đ</td>
+                        <td className="py-3 px-4 text-center font-bold text-emerald-400">45.000đ</td>
+                        <td className="py-3 px-4 text-center font-bold text-emerald-400">50.000đ</td>
+                        <td className="py-3 px-4 text-center font-bold text-white">55.000đ</td>
                       </tr>
-                      <tr className="hover:bg-neutral-50/50 transition-colors">
-                        <td className="py-3 px-4 font-semibold text-neutral-900">
+                      <tr className="hover:bg-white/5 transition-colors">
+                        <td className="py-3 px-4 font-semibold text-white">
                           Ghế Thường (Hàng A - D)
                         </td>
-                        <td className="py-3 px-4 text-center font-bold text-neutral-900">55.000đ</td>
-                        <td className="py-3 px-4 text-center font-bold text-neutral-900">60.000đ</td>
-                        <td className="py-3 px-4 text-center font-bold text-neutral-900">65.000đ</td>
+                        <td className="py-3 px-4 text-center font-bold text-white">55.000đ</td>
+                        <td className="py-3 px-4 text-center font-bold text-white">60.000đ</td>
+                        <td className="py-3 px-4 text-center font-bold text-white">65.000đ</td>
                       </tr>
-                      <tr className="hover:bg-neutral-50/50 transition-colors bg-rose-50/40">
-                        <td className="py-3 px-4 font-semibold text-neutral-900 flex items-center gap-1.5">
+                      <tr className="hover:bg-white/5 transition-colors bg-[#E50914]/10">
+                        <td className="py-3 px-4 font-semibold text-white flex items-center gap-1.5">
                           <span>Ghế VIP Sweet Spot (Hàng E - H)</span>
-                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-rose-100 text-[#e71a0f] font-bold">Hot</span>
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#E50914] text-white font-bold">Hot</span>
                         </td>
-                        <td className="py-3 px-4 text-center font-bold text-[#e71a0f]">75.000đ</td>
-                        <td className="py-3 px-4 text-center font-bold text-[#e71a0f]">80.000đ</td>
-                        <td className="py-3 px-4 text-center font-bold text-[#e71a0f]">85.000đ</td>
+                        <td className="py-3 px-4 text-center font-bold text-[#E50914]">75.000đ</td>
+                        <td className="py-3 px-4 text-center font-bold text-[#E50914]">80.000đ</td>
+                        <td className="py-3 px-4 text-center font-bold text-[#E50914]">85.000đ</td>
                       </tr>
-                      <tr className="hover:bg-neutral-50/50 transition-colors">
-                        <td className="py-3 px-4 font-semibold text-neutral-900">
+                      <tr className="hover:bg-white/5 transition-colors">
+                        <td className="py-3 px-4 font-semibold text-white">
                           Ghế Đôi Sweetbox (Hàng K - 2 vé)
                         </td>
-                        <td className="py-3 px-4 text-center font-bold text-rose-600">130.000đ</td>
-                        <td className="py-3 px-4 text-center font-bold text-rose-600">140.000đ</td>
-                        <td className="py-3 px-4 text-center font-bold text-rose-600">150.000đ</td>
+                        <td className="py-3 px-4 text-center font-bold text-pink-400">130.000đ</td>
+                        <td className="py-3 px-4 text-center font-bold text-pink-400">140.000đ</td>
+                        <td className="py-3 px-4 text-center font-bold text-pink-400">150.000đ</td>
                       </tr>
                     </tbody>
                   </table>
                 </div>
 
-                <div className="p-3 bg-neutral-50/80 border-t border-[#e5e0d8] text-[11px] text-neutral-500 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                  <span>* Giá trên đã bao gồm thuế VAT (8%). Áp dụng cho các phòng chiếu 2D tiêu chuẩn.</span>
-                  <span className="text-[#e71a0f] font-semibold">🎉 Thứ 3 hàng tuần: Đồng giá 45.000đ mọi loại ghế</span>
-                </div>
-              </div>
-            </section>
-
-            {/* 6. Khuyến Mãi & Sự Kiện Rạp Chiếu (EVENT & PROMOTION - CHUẨN CGV) */}
-            <section id="promo-section" className="max-w-[1040px] 2xl:max-w-[1080px] mx-auto px-2 sm:px-4 py-10 scroll-mt-24">
-              {/* Tiêu Đề Có Đường Kẻ Đôi 2 Bên Chuẩn CGV */}
-              <div className="relative text-center my-8">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t-2 border-b border-neutral-800" />
-                </div>
-                <div className="relative inline-block bg-[#fdfcf0] px-6">
-                  <h2 className="text-2xl sm:text-3xl font-black tracking-widest uppercase text-neutral-900 font-sans">
-                    EVENT & PROMOTION
-                  </h2>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {PROMO_DATA.map((promo) => (
-                  <div
-                    key={promo.id}
-                    onClick={() => {
-                      setSelectedPromo(promo);
-                      setCopiedPromoCode(false);
-                    }}
-                    className="relative rounded-2xl overflow-hidden bg-white border border-[#e5e0d8] flex flex-col justify-between group hover:border-[#e71a0f] hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer"
-                  >
-                    <div>
-                      {/* Banner ảnh minh họa sự kiện chuẩn CGV */}
-                      <div className="relative h-36 w-full overflow-hidden bg-neutral-900">
-                        <img
-                          src={promo.image}
-                          alt={promo.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
-                        <span className={`absolute top-2.5 left-2.5 px-2.5 py-1 rounded-full text-[10px] font-black ${promo.badgeBg} ${promo.badgeText} uppercase tracking-wider inline-block border ${promo.badgeBorder} shadow-sm backdrop-blur-xs`}>
-                          {promo.badge}
-                        </span>
-                      </div>
-
-                      <div className="p-4 space-y-1.5">
-                        <h4 className="text-sm font-black text-neutral-900 group-hover:text-[#e71a0f] transition-colors line-clamp-2">
-                          {promo.title}
-                        </h4>
-                        <p className="text-xs text-neutral-600 line-clamp-2 leading-relaxed">
-                          {promo.shortDesc}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="px-4 pb-4 pt-2 flex items-center justify-between text-[11px] text-neutral-500 font-medium border-t border-neutral-100">
-                      <span className="truncate max-w-[130px]">{promo.validity}</span>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedPromo(promo);
-                          setCopiedPromoCode(false);
-                        }}
-                        className="text-[#e71a0f] hover:text-[#c81007] font-bold flex items-center gap-1 cursor-pointer transition-colors shrink-0"
-                      >
-                        Chi tiết →
-                      </button>
-                    </div>
-                  </div>
-                ))}
               </div>
             </section>
           </>
@@ -1212,20 +1345,20 @@ export default function HomePage() {
         }}
       />
 
-      {/* Modal Chi Tiết Khuyến Mãi & Thể Lệ Ưu Đãi */}
+      {/* Modal Chi Tiết Khuyến Mãi & Thể Lệ Ưu Đãi (Dark Mode Cinematic) */}
       {selectedPromo && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200"
           onClick={() => setSelectedPromo(null)}
         >
           <div
-            className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 relative animate-in zoom-in-95 duration-200"
+            className="bg-[#161922] rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-white/10 relative animate-in zoom-in-95 duration-200 text-white"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Nút đóng */}
             <button
               onClick={() => setSelectedPromo(null)}
-              className="absolute top-4 right-4 p-1.5 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+              className="absolute top-4 right-4 p-1.5 rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
               title="Đóng modal"
             >
               <X className="w-5 h-5" />
@@ -1233,24 +1366,24 @@ export default function HomePage() {
 
             {/* Header Modal */}
             <div className="flex items-center gap-2 mb-3">
-              <span className={`px-2.5 py-1 rounded-full text-[10px] font-black ${selectedPromo.badgeBg} ${selectedPromo.badgeText} uppercase tracking-wider border ${selectedPromo.badgeBorder}`}>
+              <span className={`px-2.5 py-1 rounded-md text-[10px] font-heading font-bold ${selectedPromo.badgeBg} ${selectedPromo.badgeText} uppercase tracking-wider border ${selectedPromo.badgeBorder}`}>
                 {selectedPromo.badge}
               </span>
-              <span className="text-xs text-slate-500 font-medium flex items-center gap-1">
-                <Clock className="w-3.5 h-3.5 text-slate-400" />
+              <span className="text-xs text-[#9CA3AF] font-medium flex items-center gap-1">
+                <Clock className="w-3.5 h-3.5 text-[#E50914]" />
                 {selectedPromo.validity}
               </span>
             </div>
 
-            <h3 className="text-xl font-black text-slate-900 leading-snug">
+            <h3 className="font-heading text-xl sm:text-2xl font-bold text-white uppercase leading-snug">
               {selectedPromo.title}
             </h3>
 
             {/* Promo discount banner */}
-            <div className="mt-4 p-3.5 rounded-xl bg-sky-50 border border-sky-100 flex items-center justify-between">
+            <div className="mt-4 p-3.5 rounded-xl bg-[#12141C] border border-white/10 flex items-center justify-between">
               <div>
-                <span className="text-[11px] text-sky-700 font-medium block">Mức ưu đãi:</span>
-                <span className="text-sm font-extrabold text-sky-900">{selectedPromo.discountHighlight}</span>
+                <span className="text-[11px] text-[#9CA3AF] font-medium block">Mức ưu đãi:</span>
+                <span className="font-heading text-base sm:text-lg font-bold text-[#F5C518]">{selectedPromo.discountHighlight}</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <button
@@ -1261,16 +1394,16 @@ export default function HomePage() {
                       setTimeout(() => setCopiedPromoCode(false), 2000);
                     }
                   }}
-                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white border border-sky-200 text-sky-700 text-xs font-bold hover:bg-sky-100/50 transition-colors cursor-pointer shadow-sm"
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-bold transition-colors cursor-pointer shadow-sm"
                 >
                   {copiedPromoCode ? (
                     <>
-                      <Check className="w-3.5 h-3.5 text-emerald-600" />
-                      <span className="text-emerald-700">Đã chép</span>
+                      <Check className="w-3.5 h-3.5 text-emerald-400" />
+                      <span className="text-emerald-400">Đã chép</span>
                     </>
                   ) : (
                     <>
-                      <Copy className="w-3.5 h-3.5" />
+                      <Copy className="w-3.5 h-3.5 text-[#E50914]" />
                       <span>Mã: {selectedPromo.promoCode}</span>
                     </>
                   )}
@@ -1280,13 +1413,13 @@ export default function HomePage() {
 
             {/* Điều kiện áp dụng */}
             <div className="mt-5 space-y-2.5">
-              <h5 className="text-xs font-extrabold text-slate-800 uppercase tracking-wider">
+              <h5 className="font-heading text-xs font-bold text-white uppercase tracking-wider">
                 Điều Kiện & Thể Lệ Áp Dụng
               </h5>
-              <ul className="space-y-2 text-xs text-slate-600">
+              <ul className="space-y-2 text-xs text-[#9CA3AF]">
                 {selectedPromo.conditions.map((cond, idx) => (
                   <li key={idx} className="flex items-start gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+                    <CheckCircle2 className="w-4 h-4 text-[#E50914] flex-shrink-0 mt-0.5" />
                     <span>{cond}</span>
                   </li>
                 ))}
@@ -1294,16 +1427,16 @@ export default function HomePage() {
             </div>
 
             {/* Ghi chú */}
-            <div className="mt-4 p-2.5 rounded-lg bg-slate-50 border border-slate-100 text-[11px] text-slate-500 flex items-start gap-2">
-              <Info className="w-4 h-4 text-sky-600 flex-shrink-0 mt-0.5" />
+            <div className="mt-4 p-2.5 rounded-lg bg-[#12141C] border border-white/10 text-[11px] text-[#9CA3AF] flex items-start gap-2">
+              <Info className="w-4 h-4 text-[#F5C518] flex-shrink-0 mt-0.5" />
               <span>{selectedPromo.applicableNote}</span>
             </div>
 
             {/* Action buttons */}
-            <div className="mt-6 flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+            <div className="mt-6 flex items-center justify-end gap-3 pt-4 border-t border-white/10">
               <button
                 onClick={() => setSelectedPromo(null)}
-                className="px-4 py-2 rounded-xl border border-slate-200 text-slate-700 font-bold text-xs hover:bg-slate-50 transition-colors cursor-pointer"
+                className="px-4 py-2 rounded-lg border border-white/10 text-[#9CA3AF] hover:text-white hover:bg-white/5 font-bold text-xs transition-colors cursor-pointer"
               >
                 Đóng
               </button>
@@ -1315,7 +1448,7 @@ export default function HomePage() {
                     setActiveBookingMovie(target);
                   }
                 }}
-                className="px-5 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-extrabold text-xs transition-colors flex items-center gap-1.5 shadow-md shadow-sky-600/30 cursor-pointer"
+                className="px-5 py-2 rounded-lg bg-[#E50914] hover:bg-[#b80710] text-white font-heading font-bold text-xs uppercase tracking-wider transition-colors flex items-center gap-1.5 shadow-lg shadow-red-600/40 cursor-pointer border border-red-500/40"
               >
                 <span>Áp Dụng Ưu Đãi & Đặt Vé Ngay</span>
                 <ArrowRight className="w-3.5 h-3.5" />

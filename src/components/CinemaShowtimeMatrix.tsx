@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from "react";
 import { Movie } from "@/types";
 import { MOCK_CINEMAS, getShowtimesForMovie } from "@/lib/mockData";
-import { MapPin, Calendar, Film, Sparkles, ChevronRight } from "lucide-react";
+import { MapPin, Film } from "lucide-react";
 
 interface CinemaShowtimeMatrixProps {
   movies: Movie[];
@@ -37,7 +37,6 @@ export const CinemaShowtimeMatrix: React.FC<CinemaShowtimeMatrixProps> = ({
   movies,
   onSelectShowtime,
 }) => {
-  // 9 ngày liên tiếp theo format T5, 15/10 chuẩn hiện đại
   const dateOptions = useMemo(() => {
     return Array.from({ length: 9 }, (_, i) => getVnDate(i));
   }, []);
@@ -50,7 +49,6 @@ export const CinemaShowtimeMatrix: React.FC<CinemaShowtimeMatrixProps> = ({
     [selectedCinemaId]
   );
 
-  // Nhãn độ tuổi chính thức chuẩn Bộ VHTTDL
   const getAgeRatingBadge = (rating: string) => {
     switch (rating) {
       case "T18":
@@ -67,39 +65,36 @@ export const CinemaShowtimeMatrix: React.FC<CinemaShowtimeMatrixProps> = ({
   };
 
   return (
-    <section className="max-w-[1040px] 2xl:max-w-[1080px] mx-auto px-2 sm:px-4 py-10" id="showtimes-matrix">
-      {/* Tiêu đề Section chuẩn CineMax */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-6 gap-3 border-b border-neutral-200 pb-4">
-        <div>
-          <div className="flex items-center gap-2 text-[#e71a0f] text-xs font-bold uppercase tracking-wider mb-1">
-            <Film className="w-4 h-4" /> Lịch Chiếu Trực Tiếp CineMax
-          </div>
-          <h2 className="text-2xl sm:text-3xl font-black text-neutral-900 tracking-tight flex items-center gap-2.5">
-            <span>LỊCH CHIẾU PHIM CINEMAX</span>
-            <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-rose-50 text-[#e71a0f] border border-rose-200">
-              Live Matrix
-            </span>
+    <section className="max-w-[1040px] 2xl:max-w-[1080px] mx-auto px-2 sm:px-4 py-10" id="matrix-section">
+      {/* Tiêu đề Section chuẩn Điện Ảnh: Căn trái, thanh dọc đỏ, xóa nhãn Live Matrix */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-6 gap-3 border-b border-white/10 pb-4">
+        <div className="border-l-4 border-[#E50914] pl-4">
+          <span className="text-xs font-bold text-[#E50914] uppercase tracking-wider block mb-1">
+            Lịch Chiếu Trực Tiếp Toàn Hệ Thống
+          </span>
+          <h2 className="font-heading text-2xl sm:text-4xl font-bold text-white tracking-tight uppercase">
+            LỊCH CHIẾU PHIM CINEMAX
           </h2>
-          <p className="text-xs text-neutral-500 mt-1">
-            Bấm chọn giờ chiếu bất kỳ để mở thẳng sơ đồ chọn ghế và nhận giá vé ưu đãi
+          <p className="text-xs sm:text-sm text-[#9CA3AF] mt-1">
+            Chọn suất chiếu phù hợp để vào thẳng sơ đồ chọn ghế và nhận giá vé ưu đãi
           </p>
         </div>
       </div>
 
-      {/* Toolbar phối hợp ngang hàng: Bộ chọn rạp + Bộ chọn ngày 7-10 ngày cuộn ngang */}
-      <div className="bg-white border border-neutral-200/90 rounded-2xl p-3 sm:p-4 shadow-sm mb-6 flex flex-col lg:flex-row items-stretch lg:items-center gap-3">
-        {/* Bộ lọc rạp đặt ngang hàng */}
-        <div className="flex items-center gap-2 bg-neutral-50 border border-neutral-200 px-3.5 py-2.5 rounded-xl text-xs flex-shrink-0 lg:w-72">
-          <MapPin className="w-4 h-4 text-[#e71a0f] shrink-0" />
+      {/* Toolbar: Chọn rạp + Chọn ngày */}
+      <div className="bg-[#12141C] border border-white/10 rounded-xl p-3 sm:p-4 shadow-xl mb-6 flex flex-col lg:flex-row items-stretch lg:items-center gap-3">
+        {/* Bộ lọc rạp */}
+        <div className="flex items-center gap-2 bg-[#0B0C10] border border-white/10 px-3.5 py-2.5 rounded-lg text-xs flex-shrink-0 lg:w-72">
+          <MapPin className="w-4 h-4 text-[#E50914] shrink-0" />
           <div className="flex-1 min-w-0">
-            <span className="block text-[10px] uppercase font-bold text-neutral-400">Chọn Cụm Rạp</span>
+            <span className="block text-[10px] uppercase font-bold text-[#9CA3AF]">Chọn Cụm Rạp</span>
             <select
               value={selectedCinemaId}
               onChange={(e) => setSelectedCinemaId(e.target.value)}
-              className="w-full bg-transparent border-none text-neutral-900 font-bold focus:outline-none cursor-pointer truncate text-xs"
+              className="w-full bg-transparent border-none text-white font-bold focus:outline-none cursor-pointer truncate text-xs"
             >
               {MOCK_CINEMAS.map((c) => (
-                <option key={c.id} value={c.id} className="text-neutral-800">
+                <option key={c.id} value={c.id} className="bg-[#12141C] text-white">
                   {c.name}
                 </option>
               ))}
@@ -107,7 +102,7 @@ export const CinemaShowtimeMatrix: React.FC<CinemaShowtimeMatrixProps> = ({
           </div>
         </div>
 
-        {/* Thanh chọn ngày (7-10 ngày liên tiếp) cuộn ngang mượt mà */}
+        {/* Thanh chọn ngày */}
         <div className="flex-1 flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-thin">
           {dateOptions.map((item) => {
             const isActive = selectedDate === item.date;
@@ -116,16 +111,16 @@ export const CinemaShowtimeMatrix: React.FC<CinemaShowtimeMatrixProps> = ({
                 key={item.date}
                 type="button"
                 onClick={() => setSelectedDate(item.date)}
-                className={`flex flex-col items-center justify-center py-2 px-3 sm:px-3.5 rounded-xl border text-center transition-all flex-shrink-0 min-w-[76px] cursor-pointer ${
+                className={`flex flex-col items-center justify-center py-2 px-3 sm:px-3.5 rounded-lg border text-center transition-all flex-shrink-0 min-w-[76px] cursor-pointer ${
                   isActive
-                    ? "bg-[#e71a0f] border-[#e71a0f] text-white shadow-md shadow-rose-600/30 font-bold"
-                    : "bg-white border-neutral-200 text-neutral-700 hover:text-[#e71a0f] hover:border-rose-300 hover:bg-neutral-50"
+                    ? "bg-[#E50914] border-[#E50914] text-white shadow-lg shadow-red-600/40 font-bold"
+                    : "bg-[#0B0C10] border-white/10 text-[#9CA3AF] hover:text-white hover:border-[#E50914]/50 hover:bg-[#161922]"
                 }`}
               >
-                <span className={`text-[11px] font-black ${isActive ? "text-white" : "text-neutral-600"}`}>
+                <span className={`text-[11px] font-black ${isActive ? "text-white" : "text-[#9CA3AF]"}`}>
                   {item.shortDow}
                 </span>
-                <span className={`text-xs mt-0.5 font-bold ${isActive ? "text-white/95" : "text-neutral-900"}`}>
+                <span className={`text-xs mt-0.5 font-bold ${isActive ? "text-white" : "text-white/80"}`}>
                   {item.fullDate}
                 </span>
               </button>
@@ -134,15 +129,13 @@ export const CinemaShowtimeMatrix: React.FC<CinemaShowtimeMatrixProps> = ({
         </div>
       </div>
 
-      {/* Danh sách phim và khung giờ chiếu tại rạp đã chọn */}
+      {/* Danh sách phim và khung giờ chiếu tại rạp */}
       <div className="space-y-4">
         {movies.slice(0, 6).map((movie) => {
-          // Lấy showtime thực tế từ mock store
           const rawShowtimes = getShowtimesForMovie(movie.id).filter(
             (st) => st.cinemaId === selectedCinemaId && st.date === selectedDate
           );
 
-          // Nếu ngày đó chưa có suất, fallback các khung giờ đặc trưng CineMax
           const showtimesForMovie =
             rawShowtimes.length > 0
               ? rawShowtimes
@@ -157,38 +150,38 @@ export const CinemaShowtimeMatrix: React.FC<CinemaShowtimeMatrixProps> = ({
           return (
             <div
               key={movie.id}
-              className="bg-white border border-neutral-200 rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row gap-5 hover:border-[#e71a0f] transition-all shadow-sm"
+              className="bg-[#12141C] border border-white/10 rounded-xl p-4 sm:p-5 flex flex-col md:flex-row gap-5 hover:border-[#E50914]/40 transition-all shadow-md"
             >
               {/* Poster nhỏ và thông tin phim */}
               <div className="flex gap-4 md:w-80 shrink-0">
                 <img
                   src={movie.posterPath}
                   alt={movie.title}
-                  className="w-20 h-28 object-cover rounded-xl shadow-sm border border-neutral-100 shrink-0"
+                  className="w-20 h-28 object-cover rounded-lg shadow-sm border border-white/10 shrink-0"
                 />
                 <div className="flex flex-col justify-between">
                   <div>
                     <div className="flex items-center gap-1.5 mb-1.5">
                       {getAgeRatingBadge(movie.ageRating)}
-                      <span className="text-[11px] text-neutral-500 font-semibold">{movie.durationMinutes} phút</span>
+                      <span className="text-[11px] text-[#9CA3AF] font-semibold">{movie.durationMinutes} phút</span>
                     </div>
-                    <h3 className="font-bold text-neutral-900 text-sm sm:text-base line-clamp-1 hover:text-[#e71a0f] transition-colors">
+                    <h3 className="font-bold text-white text-sm sm:text-base line-clamp-1 hover:text-[#E50914] transition-colors cursor-pointer">
                       {movie.title}
                     </h3>
-                    <p className="text-xs text-neutral-500 line-clamp-1 mt-0.5">
+                    <p className="text-xs text-[#9CA3AF] line-clamp-1 mt-0.5">
                       {movie.genres.slice(0, 2).join(", ")}
                     </p>
                   </div>
 
-                  <span className="text-[11px] text-amber-500 font-bold flex items-center gap-1">
+                  <span className="text-[11px] text-[#F5C518] font-bold flex items-center gap-1">
                     ★ {movie.voteAverage} / 10 IMDb
                   </span>
                 </div>
               </div>
 
               {/* Bảng các khung giờ chiếu */}
-              <div className="flex-1 flex flex-col justify-center border-t md:border-t-0 md:border-l border-neutral-100 pt-4 md:pt-0 md:pl-6">
-                <span className="text-[11px] uppercase tracking-wider text-neutral-500 font-bold mb-2.5 block">
+              <div className="flex-1 flex flex-col justify-center border-t md:border-t-0 md:border-l border-white/10 pt-4 md:pt-0 md:pl-6">
+                <span className="text-[11px] uppercase tracking-wider text-[#9CA3AF] font-bold mb-2.5 block">
                   Chọn suất chiếu để đặt vé & giữ ghế ({currentCinema.name}):
                 </span>
 
@@ -207,14 +200,14 @@ export const CinemaShowtimeMatrix: React.FC<CinemaShowtimeMatrixProps> = ({
                           st.id
                         )
                       }
-                      className="group/btn px-3.5 py-2 rounded-xl bg-neutral-50 border border-neutral-200 hover:border-[#e71a0f] hover:bg-rose-50/60 text-left transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                      className="group/btn px-3.5 py-2 rounded-lg bg-[#161922] border border-white/10 hover:border-[#E50914] hover:bg-[#E50914]/10 text-left transition-all hover:scale-105 active:scale-95 cursor-pointer"
                     >
-                      <span className="block text-sm font-black text-neutral-900 group-hover/btn:text-[#e71a0f]">
+                      <span className="block text-sm font-black text-white group-hover/btn:text-[#E50914]">
                         {st.time}
                       </span>
                       <div className="flex items-center gap-1 mt-0.5">
-                        <span className="text-[10px] text-[#e71a0f] font-bold">{st.format}</span>
-                        <span className="text-[9px] text-neutral-400">• {st.roomName}</span>
+                        <span className="text-[10px] text-[#E50914] font-bold">{st.format}</span>
+                        <span className="text-[9px] text-[#9CA3AF]">• {st.roomName}</span>
                       </div>
                     </button>
                   ))}
