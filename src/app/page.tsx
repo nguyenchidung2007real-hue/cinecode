@@ -14,6 +14,8 @@ import { AiChatWidget } from "@/components/AiChatWidget";
 import { QuickBookingBar } from "@/components/QuickBookingBar";
 import { CinemaShowtimeMatrix } from "@/components/CinemaShowtimeMatrix";
 import SemanticSearchModal from "@/components/SemanticSearchModal";
+import { CgvQuickIconBar } from "@/components/CgvQuickIconBar";
+import { MovieCarousel } from "@/components/MovieCarousel";
 import { Footer } from "@/components/Footer";
 
 import { Sparkles, Flame, Film, Clapperboard, Award, SearchX, Smile, Compass, Brain, Heart, Tag, Gift, Percent, Ticket, CheckCircle2, X, Clock, Calendar, Check, Copy, ArrowRight, Info, Armchair, Popcorn, Bot, Star } from "lucide-react";
@@ -31,6 +33,7 @@ interface PromoItem {
   promoCode: string;
   conditions: string[];
   applicableNote: string;
+  image: string;
 }
 
 const PROMO_DATA: PromoItem[] = [
@@ -40,6 +43,7 @@ const PROMO_DATA: PromoItem[] = [
     badgeBg: "bg-rose-50",
     badgeText: "text-[#e71a0f]",
     badgeBorder: "border-rose-200",
+    image: "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=800&auto=format&fit=crop&q=80",
     title: "Thứ Tư Vui Vẻ - Đồng Giá Vé 45.000đ",
     shortDesc: "Chương trình ưu đãi truyền thống được yêu thích nhất tại CineMax Cinemas. Đồng giá 45.000đ mọi suất chiếu 2D và miễn phụ thu ghế VIP.",
     validity: "Thứ 4 hàng tuần • Đến hết 31/12/2026",
@@ -60,6 +64,7 @@ const PROMO_DATA: PromoItem[] = [
     badgeBg: "bg-amber-50",
     badgeText: "text-amber-700",
     badgeBorder: "border-amber-200",
+    image: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800&auto=format&fit=crop&q=80",
     title: "Đặc Quyền Thành Viên U22 - Giá Vé 45k - 50k",
     shortDesc: "Dành riêng cho khán giả từ 12 đến 22 tuổi hoặc học sinh - sinh viên. Xem phim thả ga cả tuần với mức giá siêu ưu đãi.",
     validity: "Thứ 2 đến Thứ 6 • Đến hết 31/12/2026",
@@ -80,6 +85,7 @@ const PROMO_DATA: PromoItem[] = [
     badgeBg: "bg-emerald-50",
     badgeText: "text-emerald-700",
     badgeBorder: "border-emerald-200",
+    image: "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=800&auto=format&fit=crop&q=80",
     title: "Đại Tiệc Hoạt Hình CineMax - Tặng Quà Độc Quyền",
     shortDesc: "Thưởng thức các siêu phẩm hoạt hình Doraemon, Conan, Kung Fu Panda 4 và nhận thẻ sưu tầm hologram cùng ưu đãi bình nước Minions.",
     validity: "Tất cả các ngày trong tuần • Số lượng có hạn",
@@ -99,6 +105,7 @@ const PROMO_DATA: PromoItem[] = [
     badgeBg: "bg-rose-50",
     badgeText: "text-[#e71a0f]",
     badgeBorder: "border-rose-200",
+    image: "https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=800&auto=format&fit=crop&q=80",
     title: "Sweetbox Ghế Đôi - Tặng Kèm Bắp Phô Mai",
     shortDesc: "Thưởng thức không gian ghế đôi nỉ nhung riêng tư và nhận ngay 1 bắp phô mai thơm giòn nóng hổi cho buổi hẹn hò lãng mạn.",
     validity: "Suất chiếu sau 20:00 • Tất cả các ngày trong tuần",
@@ -309,7 +316,7 @@ export default function HomePage() {
       <main className="flex-1">
         {/* Banner thông báo kết quả giao dịch VNPay */}
         {vnpayNotice && (
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+          <div className="max-w-[1040px] 2xl:max-w-[1080px] mx-auto px-2 sm:px-4 pt-6">
             <div
               className={`p-4 rounded-2xl border flex items-center justify-between gap-3 text-sm shadow-xl transition-all ${
                 vnpayNotice.type === "success"
@@ -336,7 +343,7 @@ export default function HomePage() {
 
         {/* NẾU ĐANG TÌM KIẾM HOẶC LỌC TÂM TRẠNG RIÊNG */}
         {searchQuery.trim() !== "" || selectedMood !== "all" || selectedGenre !== "Tất cả" ? (
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          <div className="max-w-[1040px] 2xl:max-w-[1080px] mx-auto px-2 sm:px-4 py-10">
             <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2">
@@ -392,19 +399,22 @@ export default function HomePage() {
             )}
           </div>
         ) : (
-          /* GIAO DIỆN TRANG CHỦ TIÊU CHUẨN CINEMAX CULTUREPLEX */
+          /* GIAO DIỆN TRANG CHỦ TIÊU CHUẨN CGV & CINEMAX CULTUREPLEX */
           <>
-            {/* 1. HERO BANNER CHÍNH FULL-WIDTH HIỆN ĐẠI (DARK CINEMA MODE) */}
-            <div className="w-full relative">
+            {/* 1. THANH ICON TRUY CẬP NHANH CHUẨN CGV (QUICK LINKS / WIDGET BAR) */}
+            <CgvQuickIconBar />
+
+            {/* 2. BANNER ĐÓNG KHUNG Ở GIỮA (BOXED CONTAINER ~1080px, TỶ LỆ ~980x448) */}
+            <section className="w-full pt-4 pb-1">
               <HeroBanner
                 movies={movies}
                 onWatchTrailer={setActiveDetailMovie}
                 onBookTicket={setActiveBookingMovie}
               />
-            </div>
+            </section>
 
-            {/* 2. THANH ĐẶT VÉ NHANH 1-CLICK NỔI BẬT NẰM NGAY BÊN DƯỚI BANNER */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6 sm:-mt-8 relative z-30">
+            {/* 3. THANH ĐẶT VÉ NHANH NẰM GỌN TRONG KHUNG 1080px */}
+            <section className="max-w-[1040px] 2xl:max-w-[1080px] mx-auto px-2 sm:px-4 mt-3">
               <QuickBookingBar
                 movies={movies}
                 onQuickBook={(movie, cinemaName, date, time, format, showtimeId) => {
@@ -412,24 +422,25 @@ export default function HomePage() {
                   setActiveBookingMovie(movie);
                 }}
               />
-            </div>
+            </section>
 
-            {/* 3. KHU VỰC DANH MỤC PHIM CHIẾU RẠP */}
-            <div id="commercial-tabs" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 scroll-mt-24">
+            {/* 4. KHU VỰC "MOVIE SELECTION" CHUẨN CGV: TIÊU ĐỀ KẺ ĐÔI & TRƯỢT 4 PHIM */}
+            <div id="commercial-tabs" className="max-w-[1040px] 2xl:max-w-[1080px] mx-auto px-2 sm:px-4 mt-10 scroll-mt-24">
               
-              {/* Tiêu Đề Đồng Bộ Font Sans-serif Hiện Đại */}
-              <div className="flex items-center justify-center my-8">
-                <div className="flex items-center gap-3 sm:gap-6 w-full justify-center">
-                  <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-neutral-300 to-neutral-700" />
-                  <h2 className="text-xl sm:text-2xl font-black tracking-widest uppercase text-neutral-900 drop-shadow-sm px-3">
-                    DANH MỤC PHIM CHIẾU RẠP
+              {/* Tiêu Đề Có Đường Kẻ Đôi 2 Bên Chuẩn CGV */}
+              <div className="relative text-center my-8">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t-2 border-b border-neutral-800" />
+                </div>
+                <div className="relative inline-block bg-[#fdfcf0] px-6">
+                  <h2 className="text-2xl sm:text-3xl font-black tracking-widest uppercase text-neutral-900 font-sans">
+                    MOVIE SELECTION
                   </h2>
-                  <div className="h-[2px] flex-1 bg-gradient-to-l from-transparent via-neutral-300 to-neutral-700" />
                 </div>
               </div>
 
-              {/* Thanh Chuyển Tab Phim với Icon Phẳng Monochrome Đồng Bộ */}
-              <div className="flex flex-wrap items-center justify-between gap-4 border-b border-neutral-200 pb-4">
+              {/* Thanh Chuyển Tab Phim Chuẩn Rạp Chiếu Phim */}
+              <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#e5e0d8] pb-4">
                 <div className="flex items-center gap-4 sm:gap-8">
                   <button
                     type="button"
@@ -486,26 +497,24 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Lưới phim theo Tab đang chọn với card chuẩn cinema */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6 mt-8">
-                {(activeCommercialTab === "now_playing"
-                  ? nowPlayingMovies
-                  : activeCommercialTab === "upcoming"
-                  ? upcomingMovies
-                  : trendingMovies
-                ).map((movie) => (
-                  <MovieCard
-                    key={movie.id}
-                    movie={movie}
-                    onOpenDetail={setActiveDetailMovie}
-                    onBookTicket={setActiveBookingMovie}
-                  />
-                ))}
+              {/* LƯỚI CAROUSEL TRƯỢT 4 PHIM TRÊN 1 HÀNG CHUẨN CGV */}
+              <div className="mt-6">
+                <MovieCarousel
+                  movies={
+                    activeCommercialTab === "now_playing"
+                      ? nowPlayingMovies
+                      : activeCommercialTab === "upcoming"
+                      ? upcomingMovies
+                      : trendingMovies
+                  }
+                  onOpenDetail={setActiveDetailMovie}
+                  onBookTicket={setActiveBookingMovie}
+                />
               </div>
             </div>
 
             {/* CINEMAX SPECIAL CINEMA - RẠP ĐẶC BIỆT ĐỘC QUYỀN */}
-            <div id="special-cinema-section" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 scroll-mt-24">
+            <div id="special-cinema-section" className="max-w-[1040px] 2xl:max-w-[1080px] mx-auto px-2 sm:px-4 mt-16 scroll-mt-24">
               <div className="flex flex-col items-center justify-center mb-8">
                 <div className="flex items-center gap-3 sm:gap-6 w-full max-w-2xl justify-center">
                   <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-[#e71a0f]/50 to-[#e71a0f]" />
@@ -694,7 +703,7 @@ export default function HomePage() {
             </div>
 
             {/* 4. Khám Phá Phim Theo Tâm Trạng (Mood-Based Discovery) */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10">
+            <div className="max-w-[1040px] 2xl:max-w-[1080px] mx-auto px-2 sm:px-4 mt-10">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <Compass className="w-4 h-4 text-[#e71a0f]" />
@@ -728,7 +737,7 @@ export default function HomePage() {
             </div>
 
             {/* Thanh Tab bộ lọc thể loại nhanh */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+            <div className="max-w-[1040px] 2xl:max-w-[1080px] mx-auto px-2 sm:px-4 mt-4">
               <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
                 <span className="text-xs font-bold text-neutral-500 uppercase tracking-wider mr-2 flex-shrink-0">
                   Thể loại:
@@ -750,7 +759,7 @@ export default function HomePage() {
             </div>
 
             {/* Banner Quyền Lợi Thành Viên & Trợ Lý CineMax */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+            <div className="max-w-[1040px] 2xl:max-w-[1080px] mx-auto px-2 sm:px-4 mt-8">
               <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-red-50 via-rose-50 to-amber-50 border border-[#e5e0d8] flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-[#e71a0f] flex items-center justify-center text-white shadow-md shadow-[#e71a0f]/30 flex-shrink-0">
@@ -780,7 +789,7 @@ export default function HomePage() {
             </div>
 
             {/* 5. Bảng Giá Vé Niêm Yết Rạp Chiếu (Official Price Table) */}
-            <section id="price-table" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 scroll-mt-24 border-t border-slate-200">
+            <section id="price-table" className="max-w-[1040px] 2xl:max-w-[1080px] mx-auto px-2 sm:px-4 py-12 scroll-mt-24 border-t border-[#e5e0d8]">
               {/* Header */}
               <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
                 <div>
@@ -1072,19 +1081,21 @@ export default function HomePage() {
               </div>
             </section>
 
-            {/* 6. Khuyến Mãi & Sự Kiện Rạp Chiếu (Promotions & Popcorn Combos) */}
-            <section id="promo-section" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 scroll-mt-24">
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <span className="text-xs text-[#e71a0f] font-bold uppercase tracking-wider block">Ưu Đãi Rạp Chiếu</span>
-                  <h3 className="text-2xl font-black text-neutral-900 tracking-tight flex items-center gap-2 mt-0.5">
-                    <span>KHUYẾN MÃI & COMBO BẮP NƯỚC HOT</span>
-                    <Tag className="w-5 h-5 text-amber-500" />
-                  </h3>
+            {/* 6. Khuyến Mãi & Sự Kiện Rạp Chiếu (EVENT & PROMOTION - CHUẨN CGV) */}
+            <section id="promo-section" className="max-w-[1040px] 2xl:max-w-[1080px] mx-auto px-2 sm:px-4 py-10 scroll-mt-24">
+              {/* Tiêu Đề Có Đường Kẻ Đôi 2 Bên Chuẩn CGV */}
+              <div className="relative text-center my-8">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t-2 border-b border-neutral-800" />
+                </div>
+                <div className="relative inline-block bg-[#fdfcf0] px-6">
+                  <h2 className="text-2xl sm:text-3xl font-black tracking-widest uppercase text-neutral-900 font-sans">
+                    EVENT & PROMOTION
+                  </h2>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {PROMO_DATA.map((promo) => (
                   <div
                     key={promo.id}
@@ -1092,21 +1103,34 @@ export default function HomePage() {
                       setSelectedPromo(promo);
                       setCopiedPromoCode(false);
                     }}
-                    className="relative rounded-2xl overflow-hidden bg-white border border-[#e5e0d8] p-5 flex flex-col justify-between group hover:border-[#e71a0f]/40 hover:shadow-md transition-all hover:scale-[1.01] cursor-pointer"
+                    className="relative rounded-2xl overflow-hidden bg-white border border-[#e5e0d8] flex flex-col justify-between group hover:border-[#e71a0f] hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer"
                   >
-                    <div className="space-y-2">
-                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-black ${promo.badgeBg} ${promo.badgeText} uppercase tracking-wider inline-block border ${promo.badgeBorder}`}>
-                        {promo.badge}
-                      </span>
-                      <h4 className="text-lg font-black text-neutral-900 group-hover:text-[#e71a0f] transition-colors">
-                        {promo.title}
-                      </h4>
-                      <p className="text-xs text-neutral-600 leading-relaxed">
-                        {promo.shortDesc}
-                      </p>
+                    <div>
+                      {/* Banner ảnh minh họa sự kiện chuẩn CGV */}
+                      <div className="relative h-36 w-full overflow-hidden bg-neutral-900">
+                        <img
+                          src={promo.image}
+                          alt={promo.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
+                        <span className={`absolute top-2.5 left-2.5 px-2.5 py-1 rounded-full text-[10px] font-black ${promo.badgeBg} ${promo.badgeText} uppercase tracking-wider inline-block border ${promo.badgeBorder} shadow-sm backdrop-blur-xs`}>
+                          {promo.badge}
+                        </span>
+                      </div>
+
+                      <div className="p-4 space-y-1.5">
+                        <h4 className="text-sm font-black text-neutral-900 group-hover:text-[#e71a0f] transition-colors line-clamp-2">
+                          {promo.title}
+                        </h4>
+                        <p className="text-xs text-neutral-600 line-clamp-2 leading-relaxed">
+                          {promo.shortDesc}
+                        </p>
+                      </div>
                     </div>
-                    <div className="pt-4 flex items-center justify-between text-xs text-neutral-500 font-medium border-t border-neutral-100 mt-4">
-                      <span>{promo.validity}</span>
+
+                    <div className="px-4 pb-4 pt-2 flex items-center justify-between text-[11px] text-neutral-500 font-medium border-t border-neutral-100">
+                      <span className="truncate max-w-[130px]">{promo.validity}</span>
                       <button
                         type="button"
                         onClick={(e) => {
@@ -1114,7 +1138,7 @@ export default function HomePage() {
                           setSelectedPromo(promo);
                           setCopiedPromoCode(false);
                         }}
-                        className="text-[#e71a0f] hover:text-[#c81007] font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                        className="text-[#e71a0f] hover:text-[#c81007] font-bold flex items-center gap-1 cursor-pointer transition-colors shrink-0"
                       >
                         Chi tiết →
                       </button>
