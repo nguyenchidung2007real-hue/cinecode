@@ -97,7 +97,7 @@ async function runPrismaDatabaseTests() {
   const updatedTickets = await prisma.ticket.findMany({
     where: { bookingId: testBookingId },
   });
-  const allCheckedIn = updatedTickets.every((t) => t.isCheckedIn);
+  const allCheckedIn = updatedTickets.every((t: { isCheckedIn: boolean } | any) => t.isCheckedIn);
   assert(allCheckedIn, "Vé trong bảng 'tickets' đã chuyển is_checked_in = true trong database");
 
   // BÀI TEST 4: ÁP DỤNG VOUCHER & MÃ GIẢM GIÁ TỪ DATABASE
