@@ -3,7 +3,7 @@
 import React, { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { ShieldCheck, Lock, Eye, EyeOff, AlertCircle, ArrowLeft, Loader2, Film, Sparkles } from "lucide-react";
+import { ShieldCheck, Lock, Eye, EyeOff, AlertCircle, ArrowLeft, Loader2, Film, Sparkles, Key, Check } from "lucide-react";
 
 function safeNext(value: string | null): string {
   return value && value.startsWith("/") && !value.startsWith("//") && !value.includes("\\")
@@ -46,9 +46,8 @@ function LoginForm() {
         return;
       }
 
-      // Đăng nhập thành công -> chuyển tiếp tới trang quản trị
-      router.push(fromUrl);
-      router.refresh();
+      // Đăng nhập thành công -> chuyển tiếp thẳng tới trang quản trị (hard navigation để nạp cookie phiên tức thì)
+      window.location.href = fromUrl;
     } catch {
       setErrorMessage("Lỗi kết nối máy chủ, vui lòng thử lại sau.");
       setIsLoading(false);
@@ -66,9 +65,29 @@ function LoginForm() {
         )}
 
         <div>
-          <label className="block text-xs font-black text-neutral-300 uppercase tracking-wider mb-2">
-            Mật khẩu quản trị viên
-          </label>
+          <div className="flex items-center justify-between mb-2">
+            <label className="block text-xs font-black text-neutral-300 uppercase tracking-wider">
+              Mật khẩu quản trị viên
+            </label>
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="text-xs text-neutral-400 hover:text-white flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              {showPassword ? (
+                <>
+                  <EyeOff className="w-3.5 h-3.5 text-amber-400" />
+                  <span className="text-amber-400 font-semibold">Ẩn mật khẩu</span>
+                </>
+              ) : (
+                <>
+                  <Eye className="w-3.5 h-3.5 text-neutral-400" />
+                  <span>Hiện mật khẩu</span>
+                </>
+              )}
+            </button>
+          </div>
+
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-neutral-500">
               <Lock className="w-4 h-4" />
@@ -80,20 +99,37 @@ function LoginForm() {
               placeholder="Nhập mật khẩu quản trị..."
               disabled={isLoading}
               autoFocus
-              className="w-full pl-10 pr-11 py-3 bg-black/40 border border-white/15 focus:border-[#e71a0f] rounded-xl text-white placeholder-neutral-500 text-sm outline-none transition-all"
+              className="w-full pl-10 pr-11 py-3 bg-black/40 border border-white/15 focus:border-[#e71a0f] rounded-xl text-white placeholder-neutral-500 text-sm outline-none transition-all font-mono"
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-neutral-400 hover:text-white"
-              tabIndex={-1}
+              className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-neutral-400 hover:text-white z-10 cursor-pointer"
+              title={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
             >
-              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              {showPassword ? <EyeOff className="w-4 h-4 text-amber-400" /> : <Eye className="w-4 h-4" />}
             </button>
           </div>
-          <p className="text-[11px] text-neutral-400 mt-2">
-            Mật khẩu bảo mật được quản lý qua biến môi trường <code className="text-amber-400 font-mono">ADMIN_LOGIN_PASSWORD</code> (Mặc định: <code className="text-emerald-400 font-mono font-bold">cinemax2026</code>).
-          </p>
+
+          {/* Quick-fill & default password preview card */}
+          <div className="mt-3 p-3 bg-white/5 border border-white/10 rounded-xl flex items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-2 text-neutral-300 min-w-0">
+              <Key className="w-4 h-4 text-amber-400 shrink-0" />
+              <span className="truncate">
+                Mặc định: <strong className="text-emerald-400 font-mono font-bold tracking-wide">cinemax2026</strong>
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setPassword("cinemax2026");
+                setShowPassword(true);
+              }}
+              className="px-2.5 py-1 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 rounded-lg text-[11px] font-bold cursor-pointer transition-all shrink-0 hover:scale-105 active:scale-95"
+            >
+              Tự động điền
+            </button>
+          </div>
         </div>
 
         <button
@@ -104,7 +140,7 @@ function LoginForm() {
           {isLoading ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin" />
-              <span>Đang xác thực...</span>
+              <span>Đang chuyển hướng vào hệ thống...</span>
             </>
           ) : (
             <span>ĐĂNG NHẬP HỆ THỐNG QUẢN TRỊ</span>

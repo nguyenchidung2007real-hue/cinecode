@@ -39,7 +39,7 @@ async function verifyEdgeToken(token: string | undefined): Promise<boolean> {
     return false;
   }
 
-  const secret = process.env.ADMIN_SESSION_SECRET?.trim() || process.env.ADMIN_SYNC_SECRET?.trim() || "cinemax-dev-insecure-admin-session-secret";
+  const secret = process.env.ADMIN_SESSION_SECRET?.trim() || process.env.ADMIN_SYNC_SECRET?.trim() || "cinemax-default-admin-session-secret-key-32chars";
   const payload = `admin:${expiresAt}`;
 
   try {
