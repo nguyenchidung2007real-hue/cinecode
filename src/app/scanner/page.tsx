@@ -688,6 +688,9 @@ export default function StaffScannerPage() {
                   placeholder="Nhập passcode ca trực"
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-sky-500"
                 />
+                <p className="text-[10px] text-slate-500 mt-1">
+                  Mẫu: Mã <span className="font-mono font-bold text-sky-600">NV01</span> (Mật khẩu: <span className="font-mono font-bold text-sky-600">1234</span>) hoặc <span className="font-mono font-bold text-sky-600">NV02</span> (Mật khẩu: <span className="font-mono font-bold text-sky-600">5678</span>)
+                </p>
               </div>
             </div>
 

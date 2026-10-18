@@ -12,13 +12,18 @@ export interface StaffAuthResult {
   reason?: string;
 }
 
+export const DEFAULT_STAFF_ACCOUNTS: StaffAccount[] = [
+  { id: "NV01", passcode: "1234", name: "Nguyễn Văn A" },
+  { id: "NV02", passcode: "5678", name: "Trần Thị B" },
+];
+
 /**
  * Phân tích danh sách tài khoản nhân viên từ biến môi trường STAFF_ACCOUNTS.
  * Định dạng: "NV01:1234:Nguyễn Văn A,NV02:5678:Trần Thị B"
  */
 export function getStaffAccounts(): StaffAccount[] {
   const raw = process.env.STAFF_ACCOUNTS?.trim();
-  if (!raw) return [];
+  if (!raw) return DEFAULT_STAFF_ACCOUNTS;
 
   const accounts: StaffAccount[] = [];
   const entries = raw.split(",");

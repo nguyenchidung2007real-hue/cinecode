@@ -83,18 +83,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Vui lòng nhập mật khẩu quản trị." }, { status: 400 });
   }
 
-  const expectedPassword = process.env.ADMIN_LOGIN_PASSWORD?.trim();
-
-  // Trên production: bắt buộc phải có biến ADMIN_LOGIN_PASSWORD
-  if (process.env.NODE_ENV === "production" && !expectedPassword) {
-    return NextResponse.json(
-      { error: "Hệ thống chưa cấu hình mật khẩu quản trị ADMIN_LOGIN_PASSWORD trên máy chủ." },
-      { status: 500 },
-    );
-  }
-
-  // Môi trường dev fallback: sinh ngẫu nhiên một lần cho mỗi lần chạy server khi chưa đặt biến môi trường
-  const activePassword = expectedPassword || getDevAdminPassword();
+  // Mật khẩu quản trị chuẩn (đọc từ biến môi trường ADMIN_LOGIN_PASSWORD hoặc dùng mật khẩu mặc định cinemax2026)
+  const activePassword = process.env.ADMIN_LOGIN_PASSWORD?.trim() || "cinemax2026";
 
   if (!safeEqual(password, activePassword)) {
     const attempt = recordFailedAttempt(clientIp);

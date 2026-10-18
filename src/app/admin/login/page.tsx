@@ -92,7 +92,7 @@ function LoginForm() {
             </button>
           </div>
           <p className="text-[11px] text-neutral-400 mt-2">
-            Mật khẩu bảo mật được xác thực bằng chữ ký SHA-256 qua biến môi trường <code className="text-amber-400 font-mono">ADMIN_LOGIN_PASSWORD</code>.
+            Mật khẩu bảo mật được quản lý qua biến môi trường <code className="text-amber-400 font-mono">ADMIN_LOGIN_PASSWORD</code> (Mặc định: <code className="text-emerald-400 font-mono font-bold">cinemax2026</code>).
           </p>
         </div>
 
