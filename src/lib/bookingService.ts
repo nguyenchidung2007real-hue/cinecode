@@ -33,7 +33,15 @@ export class BookingError extends Error {
     this.status = status;
     this.code = code;
     this.extra = extra;
+    Object.setPrototypeOf(this, BookingError.prototype);
   }
+}
+
+export function isBookingError(err: unknown): err is BookingError {
+  return (
+    err instanceof BookingError ||
+    (typeof err === "object" && err !== null && (err as { name?: string }).name === "BookingError")
+  );
 }
 
 /** Danh mục rạp lấy từ mockData & cấu hình mặc định */

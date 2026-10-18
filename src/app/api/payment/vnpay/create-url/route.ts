@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSeatStore } from "@/lib/seatStore";
 import { getTicketStore } from "@/lib/ticketStore";
-import { deriveBookingId, loadSellableShowtime, BookingError } from "@/lib/bookingService";
+import { deriveBookingId, loadSellableShowtime, BookingError, isBookingError } from "@/lib/bookingService";
 import { calculatePrice } from "@/lib/pricing";
 import { createVnpayPaymentUrl, nextPaymentAttempt } from "@/lib/vnpay";
 import { getClientIp, isRateLimited } from "@/lib/rateLimit";
@@ -97,14 +97,28 @@ export async function POST(request: NextRequest) {
     const rawOrderInfo = `Thanh toan ve ${bookingId}`;
     const safeOrderInfo = rawOrderInfo.replace(/[^a-zA-Z0-9\s,\-_]/g, " ").trim();
 
-    // 8. Sinh URL chuyển hướng VNPay (đảm bảo ip hợp lệ, không để lọt 'unknown' lên VNPay)
-    const safeIp = !ip || ip === "unknown" || !/^[0-9a-fA-F:.]+$/.test(ip) ? "127.0.0.1" : ip;
+    // 8. Sinh URL chuyển hướng VNPay (đảm bảo ip hợp lệ dạng IPv4, tự động phát hiện returnUrl theo host/origin)
+    const origin =
+      request.headers.get("origin") ||
+      request.headers.get("x-forwarded-host") ||
+      request.nextUrl.origin ||
+      process.env.NEXT_PUBLIC_SITE_URL ||
+      "http://localhost:3000";
+    const formattedOrigin = origin.startsWith("http") ? origin : `https://${origin}`;
+    const dynamicReturnUrl = process.env.VNPAY_RETURN_URL?.trim() || `${formattedOrigin}/api/payment/vnpay/return`;
+
+    const safeIp =
+      !ip || ip === "unknown" || ip.includes(":") || !/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(ip)
+        ? "127.0.0.1"
+        : ip;
+
     const paymentUrl = createVnpayPaymentUrl({
       amount: totalAmount,
       txnRef,
       orderInfo: safeOrderInfo,
       ipAddr: safeIp,
       expireDate,
+      returnUrl: dynamicReturnUrl,
     });
 
     return NextResponse.json({
@@ -115,10 +129,11 @@ export async function POST(request: NextRequest) {
       expireAt: expireDate.toISOString(),
     });
   } catch (error) {
-    if (error instanceof BookingError) {
-      return NextResponse.json({ error: error.message, code: error.code }, { status: error.status });
+    if (isBookingError(error)) {
+      return NextResponse.json({ error: error.message, code: error.code }, { status: error.status || 400 });
     }
     console.error("[vnpay/create-url] Lỗi:", error);
-    return NextResponse.json({ error: "Lỗi máy chủ khi tạo giao dịch VNPay." }, { status: 500 });
+    const message = error instanceof Error && error.message ? error.message : "Lỗi máy chủ khi tạo giao dịch VNPay.";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

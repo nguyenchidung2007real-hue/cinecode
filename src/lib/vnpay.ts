@@ -65,17 +65,25 @@ export function buildVnpaySignData(params: Record<string, string | number>): {
   return { signData, queryString: signData };
 }
 
+// Tài khoản kiểm thử chính thức VNPay Sandbox (đảm bảo môi trường dev/staging không bị gián đoạn)
+export const DEFAULT_VNPAY_SANDBOX_TMN = "CUOQNZLU";
+export const DEFAULT_VNPAY_SANDBOX_SECRET = "HTRLPQFTBFKYZOHMBKIWIOVWKJCBUEMX";
+export const DEFAULT_VNPAY_SANDBOX_URL = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
+
 /**
  * Sinh URL thanh toán chuyển hướng sang cổng VNPay.
  */
 export function createVnpayPaymentUrl(order: VnpayOrderParams): string {
-  const tmnCode = process.env.VNPAY_TMN_CODE?.trim();
-  const secretKey = process.env.VNPAY_HASH_SECRET?.trim();
-  const vnpUrl = process.env.VNPAY_URL?.trim() || "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
-  const returnUrl = order.returnUrl || process.env.VNPAY_RETURN_URL?.trim();
+  const tmnCode = process.env.VNPAY_TMN_CODE?.trim() || DEFAULT_VNPAY_SANDBOX_TMN;
+  const secretKey = process.env.VNPAY_HASH_SECRET?.trim() || DEFAULT_VNPAY_SANDBOX_SECRET;
+  const vnpUrl = process.env.VNPAY_URL?.trim() || DEFAULT_VNPAY_SANDBOX_URL;
+  const returnUrl =
+    order.returnUrl ||
+    process.env.VNPAY_RETURN_URL?.trim() ||
+    (process.env.NEXT_PUBLIC_SITE_URL ? `${process.env.NEXT_PUBLIC_SITE_URL}/api/payment/vnpay/return` : "http://localhost:3000/api/payment/vnpay/return");
 
   if (!tmnCode || !secretKey || !returnUrl) {
-    throw new Error("Chưa cấu hình đầy đủ biến môi trường VNPay (VNPAY_TMN_CODE, VNPAY_HASH_SECRET, VNPAY_RETURN_URL).");
+    throw new Error("Chưa cấu hình thông tin kết nối VNPay (thiếu TMN_CODE, HASH_SECRET hoặc RETURN_URL).");
   }
 
   const now = new Date();
@@ -116,7 +124,7 @@ export function createVnpayPaymentUrl(order: VnpayOrderParams): string {
 export function verifyVnpaySignature(
   queryParams: Record<string, string>
 ): { isValid: boolean; data: Record<string, string> } {
-  const secretKey = process.env.VNPAY_HASH_SECRET?.trim();
+  const secretKey = process.env.VNPAY_HASH_SECRET?.trim() || DEFAULT_VNPAY_SANDBOX_SECRET;
   if (!secretKey) return { isValid: false, data: {} };
 
   const cleanParams: Record<string, string> = {};

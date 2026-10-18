@@ -42,3 +42,16 @@ next-env.d.ts
 *.db
 *.db-journal
 .env
+
+# report and presentation generation artifacts
+*.docx
+*.pdf
+*.pptx
+*.py
+__pycache__/
+diagrams/
+info_*.txt
+slides_*.txt
+fpt_polytechnic_logo_clean.png
+test_vietnamese_pdf.png
+
