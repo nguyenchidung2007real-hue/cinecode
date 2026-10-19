@@ -30,13 +30,19 @@ import {
   LayoutDashboard,
   Receipt,
   ScanLine,
+  Megaphone,
+  ExternalLink,
+  Popcorn,
+  Flame,
+  Radio,
+  Eye,
 } from "lucide-react";
 import AdminSeatsMoviesAuditTab from "@/components/admin/AdminSeatsMoviesAuditTab";
 import AdminOrdersAndReviewsTab from "@/components/admin/AdminOrdersAndReviewsTab";
 import { MOCK_MOVIES, MOCK_SHOWTIMES, CONCESSION_COMBOS } from "@/lib/mockData";
 import { formatVND } from "@/lib/utils";
 import { checkShowtimeCollision, ShowtimeLike, CollisionResult, TRAILER_MINUTES, CLEANING_MINUTES } from "@/lib/showtimeCollision";
-import { ShowTime } from "@/types";
+import { ShowTime, Movie } from "@/types";
 
 interface SyncStatus {
   success: boolean;
@@ -54,6 +60,108 @@ export default function AdminDashboardPage() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Live Broadcast Controller (Phát sóng thông báo trực tiếp lên trang khách)
+  const [announcementSettings, setAnnouncementSettings] = useState<{
+    enabled: boolean;
+    text: string;
+    type: "promo" | "alert" | "event" | "maintenance";
+    actionText: string;
+    actionUrl: string;
+  }>({
+    enabled: true,
+    text: "🔥 Ưu đãi thành viên CineMax: Tặng ngay voucher bắp phô mai nóng hổi khi đặt vé qua website!",
+    type: "promo",
+    actionText: "Xem Ưu Đãi",
+    actionUrl: "#promo-section",
+  });
+  const [isSavingAnnouncement, setIsSavingAnnouncement] = useState(false);
+  const [announcementSaveSuccess, setAnnouncementSaveSuccess] = useState(false);
+
+  // Kho phim đang khai thác & Điều phối danh mục lên trang khách
+  const [adminMovies, setAdminMovies] = useState<Movie[]>(MOCK_MOVIES);
+  const [movieStatusUpdating, setMovieStatusUpdating] = useState<string | null>(null);
+  const [movieStatusSuccess, setMovieStatusSuccess] = useState<string | null>(null);
+
+  // Tải cài đặt thông báo phát sóng từ Server Store
+  useEffect(() => {
+    fetch("/api/settings")
+      .then((res) => (res.ok ? res.json() : Promise.reject()))
+      .then((data) => {
+        if (data?.data?.announcement) {
+          setAnnouncementSettings(data.data.announcement);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  // Tải danh sách phim mới nhất
+  useEffect(() => {
+    fetch("/api/movies?category=all")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.data) && data.data.length > 0) {
+          setAdminMovies(data.data);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleSaveAnnouncement = async () => {
+    setIsSavingAnnouncement(true);
+    try {
+      const res = await fetch("/api/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ announcement: announcementSettings }),
+      });
+      if (res.ok) {
+        setAnnouncementSaveSuccess(true);
+        setTimeout(() => setAnnouncementSaveSuccess(false), 3500);
+      }
+    } catch (err) {
+      console.error("Lỗi lưu thông báo broadcast:", err);
+    } finally {
+      setIsSavingAnnouncement(false);
+    }
+  };
+
+  const handleToggleMovieStatus = async (
+    movieId: string | number,
+    newStatus: "now_playing" | "upcoming" | "trending"
+  ) => {
+    setMovieStatusUpdating(String(movieId));
+    try {
+      const res = await fetch("/api/admin/seats-and-movies", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "update_movie",
+          id: movieId,
+          patch: { commercialTab: newStatus, status: newStatus },
+        }),
+      });
+      if (res.ok) {
+        setAdminMovies((prev) =>
+          prev.map((m) =>
+            String(m.id) === String(movieId) ? { ...m, commercialTab: newStatus, status: newStatus } : m
+          )
+        );
+        const label =
+          newStatus === "now_playing"
+            ? "Phim Đang Chiếu"
+            : newStatus === "upcoming"
+            ? "Phim Sắp Chiếu"
+            : "Suất Chiếu Đặc Biệt";
+        setMovieStatusSuccess(`Đã chuyển phim sang danh mục [${label}] trên trang khách!`);
+        setTimeout(() => setMovieStatusSuccess(null), 3500);
+      }
+    } catch (err) {
+      console.error("Lỗi cập nhật trạng thái phim:", err);
+    } finally {
+      setMovieStatusUpdating(null);
+    }
+  };
 
   // Chế độ giao diện Halloween (Spooky Theme 🎃 ⇄ Normal Cinema 🎬)
   const [isHalloween, setIsHalloween] = useState(false);
@@ -194,8 +302,13 @@ export default function AdminDashboardPage() {
     setTimeout(() => setScheduleSuccessMsg(null), 4000);
   };
 
-  const handleDeleteShowtime = (id: string) => {
+  const handleDeleteShowtime = async (id: string) => {
     setShowtimesList((prev) => prev.filter((st) => st.id !== id));
+    try {
+      await fetch(`/api/admin/showtimes?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+    } catch (err) {
+      console.error("Lỗi xóa suất chiếu trên server:", err);
+    }
   };
 
   const handleSyncBeta = async () => {
@@ -426,6 +539,23 @@ export default function AdminDashboardPage() {
               )}
             </button>
 
+            {/* Live Customer Preview Quick Button */}
+            <a
+              href="/"
+              target="_blank"
+              rel="noreferrer"
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all border shadow-sm ${
+                isHalloween
+                  ? "bg-purple-950/40 hover:bg-purple-900/60 text-purple-200 border-orange-500/30"
+                  : "bg-white/5 hover:bg-white/10 text-neutral-200 border-white/10 hover:text-white"
+              }`}
+              title="Mở trang chủ khách hàng trong tab mới để kiểm tra các thay đổi tức thì"
+            >
+              <Eye className="w-3.5 h-3.5 text-cyan-400" />
+              <span className="hidden sm:inline">Xem Trang Khách</span>
+              <ExternalLink className="w-3 h-3 text-neutral-400" />
+            </a>
+
             {/* Sync Data Button */}
             <button
               onClick={handleSyncBeta}
@@ -492,9 +622,9 @@ export default function AdminDashboardPage() {
             </div>
           )}
 
-          {/* 4 Cards Thống Kê Tổng Quan (Glassmorphism + Sparklines + Glow) */}
+          {/* 4 Cards Thống Kê Tổng Quan (Glassmorphism + Sparklines + Operations Telemetry) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Thẻ 1: Doanh Thu */}
+            {/* Thẻ 1: Doanh Thu Thực Tế vs Mục Tiêu */}
             <div className={`p-5 rounded-2xl border transition-all relative overflow-hidden group shadow-lg ${
               isHalloween
                 ? "bg-[#150B24]/90 border-orange-500/25 hover:border-orange-500/50 hover:shadow-[0_4px_24px_rgba(255,117,24,0.15)]"
@@ -507,32 +637,28 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
               <div className="text-2xl font-black text-white tracking-tight">{formatVND(stats.todayRevenue)}</div>
-              <div className="flex items-center justify-between mt-3">
-                <div className="flex items-center gap-1 text-[11px] text-emerald-400 font-semibold">
-                  <TrendingUp className="w-3.5 h-3.5" />
-                  <span>+18.5% so với hôm qua</span>
+              <div className="mt-2.5">
+                <div className="flex items-center justify-between text-[11px] text-neutral-400 mb-1">
+                  <span>KPI ngày: 12.000.000 ₫</span>
+                  <span className="text-emerald-400 font-bold">70.4%</span>
                 </div>
-                {/* Mini Sparkline SVG */}
-                <svg className="w-16 h-6 text-emerald-400 overflow-visible" viewBox="0 0 60 20">
-                  <path
-                    d="M 0 16 Q 15 14, 25 10 T 45 6 T 60 2"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
+                <div className="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
+                  <div
+                    className={`h-full rounded-full ${isHalloween ? "bg-gradient-to-r from-orange-500 to-amber-400" : "bg-gradient-to-r from-amber-500 to-emerald-400"}`}
+                    style={{ width: "70.4%" }}
                   />
-                </svg>
+                </div>
               </div>
             </div>
 
-            {/* Thẻ 2: Vé Đã Bán */}
+            {/* Thẻ 2: Vé Đã Bán Ra & Điểm Danh Khách */}
             <div className={`p-5 rounded-2xl border transition-all relative overflow-hidden group shadow-lg ${
               isHalloween
                 ? "bg-[#150B24]/90 border-orange-500/25 hover:border-orange-500/50 hover:shadow-[0_4px_24px_rgba(255,117,24,0.15)]"
                 : "bg-[#111625]/90 border-white/10 hover:border-red-500/40 hover:shadow-[0_4px_24px_rgba(229,9,20,0.12)]"
             }`}>
               <div className="flex items-center justify-between text-neutral-400 mb-2">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">Vé đã bán ra</span>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">Vé đã xuất vé</span>
                 <div className={`p-2 rounded-xl ${isHalloween ? "bg-orange-500/20 text-orange-400" : "bg-red-500/20 text-red-500"}`}>
                   <Ticket className="w-4 h-4" />
                 </div>
@@ -540,40 +666,28 @@ export default function AdminDashboardPage() {
               <div className="text-2xl font-black text-white tracking-tight">
                 {stats.ticketsSold} <span className="text-sm font-normal text-neutral-400">vé</span>
               </div>
-              <div className="flex items-center justify-between mt-3">
-                <span className="text-[11px] text-neutral-400">Cao điểm: Suất 19:15</span>
-                {/* Mini Bars visual */}
-                <div className="flex items-end gap-1 h-5">
-                  <span className="w-1.5 h-2 bg-red-500/40 rounded-t" />
-                  <span className="w-1.5 h-3 bg-red-500/60 rounded-t" />
-                  <span className="w-1.5 h-5 bg-red-500 rounded-t" />
-                  <span className="w-1.5 h-4 bg-red-500/80 rounded-t" />
-                  <span className="w-1.5 h-2.5 bg-red-500/50 rounded-t" />
-                </div>
+              <div className="flex items-center justify-between mt-3 text-[11px]">
+                <span className="text-neutral-400">Đã vào phòng: <strong className="text-emerald-400 font-mono">89/112</strong></span>
+                <span className="text-red-400 font-semibold">Cao điểm: 19:15</span>
               </div>
             </div>
 
-            {/* Thẻ 3: Suất Chiếu Hôm Nay */}
+            {/* Thẻ 3: Doanh Số Bắp Nước F&B (Concessions) */}
             <div className={`p-5 rounded-2xl border transition-all relative overflow-hidden group shadow-lg ${
               isHalloween
                 ? "bg-[#150B24]/90 border-orange-500/25 hover:border-orange-500/50 hover:shadow-[0_4px_24px_rgba(255,117,24,0.15)]"
-                : "bg-[#111625]/90 border-white/10 hover:border-cyan-500/40 hover:shadow-[0_4px_24px_rgba(6,182,212,0.12)]"
+                : "bg-[#111625]/90 border-white/10 hover:border-orange-500/40 hover:shadow-[0_4px_24px_rgba(249,115,22,0.12)]"
             }`}>
               <div className="flex items-center justify-between text-neutral-400 mb-2">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">Suất chiếu hôm nay</span>
-                <div className={`p-2 rounded-xl ${isHalloween ? "bg-purple-500/20 text-purple-400" : "bg-cyan-500/20 text-cyan-400"}`}>
-                  <Calendar className="w-4 h-4" />
+                <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">F&B Bắp Nước (Concessions)</span>
+                <div className={`p-2 rounded-xl ${isHalloween ? "bg-orange-500/20 text-orange-400" : "bg-orange-500/20 text-orange-400"}`}>
+                  <Popcorn className="w-4 h-4" />
                 </div>
               </div>
-              <div className="text-2xl font-black text-white tracking-tight">
-                {stats.activeShowtimes} <span className="text-sm font-normal text-neutral-400">suất</span>
-              </div>
-              <div className="flex items-center justify-between mt-3 text-[11px] text-cyan-400/90">
-                <span>Beta 01, 02, 03</span>
-                <span className="flex items-center gap-1 font-semibold text-emerald-400">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  3 phòng mở
-                </span>
+              <div className="text-2xl font-black text-white tracking-tight">3.240.000 ₫</div>
+              <div className="flex items-center justify-between mt-3 text-[11px]">
+                <span className="text-neutral-400">Tỷ lệ gắn kèm (Attach Rate):</span>
+                <span className="text-amber-400 font-bold">38.3%</span>
               </div>
             </div>
 
@@ -592,8 +706,8 @@ export default function AdminDashboardPage() {
               <div className="text-2xl font-black text-white tracking-tight">{stats.occupancyRate}</div>
               <div className="mt-3">
                 <div className="flex items-center justify-between text-[11px] text-neutral-400 mb-1">
-                  <span>VIP & Sweetbox</span>
-                  <span className="text-emerald-400 font-bold">78%</span>
+                  <span>3 Phòng Chiếu Hoạt Động</span>
+                  <span className="text-emerald-400 font-bold">Cao điểm</span>
                 </div>
                 <div className="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
                   <div
@@ -605,133 +719,396 @@ export default function AdminDashboardPage() {
             </div>
           </div>
 
-          {/* TAB 1: TỔNG QUAN RẠP */}
+          {/* TAB 1: TỔNG QUAN RẠP & TRUNG TÂM ĐIỀU HÀNH */}
           {activeTab === "overview" && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Cột trái: Thông tin rạp & Trạng thái phòng */}
-              <div className="lg:col-span-2 space-y-6">
-                <div className={`p-5 rounded-2xl border shadow-xl ${
-                  isHalloween ? "bg-[#140B22] border-orange-500/20" : "bg-[#14151B] border-white/10"
-                }`}>
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-bold text-base text-white flex items-center gap-2">
-                      <Building2 className={`w-4 h-4 ${isHalloween ? "text-[#FF7518]" : "text-[#E50914]"}`} />
-                      <span>Trạng Thái Phòng Chiếu Tại HITC Xuân Thủy</span>
-                    </h3>
-                    <span className="text-xs text-neutral-400">3 Phòng đang mở</span>
+            <div className="space-y-6">
+              {/* BỘ ĐIỀU KHIỂN PHÁT SÓNG TRỰC TIẾP LÊN TRANG KHÁCH (LIVE BROADCAST CONTROLLER) */}
+              <div className={`p-5 sm:p-6 rounded-2xl border shadow-2xl relative overflow-hidden transition-all ${
+                isHalloween
+                  ? "bg-gradient-to-br from-[#1C0E32] to-[#120820] border-orange-500/30 shadow-orange-500/10"
+                  : "bg-gradient-to-br from-[#181B26] to-[#11141D] border-white/10 shadow-black/40"
+              }`}>
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-white/10">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-lg ${
+                      isHalloween ? "bg-orange-500/20 text-[#FF7518]" : "bg-red-500/20 text-[#E50914]"
+                    }`}>
+                      <Megaphone className="w-5 h-5 animate-pulse" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="font-extrabold text-sm sm:text-base text-white">
+                          Bộ Điều Khiển Phát Sóng Lên Trang Khách Hàng (Live Announcement Banner)
+                        </h3>
+                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase flex items-center gap-1.5 ${
+                          announcementSettings.enabled
+                            ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 animate-pulse"
+                            : "bg-neutral-500/20 text-neutral-400 border border-white/10"
+                        }`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${announcementSettings.enabled ? "bg-emerald-400" : "bg-neutral-500"}`} />
+                          {announcementSettings.enabled ? "Đang phát sóng trực tiếp" : "Tạm dừng"}
+                        </span>
+                      </div>
+                      <p className="text-xs text-neutral-400 mt-0.5">
+                        Mọi cập nhật tại đây hiển thị ngay trên thanh thông báo ở đầu website khách hàng (<code className="text-cyan-400 font-mono">/</code>) không cần reload trang.
+                      </p>
+                    </div>
                   </div>
 
-                  <div className="space-y-3">
-                    {[
-                      { name: "Phòng Beta 01 (Dolby 7.1)", movie: "Dune: Phần Hai", time: "18:45 - 21:30", seats: "72/90", percent: 80, status: "Sắp chiếu", badgeColor: "bg-amber-500/10 text-amber-400 border-amber-500/20" },
-                      { name: "Phòng Beta 02 (Laser HD)", movie: "Quật Mộ Trùng Ma", time: "19:15 - 21:30", seats: "84/90", percent: 93, status: "Đang mở bán", badgeColor: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" },
-                      { name: "Phòng Beta 03 (Standard)", movie: "Những Mảnh Ghép Cảm Xúc 2", time: "19:40 - 21:15", seats: "45/70", percent: 64, status: "Đang mở bán", badgeColor: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" },
-                    ].map((room, idx) => (
-                      <div key={idx} className={`p-4 rounded-xl border transition-all ${
-                        isHalloween ? "bg-purple-950/20 border-orange-500/20 hover:border-orange-500/40" : "bg-white/5 border-white/5 hover:border-white/15"
-                      }`}>
-                        <div className="flex items-center justify-between mb-2">
-                          <div>
-                            <div className="font-bold text-sm text-white">{room.name}</div>
-                            <div className="text-xs text-neutral-400 mt-0.5">
-                              {room.movie} • <span className={isHalloween ? "text-orange-400 font-semibold" : "text-amber-400 font-semibold"}>{room.time}</span>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <span className={`text-[11px] font-bold px-2 py-0.5 rounded border ${room.badgeColor}`}>
-                              {room.status}
-                            </span>
-                            <div className="text-xs text-neutral-300 font-mono mt-1">{room.seats} ghế ({room.percent}%)</div>
-                          </div>
-                        </div>
-                        {/* Thanh Tiến Độ Lấp Đầy Phòng Chiếu */}
-                        <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden mt-2">
-                          <div
-                            className={`h-full rounded-full transition-all duration-500 ${
-                              isHalloween
-                                ? "bg-gradient-to-r from-purple-500 to-orange-500"
-                                : "bg-gradient-to-r from-[#E50914] to-amber-500"
-                            }`}
-                            style={{ width: `${room.percent}%` }}
-                          />
-                        </div>
-                      </div>
-                    ))}
+                  <div className="flex items-center gap-2.5 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setAnnouncementSettings(prev => ({ ...prev, enabled: !prev.enabled }))}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
+                        announcementSettings.enabled
+                          ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/30"
+                          : "bg-neutral-800 text-neutral-400 border-white/10 hover:text-white"
+                      }`}
+                    >
+                      {announcementSettings.enabled ? "Bật Phát Sóng (ON)" : "Tắt Phát Sóng (OFF)"}
+                    </button>
+
+                    <a
+                      href="/"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="px-3 py-1.5 rounded-xl text-xs font-bold bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white border border-white/10 transition-all flex items-center gap-1.5"
+                    >
+                      <Eye className="w-3.5 h-3.5 text-cyan-400" />
+                      <span className="hidden sm:inline">Xem Trang Khách</span>
+                      <ExternalLink className="w-3 h-3 text-neutral-400" />
+                    </a>
                   </div>
                 </div>
 
-                {/* Crawler Info Box */}
-                <div className={`p-5 rounded-2xl border ${
-                  isHalloween
-                    ? "bg-gradient-to-br from-orange-500/10 via-[#140B22] to-[#140B22] border-orange-500/25"
-                    : "bg-gradient-to-br from-[#E50914]/10 via-[#14151B] to-[#14151B] border-[#E50914]/20"
-                }`}>
-                  <div className="flex items-start gap-3">
-                    <div className={`p-2 rounded-xl ${
-                      isHalloween ? "bg-orange-500/20 text-[#FF7518]" : "bg-[#E50914]/20 text-[#E50914]"
-                    }`}>
-                      <Sparkles className="w-5 h-5" />
-                    </div>
+                {/* Form chỉnh sửa nội dung thông báo */}
+                <div className="pt-4 space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-neutral-300 mb-1.5">
+                      Nội Dung Thông Báo Phát Sóng (Hiển thị đầu trang khách hàng)
+                    </label>
+                    <input
+                      type="text"
+                      value={announcementSettings.text}
+                      onChange={(e) => setAnnouncementSettings(prev => ({ ...prev, text: e.target.value }))}
+                      placeholder="Ví dụ: 🔥 Ưu đãi thành viên CineMax: Tặng ngay voucher bắp phô mai nóng hổi khi đặt vé qua website!"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-white placeholder:text-neutral-500 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
-                      <h4 className="font-bold text-sm text-white">Dữ Liệu Mô Phỏng Rạp Chiếu (Curated Demo)</h4>
-                      <p className="text-xs text-neutral-300 mt-1 leading-relaxed">
-                        Dữ liệu lịch chiếu và sơ đồ phòng chiếu phục vụ thử nghiệm thuật toán chống xung đột (Showtime Collision Engine) và quy trình vận hành rạp Beta Xuân Thủy. Trong môi trường production thực tế, API đồng bộ từ <code>betacinemas.vn</code> yêu cầu xác thực bằng <code>ADMIN_SYNC_SECRET</code>.
-                      </p>
+                      <label className="block text-[11px] font-bold text-neutral-400 mb-1">
+                        Loại Sự Kiện / Màu Sắc Banner
+                      </label>
+                      <select
+                        value={announcementSettings.type}
+                        onChange={(e) => setAnnouncementSettings(prev => ({ ...prev, type: e.target.value as any }))}
+                        className="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/15 text-xs text-white focus:outline-none focus:border-red-500"
+                      >
+                        <option value="promo">🔥 Khuyến Mãi Rạp (Đỏ Điện Ảnh)</option>
+                        <option value="alert">⚠️ Cảnh Báo / Suất Chiếu (Vàng Hổ Phách)</option>
+                        <option value="event">🎪 Sự Kiện / Lễ Hội (Tím Huyền Bí)</option>
+                        <option value="maintenance">🔧 Bảo Trì Kỹ Thuật (Xanh Lam)</option>
+                      </select>
                     </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-neutral-400 mb-1">
+                        Nhãn Nút Bấm Kêu Gọi (Action Text)
+                      </label>
+                      <input
+                        type="text"
+                        value={announcementSettings.actionText}
+                        onChange={(e) => setAnnouncementSettings(prev => ({ ...prev, actionText: e.target.value }))}
+                        placeholder="Ví dụ: Xem Ưu Đãi"
+                        className="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/15 text-xs text-white focus:outline-none focus:border-red-500"
+                      >
+                      </input>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-neutral-400 mb-1">
+                        Liên Kết Đích (Action URL)
+                      </label>
+                      <input
+                        type="text"
+                        value={announcementSettings.actionUrl}
+                        onChange={(e) => setAnnouncementSettings(prev => ({ ...prev, actionUrl: e.target.value }))}
+                        placeholder="Ví dụ: #promo-section"
+                        className="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/15 text-xs text-white focus:outline-none focus:border-red-500"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Customer Preview Strip */}
+                  <div className="p-3 rounded-xl bg-black/30 border border-white/5 space-y-1.5">
+                    <div className="flex items-center justify-between text-[11px] text-neutral-400">
+                      <span className="font-semibold text-neutral-300">Xem Trước Giao Diện Khách Hàng (Live Preview):</span>
+                      <span className="text-[10px] text-cyan-400 font-mono">Real-time Header Strip</span>
+                    </div>
+                    <div className={`p-2 rounded-lg text-xs font-medium flex items-center justify-center gap-2 text-center transition-all ${
+                      announcementSettings.type === "alert"
+                        ? "bg-amber-950/70 text-amber-200 border border-amber-500/30"
+                        : announcementSettings.type === "event"
+                        ? "bg-purple-950/70 text-purple-200 border border-purple-500/30"
+                        : announcementSettings.type === "maintenance"
+                        ? "bg-blue-950/70 text-blue-200 border border-blue-500/30"
+                        : "bg-red-950/70 text-red-100 border border-red-500/30"
+                    }`}>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-white/10">
+                        {announcementSettings.type === "alert" ? "⚠️ Cảnh Báo" : announcementSettings.type === "event" ? "🎪 Sự Kiện" : announcementSettings.type === "maintenance" ? "🔧 Bảo Trì" : "🔥 Khuyến Mãi"}
+                      </span>
+                      <span className="truncate">{announcementSettings.text || "(Chưa nhập nội dung)"}</span>
+                      {announcementSettings.actionText && (
+                        <span className="font-bold underline text-white ml-1">{announcementSettings.actionText} →</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Action & Feedback */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
+                    {announcementSaveSuccess ? (
+                      <span className="text-xs text-emerald-400 font-bold flex items-center gap-1.5 animate-in fade-in">
+                        <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <span>Đã đồng bộ lên hệ thống máy chủ và phát trực tiếp tới trang khách!</span>
+                      </span>
+                    ) : (
+                      <span className="text-[11px] text-neutral-400">
+                        * Nhấn nút bên phải để ghi đè cài đặt vào máy chủ rạp và cập nhật trang khách hàng ngay lập tức.
+                      </span>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={handleSaveAnnouncement}
+                      disabled={isSavingAnnouncement}
+                      className={`px-5 py-2.5 rounded-xl text-xs font-black text-white transition-all shadow-lg flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 ${
+                        isHalloween
+                          ? "bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 shadow-orange-500/20"
+                          : "bg-gradient-to-r from-[#E50914] to-rose-600 hover:from-[#c81007] hover:to-rose-700 shadow-red-900/30"
+                      }`}
+                    >
+                      <Radio className={`w-4 h-4 ${isSavingAnnouncement ? "animate-spin" : ""}`} />
+                      <span>{isSavingAnnouncement ? "Đang Bắn Thông Báo..." : "🚀 Lưu & Bắn Lên Trang Khách Ngay"}</span>
+                    </button>
                   </div>
                 </div>
               </div>
 
-              {/* Cột phải: Chuyển hướng Cổng Soát Vé PWA */}
-              <div className={`p-5 rounded-2xl border shadow-xl space-y-4 ${
-                isHalloween ? "bg-[#140B22] border-orange-500/20" : "bg-[#14151B] border-white/10"
-              }`}>
-                <div className="flex items-center gap-3">
-                  <div className={`p-2.5 rounded-xl ${
-                    isHalloween ? "bg-orange-500/20 text-[#FF7518]" : "bg-[#E50914]/20 text-[#E50914]"
+              {/* LƯỚI CHI TIẾT VẬN HÀNH PHÒNG CHIẾU & QUẦY VÉ */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Cột trái (2 phần): Trạng thái 3 phòng chiếu thời gian thực */}
+                <div className="lg:col-span-2 space-y-6">
+                  <div className={`p-5 rounded-2xl border shadow-xl ${
+                    isHalloween ? "bg-[#140B22] border-orange-500/20" : "bg-[#14151B] border-white/10"
                   }`}>
-                    <QrCode className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-sm text-white">Cổng Soát Vé Nhanh</h3>
-                    <span className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1 mt-0.5">
-                      <ShieldCheck className="w-3.5 h-3.5" />
-                      Chống vé kép & gian lận nguyên tử
-                    </span>
-                  </div>
-                </div>
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <h3 className="font-bold text-base text-white flex items-center gap-2">
+                          <Building2 className={`w-4 h-4 ${isHalloween ? "text-[#FF7518]" : "text-[#E50914]"}`} />
+                          <span>Trung Tâm Điều Hành 3 Phòng Chiếu Tại HITC Xuân Thủy</span>
+                        </h3>
+                        <p className="text-xs text-neutral-400 mt-0.5">
+                          Theo dõi thời gian chiếu thực tế, đếm ngược tan phòng và chuẩn bị buffer vệ sinh 15 phút.
+                        </p>
+                      </div>
+                      <span className="text-xs text-emerald-400 font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 shrink-0">
+                        3 Phòng Hoạt Động
+                      </span>
+                    </div>
 
-                <p className="text-xs text-neutral-400 leading-relaxed">
-                  Để đảm bảo tính xác thực HMAC, ngăn chặn dùng vé hai lần và kiểm soát nhận bắp nước tại quầy, nhân viên sử dụng máy quét camera PWA chuyên dụng.
-                </p>
+                    <div className="space-y-3.5">
+                      {/* Phòng 1 */}
+                      <div className={`p-4 rounded-xl border transition-all ${
+                        isHalloween ? "bg-purple-950/20 border-orange-500/20 hover:border-orange-500/40" : "bg-white/5 border-white/5 hover:border-white/15"
+                      }`}>
+                        <div className="flex items-center justify-between mb-2">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-sm text-white">Phòng Beta 01 (Dolby 7.1)</span>
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded border bg-purple-500/10 text-purple-300 border-purple-500/20">
+                                Đang Chiếu (Phút 85/166)
+                              </span>
+                            </div>
+                            <div className="text-xs text-neutral-400 mt-1">
+                              Phim: <strong className="text-white">Dune: Phần Hai</strong> • Suất: <span className="text-amber-400 font-semibold">18:45 – 21:30</span>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-xs text-neutral-300 font-mono font-bold">72/90 ghế (80%)</span>
+                            <div className="text-[11px] text-cyan-400 mt-0.5">Buffer dọn buồng: 15p</div>
+                          </div>
+                        </div>
+                        <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden mt-2">
+                          <div
+                            className={`h-full rounded-full transition-all duration-500 ${
+                              isHalloween ? "bg-gradient-to-r from-purple-500 to-orange-500" : "bg-gradient-to-r from-[#E50914] to-amber-500"
+                            }`}
+                            style={{ width: "80%" }}
+                          />
+                        </div>
+                        <div className="flex items-center justify-between text-[11px] text-neutral-400 mt-2">
+                          <span>Đội dọn buồng: Chuẩn bị vào ca lúc 21:30</span>
+                          <span className="text-emerald-400 font-medium">Chiếu ổn định</span>
+                        </div>
+                      </div>
 
-                <div className="p-3 rounded-xl bg-white/5 border border-white/10 space-y-2 text-xs text-neutral-300">
-                  <div className="flex items-center justify-between">
-                    <span className="text-neutral-400">Phương thức:</span>
-                    <span className="font-semibold text-white">Camera Quét QR Real-time</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-neutral-400">Bảo mật:</span>
-                    <span className="text-amber-400 font-mono">STAFF_SCAN_SECRET</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-neutral-400">Trạng thái:</span>
-                    <span className="text-emerald-400 font-semibold">Sẵn sàng hoạt động</span>
-                  </div>
-                </div>
+                      {/* Phòng 2 */}
+                      <div className={`p-4 rounded-xl border transition-all ${
+                        isHalloween ? "bg-purple-950/20 border-orange-500/20 hover:border-orange-500/40" : "bg-white/5 border-white/5 hover:border-white/15"
+                      }`}>
+                        <div className="flex items-center justify-between mb-2">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-sm text-white">Phòng Beta 02 (Laser HD - Atmos)</span>
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded border bg-amber-500/10 text-amber-300 border-amber-500/20 animate-pulse">
+                                Trailer & Đón Khách (Còn 8p)
+                              </span>
+                            </div>
+                            <div className="text-xs text-neutral-400 mt-1">
+                              Phim: <strong className="text-white">Quật Mộ Trùng Ma</strong> • Suất: <span className="text-amber-400 font-semibold">20:00 – 22:15</span>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-xs text-neutral-300 font-mono font-bold">76/84 ghế (90%)</span>
+                            <div className="text-[11px] text-emerald-400 mt-0.5">76 khách đã vào</div>
+                          </div>
+                        </div>
+                        <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden mt-2">
+                          <div
+                            className={`h-full rounded-full transition-all duration-500 ${
+                              isHalloween ? "bg-gradient-to-r from-purple-500 to-orange-500" : "bg-gradient-to-r from-emerald-500 to-cyan-500"
+                            }`}
+                            style={{ width: "90%" }}
+                          />
+                        </div>
+                        <div className="flex items-center justify-between text-[11px] text-neutral-400 mt-2">
+                          <span>Cửa phòng: Đang mở đón khách</span>
+                          <span className="text-amber-400 font-medium">Bắt đầu lúc 20:00</span>
+                        </div>
+                      </div>
 
-                <Link
-                  href="/staff/scanner"
-                  className={`w-full py-3 rounded-xl text-white text-xs font-bold transition-all shadow-lg flex items-center justify-center gap-2 group ${
+                      {/* Phòng 3 */}
+                      <div className={`p-4 rounded-xl border transition-all ${
+                        isHalloween ? "bg-purple-950/20 border-orange-500/20 hover:border-orange-500/40" : "bg-white/5 border-white/5 hover:border-white/15"
+                      }`}>
+                        <div className="flex items-center justify-between mb-2">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-sm text-white">Phòng Beta 03 (Standard)</span>
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded border bg-emerald-500/10 text-emerald-300 border-emerald-500/20">
+                                Đang Mở Bán Online
+                              </span>
+                            </div>
+                            <div className="text-xs text-neutral-400 mt-1">
+                              Phim: <strong className="text-white">Những Mảnh Ghép Cảm Xúc 2</strong> • Suất: <span className="text-amber-400 font-semibold">21:15 – 22:50</span>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-xs text-neutral-300 font-mono font-bold">45/70 vé (64%)</span>
+                            <div className="text-[11px] text-cyan-400 mt-0.5">Còn 25 ghế</div>
+                          </div>
+                        </div>
+                        <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden mt-2">
+                          <div
+                            className={`h-full rounded-full transition-all duration-500 ${
+                              isHalloween ? "bg-gradient-to-r from-purple-500 to-orange-500" : "bg-gradient-to-r from-blue-500 to-emerald-500"
+                            }`}
+                            style={{ width: "64%" }}
+                          />
+                        </div>
+                        <div className="flex items-center justify-between text-[11px] text-neutral-400 mt-2">
+                          <span>Hệ thống đặt vé: Mở bán trực tuyến</span>
+                          <span className="text-neutral-400 font-medium">Suất kế tiếp</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* THỐNG KÊ QUẦY BẮP NƯỚC F&B CONCESSIONS */}
+                  <div className={`p-5 rounded-2xl border ${
                     isHalloween
-                      ? "bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 shadow-orange-500/20"
-                      : "bg-gradient-to-r from-[#E50914] to-rose-600 hover:from-[#c81007] hover:to-rose-700 shadow-red-900/30"
-                  }`}
-                >
-                  <QrCode className="w-4 h-4" />
-                  <span>Mở Máy Quét Vé /staff/scanner</span>
-                  <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-                </Link>
+                      ? "bg-gradient-to-br from-orange-500/10 via-[#140B22] to-[#140B22] border-orange-500/25"
+                      : "bg-gradient-to-br from-orange-500/10 via-[#14151B] to-[#14151B] border-orange-500/20"
+                  }`}>
+                    <div className="flex items-start gap-3">
+                      <div className={`p-2.5 rounded-xl ${
+                        isHalloween ? "bg-orange-500/20 text-[#FF7518]" : "bg-orange-500/20 text-orange-400"
+                      }`}>
+                        <Popcorn className="w-5 h-5" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-bold text-sm text-white">Doanh Số Quầy Bắp Nước Concession</h4>
+                          <span className="text-xs font-bold text-amber-400">3.240.000 ₫ (38.3% doanh thu)</span>
+                        </div>
+                        <p className="text-xs text-neutral-300 mt-1 leading-relaxed">
+                          Top món bán chạy nhất: <strong className="text-white">Beta Combo Bắp Phô Mai 60oz + 2 Coke</strong> (48 phần) & <strong className="text-white">Sweetbox Couple Bắp Caramel</strong> (29 phần). Tồn kho bắp hạt và phô mai nóng đảm bảo phục vụ 100% cho khung giờ cao điểm tối nay.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Cột phải: Cổng Soát Vé PWA & HMAC Check-in */}
+                <div className={`p-5 rounded-2xl border shadow-xl space-y-4 ${
+                  isHalloween ? "bg-[#140B22] border-orange-500/20" : "bg-[#14151B] border-white/10"
+                }`}>
+                  <div className="flex items-center gap-3">
+                    <div className={`p-2.5 rounded-xl ${
+                      isHalloween ? "bg-orange-500/20 text-[#FF7518]" : "bg-[#E50914]/20 text-[#E50914]"
+                    }`}>
+                      <QrCode className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-sm text-white">Cổng Soát Vé & Điểm Danh Khách</h3>
+                      <span className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1 mt-0.5">
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                        Chống vé kép & gian lận nguyên tử
+                      </span>
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-neutral-400 leading-relaxed">
+                    Hệ thống soát vé quét mã QR qua PWA Scanner của nhân viên tại cửa rạp. Ngăn chặn tuyệt đối tình trạng quét 2 lần hoặc vé giả mạo.
+                  </p>
+
+                  <div className="p-3.5 rounded-xl bg-white/5 border border-white/10 space-y-2 text-xs text-neutral-300">
+                    <div className="flex items-center justify-between">
+                      <span className="text-neutral-400">Khách đã quét QR:</span>
+                      <span className="font-bold text-emerald-400 font-mono">89 / 112 khách</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-neutral-400">Phương thức:</span>
+                      <span className="font-semibold text-white">Camera QR Real-time</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-neutral-400">Bảo mật nguyên tử:</span>
+                      <span className="text-amber-400 font-mono text-[11px]">HMAC SHA-256</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-neutral-400">Trạng thái cổng:</span>
+                      <span className="text-emerald-400 font-semibold flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                        Đang mở soát vé
+                      </span>
+                    </div>
+                  </div>
+
+                  <Link
+                    href="/staff/scanner"
+                    className={`w-full py-3 rounded-xl text-white text-xs font-bold transition-all shadow-lg flex items-center justify-center gap-2 group ${
+                      isHalloween
+                        ? "bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 shadow-orange-500/20"
+                        : "bg-gradient-to-r from-[#E50914] to-rose-600 hover:from-[#c81007] hover:to-rose-700 shadow-red-900/30"
+                    }`}
+                  >
+                    <QrCode className="w-4 h-4" />
+                    <span>Mở Máy Quét Vé /staff/scanner</span>
+                    <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                  </Link>
+                </div>
               </div>
             </div>
           )}
@@ -1070,17 +1447,17 @@ export default function AdminDashboardPage() {
             </div>
           )}
 
-          {/* TAB 3: QUẢN LÝ PHIM */}
+          {/* TAB 3: QUẢN LÝ PHIM & ĐIỀU PHỐI DANH MỤC TRANG KHÁCH */}
           {activeTab === "movies" && (
             <div className="space-y-5">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <h3 className="font-black text-base text-white flex items-center gap-2">
                     <Film className={`w-5 h-5 ${isHalloween ? "text-orange-400" : "text-[#E50914]"}`} />
-                    <span>Kho Phim Chiếu Rạp & Quản Lý Bản Quyền ({MOCK_MOVIES.length} phim)</span>
+                    <span>Kho Phim Chiếu Rạp & Điều Phối Danh Mục ({adminMovies.length} phim)</span>
                   </h3>
                   <p className="text-xs text-neutral-400 mt-0.5">
-                    Quản lý phim đang chiếu, sắp chiếu và điều phối định dạng rạp (IMAX Laser, ScreenX, 4DX, 2D)
+                    Thay đổi danh mục (Đang chiếu / Sắp chiếu / Suất đặc biệt) tại đây sẽ cập nhật trực tiếp lên các tab trang chủ khách hàng (<code className="text-cyan-400 font-mono">/</code>).
                   </p>
                 </div>
 
@@ -1096,8 +1473,27 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
 
+              {/* Toast Thông Báo Khi Đổi Trạng Thái Thành Công */}
+              {movieStatusSuccess && (
+                <div className="p-3.5 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 text-xs font-semibold flex items-center justify-between shadow-lg animate-in fade-in">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <span>{movieStatusSuccess}</span>
+                  </div>
+                  <a
+                    href="/"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-xs text-white underline hover:no-underline font-bold flex items-center gap-1"
+                  >
+                    <span>Xem trên trang chủ</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+              )}
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {MOCK_MOVIES.filter((m) => {
+                {adminMovies.filter((m) => {
                   if (!searchQuery.trim()) return true;
                   const q = searchQuery.toLowerCase();
                   return (
@@ -1117,6 +1513,9 @@ export default function AdminDashboardPage() {
                       ? "bg-red-600 text-white"
                       : "bg-blue-500 text-white";
 
+                  const currentTab = movie.commercialTab || (movie.status === "upcoming" ? "upcoming" : movie.status === "trending" ? "trending" : "now_playing");
+                  const isUpdatingThis = movieStatusUpdating === String(movie.id);
+
                   return (
                     <div
                       key={movie.id}
@@ -1126,59 +1525,104 @@ export default function AdminDashboardPage() {
                           : "bg-[#13151f] border-white/10 hover:border-white/20"
                       }`}
                     >
-                      <div className="flex gap-4">
-                        {/* Poster với Age Badge */}
-                        <div className="relative w-20 h-28 shrink-0 rounded-xl overflow-hidden bg-neutral-900 border border-white/10 shadow-md">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={movie.posterPath}
-                            alt={movie.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          />
-                          <span
-                            className={`absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[9px] font-black uppercase shadow-md ${ageColor}`}
-                          >
-                            {movie.ageRating}
-                          </span>
+                      <div>
+                        <div className="flex gap-4">
+                          {/* Poster với Age Badge */}
+                          <div className="relative w-20 h-28 shrink-0 rounded-xl overflow-hidden bg-neutral-900 border border-white/10 shadow-md">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={movie.posterPath}
+                              alt={movie.title}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                            <span
+                              className={`absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[9px] font-black uppercase shadow-md ${ageColor}`}
+                            >
+                              {movie.ageRating}
+                            </span>
+                          </div>
+
+                          {/* Thông tin phim */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h4 className="font-extrabold text-sm text-white truncate">{movie.title}</h4>
+                              <span className="text-[10px] text-amber-400 font-bold flex items-center gap-0.5">
+                                <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                                {movie.voteAverage}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-neutral-400 italic line-clamp-1 mt-0.5">
+                              {movie.originalTitle}
+                            </p>
+
+                            <div className="flex flex-wrap gap-1 mt-2">
+                              {movie.genres.map((g, i) => (
+                                <span
+                                  key={i}
+                                  className="px-2 py-0.5 rounded text-[9px] font-semibold bg-white/5 text-neutral-300 border border-white/5"
+                                >
+                                  {g}
+                                </span>
+                              ))}
+                              <span className="px-2 py-0.5 rounded text-[9px] font-semibold bg-white/5 text-neutral-400">
+                                {movie.durationMinutes} phút
+                              </span>
+                            </div>
+
+                            <p className="text-[11px] text-neutral-400 mt-2 line-clamp-2 leading-relaxed">
+                              {movie.overview}
+                            </p>
+                          </div>
                         </div>
 
-                        {/* Thông tin phim */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <h4 className="font-extrabold text-sm text-white truncate">{movie.title}</h4>
-                            <span className="text-[10px] text-amber-400 font-bold flex items-center gap-0.5">
-                              <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                              {movie.voteAverage}
+                        {/* Điều phối 1-Click hiển thị trên trang khách */}
+                        <div className="mt-3.5 pt-3 border-t border-white/5">
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">
+                              Trạng Thái Hiển Thị Trang Khách:
                             </span>
-                          </div>
-                          <p className="text-[11px] text-neutral-400 italic line-clamp-1 mt-0.5">
-                            {movie.originalTitle}
-                          </p>
-
-                          <div className="flex flex-wrap gap-1 mt-2">
-                            {movie.genres.map((g, i) => (
-                              <span
-                                key={i}
-                                className="px-2 py-0.5 rounded text-[9px] font-semibold bg-white/5 text-neutral-300 border border-white/5"
-                              >
-                                {g}
+                            {isUpdatingThis && (
+                              <span className="text-[10px] text-amber-400 font-semibold animate-pulse">
+                                Đang đồng bộ máy chủ...
                               </span>
-                            ))}
-                            <span className="px-2 py-0.5 rounded text-[9px] font-semibold bg-white/5 text-neutral-400">
-                              {movie.durationMinutes} phút
-                            </span>
+                            )}
                           </div>
 
-                          <p className="text-[11px] text-neutral-400 mt-2 line-clamp-2 leading-relaxed">
-                            {movie.overview}
-                          </p>
+                          <div className="grid grid-cols-3 gap-1.5">
+                            {[
+                              { id: "now_playing", label: "Đang Chiếu", icon: Film },
+                              { id: "upcoming", label: "Sắp Chiếu", icon: Clock },
+                              { id: "trending", label: "Suất Đặc Biệt", icon: Flame },
+                            ].map((tabOption) => {
+                              const isSelected = currentTab === tabOption.id;
+                              const Icon = tabOption.icon;
+                              return (
+                                <button
+                                  key={tabOption.id}
+                                  type="button"
+                                  disabled={isUpdatingThis}
+                                  onClick={() => handleToggleMovieStatus(movie.id, tabOption.id as any)}
+                                  className={`py-1.5 px-2 rounded-lg text-[11px] font-bold transition-all flex items-center justify-center gap-1 border ${
+                                    isSelected
+                                      ? isHalloween
+                                        ? "bg-orange-500 text-white border-orange-400 shadow-md shadow-orange-500/30"
+                                        : "bg-[#E50914] text-white border-[#ff4e45] shadow-md shadow-red-900/40"
+                                      : "bg-white/5 text-neutral-400 hover:text-white hover:bg-white/10 border-white/5"
+                                  }`}
+                                  title={`Chuyển phim này sang tab [${tabOption.label}] trên trang khách`}
+                                >
+                                  <Icon className="w-3 h-3 shrink-0" />
+                                  <span className="truncate">{tabOption.label}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
                         </div>
                       </div>
 
-                      <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between text-xs">
-                        <span className="text-[11px] font-bold text-emerald-400 flex items-center gap-1.5">
-                          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                          Đang Khai Thác
+                      <div className="mt-3.5 pt-3 border-t border-white/5 flex items-center justify-between text-xs">
+                        <span className="text-[11px] font-semibold text-neutral-400">
+                          Beta Cinemas Xuân Thủy
                         </span>
 
                         <button
@@ -1189,12 +1633,12 @@ export default function AdminDashboardPage() {
                           }}
                           className={`px-3 py-1.5 rounded-lg border text-xs font-bold transition-all flex items-center gap-1 ${
                             isHalloween
-                              ? "bg-orange-500/20 hover:bg-orange-500 text-orange-300 hover:text-white border-orange-500/40"
-                              : "bg-[#E50914]/20 hover:bg-[#E50914] text-[#ff6b62] hover:text-white border-[#E50914]/40"
+                              ? "bg-purple-900/30 hover:bg-orange-500 text-orange-300 hover:text-white border-orange-500/30"
+                              : "bg-white/5 hover:bg-[#E50914] text-neutral-300 hover:text-white border-white/10"
                           }`}
                         >
                           <Calendar className="w-3.5 h-3.5" />
-                          <span>Xếp Lịch Suất Chiếu</span>
+                          <span>Lên Lịch Suất Chiếu</span>
                         </button>
                       </div>
                     </div>

@@ -9,6 +9,7 @@ import {
 import { HOLD_TTL_SECONDS, getSeatStore } from "@/lib/seatStore";
 import { allSeatIds } from "@/lib/seatLayout";
 import { getClientIp, isRateLimited } from "@/lib/rateLimit";
+import { getBlockedSeats } from "@/lib/adminSeatAndMovieStore";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -51,6 +52,21 @@ export async function GET(request: NextRequest) {
     const viewerHoldId = holdHeader ? parseHoldId(holdHeader) : undefined;
 
     const seats = await getSeatStore().statuses(showtime.id, allSeatIds(), viewerHoldId);
+
+    // Đồng bộ tức thì các ghế bị Admin khóa bảo trì kỹ thuật
+    try {
+      const blockedList = getBlockedSeats({ showtimeId: showtime.id, roomId: showtime.roomName });
+      if (blockedList.length > 0) {
+        for (const b of blockedList) {
+          if (b.seatId && (seats as Record<string, any>)[b.seatId]) {
+            (seats as Record<string, any>)[b.seatId] = "sold";
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("Lỗi đọc ghế khóa từ Admin Store:", e);
+    }
+
     return NextResponse.json({ showtimeId: showtime.id, seats, holdTtlSeconds: HOLD_TTL_SECONDS }, { headers: NO_STORE });
   } catch (error) {
     return errorResponse(error);

@@ -1,5 +1,6 @@
 import { Movie } from "@/types";
 import { MOCK_MOVIES } from "./mockData";
+import { listMovies, getMovie } from "./adminSeatAndMovieStore";
 
 // Sử dụng api.tmdb.org làm cổng chính (tránh bị chặn/reset kết nối tại các nhà mạng Việt Nam)
 const TMDB_PRIMARY_URL = "https://api.tmdb.org/3";
@@ -201,15 +202,50 @@ export async function getMovies(category: "all" | "now_playing" | "upcoming" | "
       }
     }
 
+    // Đồng bộ tức thì các thay đổi từ Admin (đổi trạng thái Đang chiếu/Sắp chiếu, sửa thông tin, thêm phim)
+    try {
+      const adminManaged = listMovies();
+      for (const am of adminManaged) {
+        const existingIdx = combined.findIndex((m) => String(m.id) === String(am.id));
+        if (existingIdx >= 0) {
+          combined[existingIdx] = { ...combined[existingIdx], ...am };
+        } else {
+          combined.unshift(am);
+        }
+      }
+    } catch (e) {
+      console.warn("Lỗi đồng bộ phim từ Admin Store:", e);
+    }
+
     if (category === "all") return combined;
     return combined.filter((m) => m.status === category);
   } catch (error) {
     console.error("Lỗi khi tải TMDB API, sử dụng mock data dự phòng:", error);
-    return MOCK_MOVIES.filter((m) => category === "all" || m.status === category);
+    try {
+      const adminManaged = listMovies();
+      const fallbackList = [...MOCK_MOVIES];
+      for (const am of adminManaged) {
+        const existingIdx = fallbackList.findIndex((m) => String(m.id) === String(am.id));
+        if (existingIdx >= 0) {
+          fallbackList[existingIdx] = { ...fallbackList[existingIdx], ...am };
+        } else {
+          fallbackList.unshift(am);
+        }
+      }
+      return fallbackList.filter((m) => category === "all" || m.status === category);
+    } catch {
+      return MOCK_MOVIES.filter((m) => category === "all" || m.status === category);
+    }
   }
 }
 
 export async function getMovieById(id: string | number): Promise<Movie | null> {
+  // Ưu tiên bản ghi cập nhật mới nhất từ Admin Store
+  try {
+    const fromAdmin = getMovie(id);
+    if (fromAdmin) return fromAdmin;
+  } catch {}
+
   const match = MOCK_MOVIES.find((m) => m.id.toString() === id.toString());
   if (match) return match;
 

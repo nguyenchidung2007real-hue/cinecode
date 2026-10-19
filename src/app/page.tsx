@@ -198,6 +198,26 @@ export default function HomePage() {
     }
   }, []);
 
+  // Thông báo phát trực tiếp từ Quản trị viên rạp (Live Admin Broadcast)
+  const [liveAnnouncement, setLiveAnnouncement] = useState<{
+    enabled: boolean;
+    text: string;
+    type: "promo" | "alert" | "event" | "maintenance";
+    actionText: string;
+    actionUrl: string;
+  } | null>(null);
+
+  useEffect(() => {
+    fetch("/api/settings")
+      .then((res) => (res.ok ? res.json() : Promise.reject()))
+      .then((data) => {
+        if (data?.data?.announcement?.enabled) {
+          setLiveAnnouncement(data.data.announcement);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   const [vnpayNotice, setVnpayNotice] = useState<{ type: "success" | "error" | "info"; message: string } | null>(null);
 
   // Bắt callback sau khi thanh toán từ cổng VNPay quay về (vnp_return=true)
@@ -326,6 +346,7 @@ export default function HomePage() {
         onOpenSearch={() => setIsSearchOpen(true)}
         ticketCount={ticketCount}
         customerInfo={customerInfo}
+        announcement={liveAnnouncement}
         selectedCity={selectedCity}
         onCityChange={setSelectedCity}
       />

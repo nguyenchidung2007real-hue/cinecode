@@ -183,7 +183,7 @@ function readSeatIds(source: Record<string, unknown>): string[] {
 }
 
 function readMovieId(source: Record<string, unknown>): string | number {
-  const id = source.id;
+  const id = source.id ?? source.movieId;
   if ((typeof id === "string" && id.trim() !== "") || typeof id === "number") {
     return id;
   }

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Film, Search, Ticket, User, MapPin, Phone } from "lucide-react";
+import { Film, Search, Ticket, User, MapPin, Phone, Megaphone, AlertTriangle, Sparkles, X, ChevronRight } from "lucide-react";
 
 interface NavbarProps {
   onOpenSearch: () => void;
@@ -10,6 +10,13 @@ interface NavbarProps {
   ticketCount: number;
   onOpenAiChat?: () => void;
   customerInfo?: { name: string; phone: string } | null;
+  announcement?: {
+    enabled: boolean;
+    text: string;
+    type: "promo" | "alert" | "event" | "maintenance";
+    actionText?: string;
+    actionUrl?: string;
+  } | null;
   selectedCity: string;
   onCityChange: (city: string) => void;
   onSearchChange: (query: string) => void;
@@ -20,11 +27,13 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenMyTickets,
   ticketCount,
   customerInfo,
+  announcement,
   selectedCity,
   onCityChange,
   onSearchChange,
 }) => {
   const [searchValue, setSearchValue] = useState("");
+  const [isAnnouncementDismissed, setIsAnnouncementDismissed] = useState(false);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -44,8 +53,60 @@ export const Navbar: React.FC<NavbarProps> = ({
     onSearchChange(val);
   };
 
+  const showAnnouncement = announcement?.enabled && !!announcement?.text && !isAnnouncementDismissed;
+
   return (
     <header className="sticky top-0 z-40 w-full -mb-[97px] transition-all">
+      {/* 0. Live Admin Broadcast Banner (Cập nhật trực tiếp từ Admin Dashboard) */}
+      {showAnnouncement && (
+        <div
+          className={`w-full py-1.5 px-4 text-xs font-medium flex items-center justify-between gap-3 border-b shadow-lg transition-all backdrop-blur-md ${
+            announcement.type === "alert"
+              ? "bg-amber-950/90 text-amber-200 border-amber-500/40"
+              : announcement.type === "event"
+              ? "bg-purple-950/90 text-purple-200 border-purple-500/40"
+              : announcement.type === "maintenance"
+              ? "bg-blue-950/90 text-blue-200 border-blue-500/40"
+              : "bg-red-950/90 text-red-100 border-red-500/40"
+          }`}
+        >
+          <div className="flex-1 flex items-center justify-center gap-2.5 text-center flex-wrap">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-white/10 border border-white/20">
+              {announcement.type === "alert" ? (
+                <>
+                  <AlertTriangle className="w-3 h-3 text-amber-400" /> CẢNH BÁO
+                </>
+              ) : announcement.type === "event" ? (
+                <>
+                  <Sparkles className="w-3 h-3 text-purple-300" /> SỰ KIỆN ĐẶC BIỆT
+                </>
+              ) : (
+                <>
+                  <Megaphone className="w-3 h-3 text-red-400 animate-pulse" /> THÔNG BÁO RẠP
+                </>
+              )}
+            </span>
+            <span className="font-semibold text-white/90">{announcement.text}</span>
+            {announcement.actionText && announcement.actionUrl && (
+              <a
+                href={announcement.actionUrl}
+                className="inline-flex items-center gap-1 font-bold text-white underline hover:no-underline ml-1.5 hover:text-red-300 transition-colors"
+              >
+                {announcement.actionText} <ChevronRight className="w-3 h-3" />
+              </a>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsAnnouncementDismissed(true)}
+            aria-label="Đóng thông báo"
+            className="p-1 rounded-md text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+
       {/* 1. Top Utility Bar - Dark Cinema Strip */}
       <div className="w-full bg-black/50 backdrop-blur-sm text-[#9CA3AF] text-[11px] py-1.5 px-4 sm:px-6 lg:px-8 border-b border-white/5 flex items-center justify-between">
         <div className="flex items-center gap-4">

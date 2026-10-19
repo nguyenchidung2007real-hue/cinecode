@@ -16,6 +16,7 @@ import { normalizeSeatId } from "@/lib/seatLayout";
 import { calculatePrice, type PriceBreakdown } from "@/lib/pricing";
 import { safeEqual } from "@/lib/adminAuth";
 import { MOCK_CINEMAS } from "@/lib/mockData";
+import { getBlockedSeats } from "@/lib/adminSeatAndMovieStore";
 
 /**
  * CineMax AI - Booking service (Module 3): điều phối giữ ghế -> tính giá -> thanh toán -> chốt ghế -> phát vé.
@@ -175,6 +176,25 @@ export async function holdSeats(input: {
   const seats = parseSeats(input.seats);
   const showtime = await loadSellableShowtime(input.showtimeId);
   const holdId = input.holdId === undefined ? newHoldId() : parseHoldId(input.holdId);
+
+  // Kiểm tra ghế bị khóa bảo trì kỹ thuật từ phía Admin
+  try {
+    const blockedList = getBlockedSeats({ showtimeId: showtime.id, roomId: showtime.roomName });
+    if (blockedList.length > 0) {
+      const blockedSet = new Set(blockedList.map((b) => b.seatId));
+      const hit = seats.filter((s) => blockedSet.has(s));
+      if (hit.length > 0) {
+        throw new BookingError(
+          409,
+          "SEAT_BLOCKED",
+          `Ghế ${hit.join(", ")} đang được khóa bảo trì kỹ thuật bởi Quản trị viên rạp. Vui lòng chọn ghế khác.`,
+          { seats: hit }
+        );
+      }
+    }
+  } catch (err) {
+    if (err instanceof BookingError) throw err;
+  }
 
   const outcome = await getSeatStore().hold({ showtimeId: showtime.id, seats, holdId });
   if (outcome.outcome === "expired") {

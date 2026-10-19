@@ -15,6 +15,7 @@ export interface Movie {
   trailerYoutubeId: string;
   ageRating: string; // e.g. "T18", "T16", "P", "K"
   status: "now_playing" | "upcoming" | "trending";
+  commercialTab?: "now_playing" | "upcoming" | "trending";
 }
 
 export type SeatType = "standard" | "vip" | "couple" | "empty";
