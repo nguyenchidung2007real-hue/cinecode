@@ -207,12 +207,18 @@ export default function HomePage() {
     actionUrl: string;
   } | null>(null);
 
+  // Chủ đề Halloween trang khách được điều khiển trực tiếp từ Admin
+  const [isCustomerHalloween, setIsCustomerHalloween] = useState(false);
+
   useEffect(() => {
     fetch("/api/settings")
       .then((res) => (res.ok ? res.json() : Promise.reject()))
       .then((data) => {
         if (data?.data?.announcement?.enabled) {
           setLiveAnnouncement(data.data.announcement);
+        }
+        if (typeof data?.data?.halloweenThemeEnabled === "boolean") {
+          setIsCustomerHalloween(data.data.halloweenThemeEnabled);
         }
       })
       .catch(() => {});
@@ -337,7 +343,11 @@ export default function HomePage() {
   }, [movies, searchQuery, selectedGenre, selectedMood]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-background selection:bg-accent-red selection:text-white">
+    <div className={`min-h-screen flex flex-col transition-colors duration-500 ${
+      isCustomerHalloween
+        ? "bg-[#090412] text-neutral-100 selection:bg-[#FF7518] selection:text-white"
+        : "bg-background selection:bg-accent-red selection:text-white"
+    }`}>
       {/* Header thanh điều hướng */}
       <Navbar
         onSearchChange={setSearchQuery}
@@ -347,9 +357,32 @@ export default function HomePage() {
         ticketCount={ticketCount}
         customerInfo={customerInfo}
         announcement={liveAnnouncement}
+        isHalloween={isCustomerHalloween}
         selectedCity={selectedCity}
         onCityChange={setSelectedCity}
       />
+
+      {/* Dải Banner Lễ Hội Halloween Trang Khách (Kích hoạt trực tiếp từ Admin) */}
+      {isCustomerHalloween && (
+        <div className="w-full bg-gradient-to-r from-orange-600/30 via-purple-950/90 to-orange-600/30 border-b border-orange-500/40 py-2.5 px-4 shadow-xl shadow-orange-500/10 z-10 relative">
+          <div className="max-w-7xl mx-auto flex items-center justify-between text-xs text-orange-200 flex-wrap gap-2">
+            <div className="flex items-center gap-2.5">
+              <span className="text-base animate-bounce">🎃</span>
+              <strong className="text-orange-400 uppercase tracking-wider font-black">
+                Lễ Hội Điện Ảnh Halloween Spooky CineMax 2026
+              </strong>
+              <span className="hidden md:inline text-white/30">•</span>
+              <span className="hidden md:inline text-neutral-300">
+                Đồng giá vé phim kinh dị 45k, combo bắp phô mai bí ngô & quà tặng thẻ hologram
+              </span>
+            </div>
+            <span className="text-xs font-bold text-orange-300 flex items-center gap-1.5 ml-auto">
+              <span>🦇 🕸️</span>
+              <span className="hidden sm:inline">Trang Khách Đang Kích Hoạt Theme Halloween</span>
+            </span>
+          </div>
+        </div>
+      )}
 
       <main className="flex-1">
         {/* Banner thông báo kết quả giao dịch VNPay */}

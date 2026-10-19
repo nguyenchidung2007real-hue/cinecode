@@ -83,7 +83,12 @@ export default function AdminDashboardPage() {
   const [movieStatusUpdating, setMovieStatusUpdating] = useState<string | null>(null);
   const [movieStatusSuccess, setMovieStatusSuccess] = useState<string | null>(null);
 
-  // Tải cài đặt thông báo phát sóng từ Server Store
+  // Điều khiển giao diện Halloween trên trang khách hàng (Customer-Facing Halloween Theme)
+  const [customerHalloweenEnabled, setCustomerHalloweenEnabled] = useState(false);
+  const [isTogglingCustomerHalloween, setIsTogglingCustomerHalloween] = useState(false);
+  const [customerHalloweenToast, setCustomerHalloweenToast] = useState<string | null>(null);
+
+  // Tải cài đặt thông báo phát sóng & Theme Halloween từ Server Store
   useEffect(() => {
     fetch("/api/settings")
       .then((res) => (res.ok ? res.json() : Promise.reject()))
@@ -91,9 +96,37 @@ export default function AdminDashboardPage() {
         if (data?.data?.announcement) {
           setAnnouncementSettings(data.data.announcement);
         }
+        if (typeof data?.data?.halloweenThemeEnabled === "boolean") {
+          setCustomerHalloweenEnabled(data.data.halloweenThemeEnabled);
+        }
       })
       .catch(() => {});
   }, []);
+
+  const handleToggleCustomerHalloween = async () => {
+    setIsTogglingCustomerHalloween(true);
+    const next = !customerHalloweenEnabled;
+    setCustomerHalloweenEnabled(next);
+    try {
+      const res = await fetch("/api/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ halloweenThemeEnabled: next }),
+      });
+      if (res.ok) {
+        setCustomerHalloweenToast(
+          next
+            ? "🎃 Đã kích hoạt giao diện Lễ Hội Halloween cho toàn bộ khách hàng trên website!"
+            : "🎬 Đã đưa trang khách hàng về giao diện điện ảnh tiêu chuẩn!"
+        );
+        setTimeout(() => setCustomerHalloweenToast(null), 4000);
+      }
+    } catch (err) {
+      console.error("Lỗi cập nhật theme Halloween khách:", err);
+    } finally {
+      setIsTogglingCustomerHalloween(false);
+    }
+  };
 
   // Tải danh sách phim mới nhất
   useEffect(() => {
@@ -516,27 +549,45 @@ export default function AdminDashboardPage() {
 
           {/* Action Buttons: Halloween Toggle, Sync Data, Admin Profile */}
           <div className="flex items-center gap-2.5 sm:gap-3">
-            {/* Halloween Theme Toggle Button */}
+            {/* Halloween Admin Theme Toggle Button */}
             <button
               onClick={toggleHalloweenTheme}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl font-bold text-xs transition-all border shadow-lg ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-xs transition-all border shadow-lg ${
                 isHalloween
                   ? "bg-gradient-to-r from-orange-600/30 to-purple-600/30 hover:from-orange-600/40 hover:to-purple-600/40 text-orange-300 border-orange-500/40 shadow-orange-500/20"
                   : "bg-white/5 hover:bg-white/10 text-neutral-300 border-white/10"
               }`}
-              title="Chuyển đổi giao diện Halloween 🎃 ⇄ Bình thường 🎬"
+              title="Chuyển đổi giao diện trang Admin: Halloween 🎃 ⇄ Bình thường 🎬"
             >
               {isHalloween ? (
                 <>
                   <span className="text-base">🎃</span>
-                  <span className="text-xs font-black tracking-wide text-orange-400">Halloween Mode</span>
+                  <span className="text-xs font-black tracking-wide text-orange-400">Admin Spooky</span>
                 </>
               ) : (
                 <>
                   <span className="text-base">🎬</span>
-                  <span className="text-xs font-semibold text-neutral-300">Normal Mode</span>
+                  <span className="text-xs font-semibold text-neutral-300">Admin Normal</span>
                 </>
               )}
+            </button>
+
+            {/* Customer Website Halloween Mode Master Switch */}
+            <button
+              onClick={handleToggleCustomerHalloween}
+              disabled={isTogglingCustomerHalloween}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-xs transition-all border shadow-lg ${
+                customerHalloweenEnabled
+                  ? "bg-gradient-to-r from-orange-600 to-purple-700 text-white border-orange-400 shadow-orange-500/30 animate-pulse"
+                  : "bg-white/5 hover:bg-white/10 text-neutral-300 border-white/10"
+              }`}
+              title="Kích hoạt hoặc tắt chủ đề Lễ Hội Halloween trên trang chủ khách hàng (/)"
+            >
+              <span className="text-base">{customerHalloweenEnabled ? "🎃" : "👻"}</span>
+              <span className="hidden sm:inline">Halloween Trang Khách:</span>
+              <span className={`font-black ${customerHalloweenEnabled ? "text-orange-200" : "text-neutral-400"}`}>
+                {customerHalloweenEnabled ? "BẬT" : "TẮT"}
+              </span>
             </button>
 
             {/* Live Customer Preview Quick Button */}
@@ -603,6 +654,22 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
               <span className="text-lg">🕸️ 🎃</span>
+            </div>
+          )}
+
+          {/* Customer Halloween Theme Status Toast */}
+          {customerHalloweenToast && (
+            <div className="p-4 rounded-xl bg-orange-500/20 border border-orange-500/40 text-orange-200 flex items-center justify-between text-xs animate-in fade-in shadow-lg shadow-orange-500/10">
+              <div className="flex items-center gap-2.5">
+                <span className="text-xl">🎃</span>
+                <div>
+                  <strong className="text-orange-300 font-bold">{customerHalloweenToast}</strong>
+                  <p className="text-orange-200/80 text-[11px] mt-0.5">
+                    Trạng thái: {customerHalloweenEnabled ? "Website khách hàng đang hiển thị giao diện Halloween (Màu cam neon #FF7518, dải banner bí ngô)" : "Website khách hàng đang ở giao diện điện ảnh tiêu chuẩn"}
+                  </p>
+                </div>
+              </div>
+              <button onClick={() => setCustomerHalloweenToast(null)} className="text-orange-400 hover:text-white px-2 py-1 font-bold">✕</button>
             </div>
           )}
 
@@ -892,6 +959,100 @@ export default function AdminDashboardPage() {
                       <Radio className={`w-4 h-4 ${isSavingAnnouncement ? "animate-spin" : ""}`} />
                       <span>{isSavingAnnouncement ? "Đang Bắn Thông Báo..." : "🚀 Lưu & Bắn Lên Trang Khách Ngay"}</span>
                     </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* BỘ ĐIỀU KHIỂN CHỦ ĐỀ HALLOWEEN TRANG KHÁCH HÀNG (FESTIVE CAMPAIGN CONTROLLER) */}
+              <div className={`p-5 rounded-2xl border transition-all ${
+                customerHalloweenEnabled
+                  ? "bg-gradient-to-r from-[#1E0E32] via-[#2D124D] to-[#1E0E32] border-orange-500/40 shadow-[0_4px_30px_rgba(255,117,24,0.18)]"
+                  : isHalloween
+                  ? "bg-[#140B22] border-orange-500/20"
+                  : "bg-[#14151B] border-white/10"
+              }`}>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0 shadow-lg ${
+                      customerHalloweenEnabled
+                        ? "bg-gradient-to-tr from-orange-500 to-purple-600 shadow-orange-500/40 animate-pulse"
+                        : "bg-white/10 text-neutral-400"
+                    }`}>
+                      {customerHalloweenEnabled ? "🎃" : "👻"}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-black text-sm text-white">
+                          Giao Diện Lễ Hội Halloween Trang Khách Hàng (Customer Theme Switcher)
+                        </h3>
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-black tracking-wide border ${
+                          customerHalloweenEnabled
+                            ? "bg-orange-500/20 text-orange-300 border-orange-500/40"
+                            : "bg-white/10 text-neutral-400 border-white/10"
+                        }`}>
+                          {customerHalloweenEnabled ? "ĐANG BẬT TRÊN WEBSITE" : "ĐANG TẮT"}
+                        </span>
+                      </div>
+                      <p className="text-xs text-neutral-400 mt-0.5">
+                        Khi kích hoạt, toàn bộ trang chủ bán vé của khách (<span className="text-white font-mono text-[11px]">/</span>) sẽ chuyển sang tông màu Cam Neon Bí Ngô (#FF7518), banner lễ hội và hiệu ứng mạng nhện rùng rợn.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2.5 shrink-0">
+                    <button
+                      type="button"
+                      onClick={handleToggleCustomerHalloween}
+                      disabled={isTogglingCustomerHalloween}
+                      className={`px-4 py-2.5 rounded-xl text-xs font-black transition-all flex items-center gap-2 shadow-lg disabled:opacity-50 ${
+                        customerHalloweenEnabled
+                          ? "bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-700 hover:to-rose-800 text-white shadow-red-900/30"
+                          : "bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white shadow-orange-500/30"
+                      }`}
+                    >
+                      <span>{customerHalloweenEnabled ? "👻 Tắt Halloween Trang Khách" : "🎃 Bật Halloween Trang Khách Ngay"}</span>
+                    </button>
+
+                    <a
+                      href="/"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="px-3 py-2.5 rounded-xl text-xs font-bold bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white border border-white/10 transition-all flex items-center gap-1.5"
+                      title="Mở trang chủ khách hàng để xem ngay thay đổi"
+                    >
+                      <Eye className="w-3.5 h-3.5 text-cyan-400" />
+                      <span className="hidden md:inline">Kiểm Tra Trực Tiếp</span>
+                      <ExternalLink className="w-3 h-3 text-neutral-400" />
+                    </a>
+                  </div>
+                </div>
+
+                {/* Live Status Indicators */}
+                <div className="pt-3 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                  <div className="flex items-center gap-2 p-2.5 rounded-xl bg-black/30 border border-white/5">
+                    <span className="text-base">🎨</span>
+                    <div>
+                      <div className="text-[10px] text-neutral-400 uppercase font-bold">Màu Chủ Đạo Website Khách</div>
+                      <div className="text-white font-semibold">
+                        {customerHalloweenEnabled ? "🎃 Cam Neon #FF7518 & Tím Huyền Bí" : "🎬 Đỏ Điện Ảnh #E50914 & Đen Vũ Trụ"}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 p-2.5 rounded-xl bg-black/30 border border-white/5">
+                    <span className="text-base">🎪</span>
+                    <div>
+                      <div className="text-[10px] text-neutral-400 uppercase font-bold">Banner Header Khách</div>
+                      <div className="text-white font-semibold">
+                        {customerHalloweenEnabled ? "🎃 Banner Lễ Hội Ma Halloween 2026" : "✨ Banner Khuyến Mãi Tiêu Chuẩn"}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 p-2.5 rounded-xl bg-black/30 border border-white/5">
+                    <span className="text-base">⚡</span>
+                    <div>
+                      <div className="text-[10px] text-neutral-400 uppercase font-bold">Thời Gian Đồng Bộ</div>
+                      <div className="text-emerald-400 font-semibold">Tức thì (Real-time qua Store API)</div>
+                    </div>
                   </div>
                 </div>
               </div>

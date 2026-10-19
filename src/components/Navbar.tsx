@@ -17,6 +17,7 @@ interface NavbarProps {
     actionText?: string;
     actionUrl?: string;
   } | null;
+  isHalloween?: boolean;
   selectedCity: string;
   onCityChange: (city: string) => void;
   onSearchChange: (query: string) => void;
@@ -28,6 +29,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   ticketCount,
   customerInfo,
   announcement,
+  isHalloween = false,
   selectedCity,
   onCityChange,
   onSearchChange,
@@ -108,66 +110,91 @@ export const Navbar: React.FC<NavbarProps> = ({
       )}
 
       {/* 1. Top Utility Bar - Dark Cinema Strip */}
-      <div className="w-full bg-black/50 backdrop-blur-sm text-[#9CA3AF] text-[11px] py-1.5 px-4 sm:px-6 lg:px-8 border-b border-white/5 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <span className="flex items-center gap-1.5 text-[#9CA3AF] font-medium">
-            <Phone className="w-3.5 h-3.5 text-[#E50914]" />
+      <div className={`w-full backdrop-blur-sm text-[11px] py-1.5 px-4 sm:px-6 lg:px-8 border-b flex items-center justify-between transition-colors ${
+        isHalloween ? "bg-[#0C0517]/80 text-orange-200/80 border-orange-500/20" : "bg-black/50 text-[#9CA3AF] border-white/5"
+      }`}>
+        <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
+          {isHalloween && (
+            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-500/20 border border-orange-500/30 text-[10px] font-extrabold text-orange-300">
+              <span>🎃</span>
+              <span>Lễ Hội Halloween 2026</span>
+            </span>
+          )}
+          <span className="flex items-center gap-1.5 font-medium">
+            <Phone className={`w-3.5 h-3.5 ${isHalloween ? "text-[#FF7518]" : "text-[#E50914]"}`} />
             Hotline CineMax: <strong className="text-white">1900 6017</strong> (8:00 - 22:00)
           </span>
           <span className="hidden md:inline text-white/20">|</span>
           <span className="hidden md:inline text-[#9CA3AF]">
-            Rạp trọng điểm: <strong className="text-[#E50914]">CineMax Bà Triệu</strong> & <strong className="text-[#E50914]">CineMax Landmark 81</strong>
+            Rạp trọng điểm: <strong className={isHalloween ? "text-[#FF7518]" : "text-[#E50914]"}>CineMax Bà Triệu</strong> & <strong className={isHalloween ? "text-[#FF7518]" : "text-[#E50914]"}>CineMax Landmark 81</strong>
           </span>
         </div>
 
         <div className="flex items-center gap-3">
           <a
             href="#promo-section"
-            className="hidden sm:inline text-[#9CA3AF] hover:text-[#E50914] font-medium transition-colors"
+            className={`hidden sm:inline font-medium transition-colors ${
+              isHalloween ? "text-orange-200/80 hover:text-[#FF7518]" : "text-[#9CA3AF] hover:text-[#E50914]"
+            }`}
           >
             Tin Mới & Ưu Đãi
           </a>
           <span className="hidden sm:inline text-white/20">•</span>
           <Link
             href="/dashboard"
-            className="flex items-center gap-1.5 text-[#9CA3AF] hover:text-[#E50914] font-medium transition-colors"
+            className={`flex items-center gap-1.5 font-medium transition-colors ${
+              isHalloween ? "text-orange-200/80 hover:text-[#FF7518]" : "text-[#9CA3AF] hover:text-[#E50914]"
+            }`}
           >
-            <User className="w-3.5 h-3.5 text-[#E50914]" />
+            <User className={`w-3.5 h-3.5 ${isHalloween ? "text-[#FF7518]" : "text-[#E50914]"}`} />
             <span>{customerInfo ? `Thành viên: ${customerInfo.name}` : "Đăng ký / Đăng nhập CineMax"}</span>
           </Link>
           <span className="text-white/20">•</span>
-          <div className="flex items-center gap-1 text-[#9CA3AF] cursor-pointer hover:text-[#E50914]">
+          <div className="flex items-center gap-1 text-[#9CA3AF] cursor-pointer hover:text-white">
             <span>🇻🇳 VN</span>
           </div>
         </div>
       </div>
 
       {/* 2. Main Navigation Bar - Dark Mode Cinematic Style */}
-      <div className="w-full bg-black/60 backdrop-blur-md border-b border-white/10 shadow-lg">
+      <div className={`w-full backdrop-blur-md border-b shadow-lg transition-colors duration-300 ${
+        isHalloween
+          ? "bg-[#0E061A]/85 border-orange-500/25 shadow-[0_4px_24px_rgba(255,117,24,0.08)]"
+          : "bg-black/60 border-white/10"
+      }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
           
-          {/* Logo CINEMAX (Đã bỏ nhãn chữ AI) */}
+          {/* Logo CINEMAX */}
           <div
             className="flex items-center gap-3 cursor-pointer select-none group"
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
           >
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-tr from-[#E50914] to-amber-600 flex items-center justify-center text-white shadow-lg shadow-red-900/30 group-hover:scale-105 transition-transform">
+            <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-white shadow-lg group-hover:scale-105 transition-transform ${
+              isHalloween
+                ? "bg-gradient-to-tr from-[#FF7518] to-purple-600 shadow-orange-500/30"
+                : "bg-gradient-to-tr from-[#E50914] to-amber-600 shadow-red-900/30"
+            }`}>
               <Film className="w-5 h-5 text-white" />
             </div>
             <div className="text-left">
               <div className="flex items-center leading-none">
                 <span className="font-black text-2xl tracking-tighter text-white">CINE</span>
-                <span className="font-black text-2xl tracking-tight text-[#E50914]">MAX</span>
+                <span className={`font-black text-2xl tracking-tight ${isHalloween ? "text-[#FF7518]" : "text-[#E50914]"}`}>MAX</span>
+                {isHalloween && <span className="ml-1 text-base animate-bounce">🎃</span>}
               </div>
-              <span className="block text-[8px] text-[#9CA3AF] font-bold uppercase tracking-wider mt-0.5">
-                CULTUREPLEX • ĐIỆN ẢNH VƯỢT TRỘI
+              <span className={`block text-[8px] font-bold uppercase tracking-wider mt-0.5 ${
+                isHalloween ? "text-orange-400/90 font-black" : "text-[#9CA3AF]"
+              }`}>
+                {isHalloween ? "SPOOKY CINEMA • LỄ HỘI HALLOWEEN" : "CULTUREPLEX • ĐIỆN ẢNH VƯỢT TRỘI"}
               </span>
             </div>
           </div>
 
           {/* Chọn Cụm Rạp CineMax */}
-          <div className="hidden lg:flex items-center gap-2 bg-[#12141C] border border-white/10 px-3 py-1.5 rounded-lg text-xs text-white shadow-sm">
-            <MapPin className="w-3.5 h-3.5 text-[#E50914]" />
+          <div className={`hidden lg:flex items-center gap-2 border px-3 py-1.5 rounded-lg text-xs text-white shadow-sm ${
+            isHalloween ? "bg-[#160B24] border-orange-500/30" : "bg-[#12141C] border-white/10"
+          }`}>
+            <MapPin className={`w-3.5 h-3.5 ${isHalloween ? "text-[#FF7518]" : "text-[#E50914]"}`} />
             <select
               value={selectedCity}
               onChange={(e) => onCityChange(e.target.value)}
@@ -185,31 +212,41 @@ export const Navbar: React.FC<NavbarProps> = ({
           <nav className="hidden xl:flex items-center gap-7 text-xs font-black text-white/90 tracking-wider uppercase">
             <a
               href="#commercial-tabs"
-              className="text-[#9CA3AF] hover:text-white transition-colors py-1 border-b-2 border-transparent hover:border-[#E50914]"
+              className={`text-[#9CA3AF] hover:text-white transition-colors py-1 border-b-2 border-transparent ${
+                isHalloween ? "hover:border-[#FF7518]" : "hover:border-[#E50914]"
+              }`}
             >
               Phim
             </a>
             <a
               href="#matrix-section"
-              className="text-[#9CA3AF] hover:text-white transition-colors py-1 border-b-2 border-transparent hover:border-[#E50914]"
+              className={`text-[#9CA3AF] hover:text-white transition-colors py-1 border-b-2 border-transparent ${
+                isHalloween ? "hover:border-[#FF7518]" : "hover:border-[#E50914]"
+              }`}
             >
               Lịch Chiếu
             </a>
             <a
               href="#special-cinema-section"
-              className="text-[#9CA3AF] hover:text-white transition-colors py-1 border-b-2 border-transparent hover:border-[#E50914]"
+              className={`text-[#9CA3AF] hover:text-white transition-colors py-1 border-b-2 border-transparent ${
+                isHalloween ? "hover:border-[#FF7518]" : "hover:border-[#E50914]"
+              }`}
             >
               Rạp Đặc Biệt
             </a>
             <a
               href="#price-table"
-              className="text-[#9CA3AF] hover:text-white transition-colors py-1 border-b-2 border-transparent hover:border-[#E50914]"
+              className={`text-[#9CA3AF] hover:text-white transition-colors py-1 border-b-2 border-transparent ${
+                isHalloween ? "hover:border-[#FF7518]" : "hover:border-[#E50914]"
+              }`}
             >
               Giá Vé
             </a>
             <a
               href="#promo-section"
-              className="text-[#F5C518] hover:text-[#E50914] transition-colors py-1 border-b-2 border-transparent hover:border-[#E50914]"
+              className={`hover:text-white transition-colors py-1 border-b-2 border-transparent ${
+                isHalloween ? "text-orange-400 hover:border-[#FF7518]" : "text-[#F5C518] hover:border-[#E50914]"
+              }`}
             >
               Ưu Đãi & Combo
             </a>
@@ -217,14 +254,20 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Search Spotlight & Actions */}
           <div className="flex items-center gap-2.5 sm:gap-3">
-            {/* Thanh tìm kiếm Spotlight (Đã bỏ ký hiệu phím tắt Ctrl K) */}
+            {/* Thanh tìm kiếm Spotlight */}
             <div className="w-44 sm:w-60 hidden md:block">
               <div
                 onClick={onOpenSearch}
-                className="relative flex items-center justify-between bg-[#12141C] hover:bg-[#161922] text-xs text-[#9CA3AF] pl-8 pr-3 py-2 rounded-lg border border-white/10 hover:border-[#E50914] cursor-pointer transition-all group shadow-sm"
+                className={`relative flex items-center justify-between text-xs pl-8 pr-3 py-2 rounded-lg border cursor-pointer transition-all group shadow-sm ${
+                  isHalloween
+                    ? "bg-[#160B24] hover:bg-[#1E1030] text-orange-200/70 border-orange-500/20 hover:border-orange-500/50"
+                    : "bg-[#12141C] hover:bg-[#161922] text-[#9CA3AF] border-white/10 hover:border-[#E50914]"
+                }`}
               >
-                <Search className="w-3.5 h-3.5 text-[#9CA3AF] group-hover:text-[#E50914] absolute left-2.5 top-1/2 -translate-y-1/2 transition-colors" />
-                <span className="truncate text-[11px] text-[#9CA3AF] group-hover:text-white">
+                <Search className={`w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 transition-colors ${
+                  isHalloween ? "text-orange-400 group-hover:text-orange-300" : "text-[#9CA3AF] group-hover:text-[#E50914]"
+                }`} />
+                <span className="truncate text-[11px] group-hover:text-white">
                   Tìm phim, rạp CineMax...
                 </span>
               </div>
@@ -234,20 +277,28 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               onClick={onOpenSearch}
               title="Tìm kiếm phim"
-              className="md:hidden flex items-center justify-center w-9 h-9 rounded-lg bg-[#12141C] border border-white/10 text-white hover:text-[#E50914] shadow-sm"
+              className={`md:hidden flex items-center justify-center w-9 h-9 rounded-lg border shadow-sm ${
+                isHalloween ? "bg-[#160B24] border-orange-500/30 text-orange-400" : "bg-[#12141C] border-white/10 text-[#E50914]"
+              }`}
             >
-              <Search className="w-4 h-4 text-[#E50914]" />
+              <Search className="w-4 h-4" />
             </button>
 
-            {/* Nút Ví Vé Của Tôi (Đã bỏ nút robot bên cạnh) */}
+            {/* Nút Ví Vé Của Tôi */}
             <button
               onClick={onOpenMyTickets}
-              className="relative flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-[#12141C] hover:bg-[#161922] border border-white/10 hover:border-[#E50914] text-white text-xs font-bold transition-all shadow-sm"
+              className={`relative flex items-center gap-1.5 px-3.5 py-2 rounded-lg border text-white text-xs font-bold transition-all shadow-sm ${
+                isHalloween
+                  ? "bg-[#160B24] hover:bg-[#1E1030] border-orange-500/30 hover:border-orange-500/60"
+                  : "bg-[#12141C] hover:bg-[#161922] border-white/10 hover:border-[#E50914]"
+              }`}
             >
-              <Ticket className="w-3.5 h-3.5 text-[#E50914]" />
+              <Ticket className={`w-3.5 h-3.5 ${isHalloween ? "text-[#FF7518]" : "text-[#E50914]"}`} />
               <span className="hidden sm:inline">Vé Của Tôi</span>
               {ticketCount > 0 && (
-                <span className="w-4 h-4 rounded-full bg-[#E50914] text-white text-[10px] font-black flex items-center justify-center shadow-sm">
+                <span className={`w-4 h-4 rounded-full text-white text-[10px] font-black flex items-center justify-center shadow-sm ${
+                  isHalloween ? "bg-[#FF7518]" : "bg-[#E50914]"
+                }`}>
                   {ticketCount}
                 </span>
               )}
@@ -258,3 +309,4 @@ export const Navbar: React.FC<NavbarProps> = ({
     </header>
   );
 };
+

@@ -15,6 +15,7 @@ export interface CinemaAnnouncement {
 
 export interface CinemaSettings {
   announcement: CinemaAnnouncement;
+  halloweenThemeEnabled: boolean;
   ticketPricing: {
     standardPrice: number;
     vipPrice: number;
@@ -38,6 +39,7 @@ const DEFAULT_SETTINGS: CinemaSettings = {
     actionUrl: "#promo-section",
     updatedAt: new Date().toISOString(),
   },
+  halloweenThemeEnabled: false,
   ticketPricing: {
     standardPrice: 55000,
     vipPrice: 75000,
