@@ -49,7 +49,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
               "Bộ đôi pháp sư trẻ khai quật một ngôi mộ bí ẩn tại vùng hẻo lánh, vô tình giải phóng thế lực tà ác đáng sợ. Thưởng thức âm thanh Dolby Atmos rùng rợn sống động.",
             badge: "🎃 ĐỀ XUẤT HALLOWEEN",
             formatTag: "2D Phụ Đề • Dolby 7.1",
-            bgImage: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=1600&auto=format&fit=crop&q=80",
+            bgImage: "/images/posters/exhuma-backdrop.jpg",
             posterImage: "/images/posters/exhuma.jpg",
             accentColor: "#FF7518",
             ageRating: "T18",

@@ -305,7 +305,7 @@ export default function AdminDashboardPage() {
       tickets: 39,
       percent: 35,
       revenue: 2925000,
-      poster: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=200&auto=format&fit=crop&q=80",
+      poster: "/images/posters/exhuma.jpg",
       badgeColor: "bg-slate-300 text-black",
     },
     {

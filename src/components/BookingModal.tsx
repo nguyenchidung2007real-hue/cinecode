@@ -216,6 +216,76 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   const [isRedirectingVnpay, setIsRedirectingVnpay] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
+  // Voucher & Mã giảm giá
+  const [couponCode, setCouponCode] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<{
+    code: string;
+    description: string;
+    discountAmount: number;
+  } | null>(null);
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
+
+  const handleApplyCoupon = async (baseTotal: number) => {
+    const code = couponCode.trim().toUpperCase();
+    if (!code) {
+      setCouponError("Vui lòng nhập mã giảm giá.");
+      return;
+    }
+    setIsValidatingCoupon(true);
+    setCouponError(null);
+
+    try {
+      const res = await fetch("/api/coupons/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, orderAmount: baseTotal }),
+      });
+      const data = await res.json();
+      if (res.ok && data.valid && data.discountAmount) {
+        setAppliedCoupon({
+          code,
+          description: data.coupon?.description || `Giảm ${formatVND(data.discountAmount)}`,
+          discountAmount: data.discountAmount,
+        });
+        setCouponError(null);
+        setIsValidatingCoupon(false);
+        return;
+      }
+    } catch {}
+
+    // Fallback danh sách voucher hệ thống rạp CineMax
+    if (code === "HALLOWEEN30K") {
+      if (baseTotal < 80000) {
+        setCouponError("Đơn hàng tối thiểu từ 80.000đ để áp dụng mã HALLOWEEN30K.");
+      } else {
+        setAppliedCoupon({ code, description: "🎃 Ưu đãi Lễ Hội Halloween: Giảm ngay 30.000đ", discountAmount: 30000 });
+        setCouponError(null);
+      }
+    } else if (code === "CINEMAXHAPPY45") {
+      setAppliedCoupon({ code, description: "🔥 Happy Day: Đồng giá vé & Giảm 30.000đ", discountAmount: 30000 });
+      setCouponError(null);
+    } else if (code === "CINEMAXU22") {
+      setAppliedCoupon({ code, description: "🎓 Đặc quyền U22/HSSV: Giảm 25.000đ", discountAmount: 25000 });
+      setCouponError(null);
+    } else if (code === "CINEMAXANIME") {
+      setAppliedCoupon({ code, description: "🍿 Lễ hội Anime: Giảm 20.000đ vé xem phim", discountAmount: 20000 });
+      setCouponError(null);
+    } else if (code === "SWEETBOXFREE") {
+      setAppliedCoupon({ code, description: "💑 Sweetbox Couple: Giảm 45.000đ tặng bắp", discountAmount: 45000 });
+      setCouponError(null);
+    } else {
+      setCouponError("Mã giảm giá không hợp lệ hoặc đã hết lượt áp dụng.");
+    }
+    setIsValidatingCoupon(false);
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode("");
+    setCouponError(null);
+  };
+
   const handleCopy = (text: string, field: string) => {
     try {
       navigator.clipboard.writeText(text);
@@ -580,7 +650,9 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   const combosTotal = selectedConcessions.reduce((sum, c) => sum + c.totalPrice, 0);
   // Sau PRICE_CHANGED: dùng đúng số server báo cho giỏ hàng đó (tự vô hiệu khi giỏ hàng đổi)
   const serverTotal = serverTotalRec && serverTotalRec.basis === basis ? serverTotalRec.total : null;
-  const grandTotal = serverTotal ?? seatsTotal + combosTotal;
+  const subTotal = serverTotal ?? seatsTotal + combosTotal;
+  const discountAmount = appliedCoupon ? Math.min(appliedCoupon.discountAmount, subTotal) : 0;
+  const grandTotal = Math.max(0, subTotal - discountAmount);
 
   const seatsReady = selectedSeats.length > 0 && h.status === "held" && !h.busy;
 
@@ -1488,6 +1560,73 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               )}
             </div>
 
+            {/* Khối Mã Giảm Giá & Voucher Khuyến Mãi */}
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-xs font-bold text-slate-800 uppercase tracking-wider">
+                  <Ticket className="w-4 h-4 text-sky-600" />
+                  <span>Mã Giảm Giá / Voucher Khuyến Mãi</span>
+                </div>
+                <span className="text-[11px] text-slate-500">
+                  Gợi ý: <strong className="text-orange-600 font-mono">HALLOWEEN30K</strong>, <strong className="text-sky-600 font-mono">CINEMAXHAPPY45</strong>
+                </span>
+              </div>
+
+              {appliedCoupon ? (
+                <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between gap-3 text-xs">
+                  <div className="flex items-center gap-2.5 text-emerald-800">
+                    <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <div>
+                      <div className="font-bold flex items-center gap-2">
+                        <span className="font-mono bg-emerald-200/80 px-1.5 py-0.5 rounded text-[11px]">{appliedCoupon.code}</span>
+                        <span>{appliedCoupon.description}</span>
+                      </div>
+                      <span className="text-[11px] text-emerald-600 font-semibold block mt-0.5">
+                        Đã tiết kiệm được: -{formatVND(discountAmount)}
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleRemoveCoupon}
+                    className="p-1 text-slate-400 hover:text-red-500 rounded transition-colors cursor-pointer"
+                    title="Gỡ mã giảm giá"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={couponCode}
+                      onChange={(e) => {
+                        setCouponCode(e.target.value);
+                        if (couponError) setCouponError(null);
+                      }}
+                      placeholder="Nhập mã voucher (VD: HALLOWEEN30K, CINEMAXHAPPY45)..."
+                      className="flex-1 bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-mono text-slate-900 uppercase placeholder-slate-400 focus:outline-none focus:border-sky-500 transition-colors"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleApplyCoupon(subTotal)}
+                      disabled={isValidatingCoupon || !couponCode.trim()}
+                      className="px-4 py-2 bg-sky-600 hover:bg-sky-700 disabled:opacity-50 text-white rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer"
+                    >
+                      {isValidatingCoupon ? "Đang kiểm tra..." : "Áp dụng"}
+                    </button>
+                  </div>
+                  {couponError && (
+                    <p className="text-[11px] text-red-600 font-medium flex items-center gap-1">
+                      <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                      <span>{couponError}</span>
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+
             {/* Tóm tắt thanh toán */}
             <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
               <div>
@@ -1496,17 +1635,32 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 <p className="text-xs text-slate-500 mt-0.5">
                   Ghế: <span className="text-slate-900 font-bold">{selectedSeats.map((s) => s.id).join(", ")}</span>
                 </p>
+                {discountAmount > 0 && (
+                  <p className="text-xs text-emerald-600 font-semibold mt-0.5 flex items-center gap-1">
+                    <span>Voucher ({appliedCoupon?.code}):</span>
+                    <strong className="font-mono">-{formatVND(discountAmount)}</strong>
+                  </p>
+                )}
               </div>
 
               <div className="flex items-center gap-4">
                 <div className="text-right">
-                  <p className="text-xs text-slate-500">Tổng thanh toán</p>
-                  <p className="text-xl font-black text-sky-600">{formatVND(grandTotal)}</p>
+                  {discountAmount > 0 ? (
+                    <>
+                      <p className="text-[11px] text-slate-400 line-through">{formatVND(subTotal)}</p>
+                      <p className="text-xl font-black text-emerald-600">{formatVND(grandTotal)}</p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-xs text-slate-500">Tổng thanh toán</p>
+                      <p className="text-xl font-black text-sky-600">{formatVND(grandTotal)}</p>
+                    </>
+                  )}
                 </div>
 
                 <button
                   type="submit"
-                  className="flex items-center gap-2 px-6 py-3 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-sm shadow-md shadow-sky-600/30 transition-all"
+                  className="flex items-center gap-2 px-6 py-3 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-sm shadow-md shadow-sky-600/30 transition-all cursor-pointer"
                 >
                   <span>Thanh Toán QR</span>
                   <ArrowRight className="w-4 h-4" />
@@ -1722,6 +1876,12 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                     <span className="text-slate-500">Ghế đã chọn:</span>
                     <span className="text-sky-600 font-bold">{selectedSeats.map(s => s.id).join(", ")}</span>
                   </div>
+                  {discountAmount > 0 && (
+                    <div className="flex justify-between text-emerald-600 font-semibold">
+                      <span>Giảm giá ({appliedCoupon?.code}):</span>
+                      <span>-{formatVND(discountAmount)}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between border-t border-slate-200 pt-2 font-bold">
                     <span className="text-slate-700">Tổng thanh toán:</span>
                     <span className="text-sky-600 text-base">{formatVND(grandTotal)}</span>

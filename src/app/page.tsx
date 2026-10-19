@@ -214,17 +214,34 @@ export default function HomePage() {
   const [isCustomerHalloween, setIsCustomerHalloween] = useState(false);
 
   useEffect(() => {
-    fetch("/api/settings")
-      .then((res) => (res.ok ? res.json() : Promise.reject()))
-      .then((data) => {
-        if (data?.data?.announcement?.enabled) {
-          setLiveAnnouncement(data.data.announcement);
-        }
-        if (typeof data?.data?.halloweenThemeEnabled === "boolean") {
-          setIsCustomerHalloween(data.data.halloweenThemeEnabled);
-        }
-      })
-      .catch(() => {});
+    let isMounted = true;
+    const fetchSettings = () => {
+      fetch("/api/settings")
+        .then((res) => (res.ok ? res.json() : Promise.reject()))
+        .then((data) => {
+          if (!isMounted) return;
+          if (data?.data?.announcement?.enabled) {
+            setLiveAnnouncement(data.data.announcement);
+          } else if (data?.data?.announcement && !data.data.announcement.enabled) {
+            setLiveAnnouncement(null);
+          }
+          if (typeof data?.data?.halloweenThemeEnabled === "boolean") {
+            setIsCustomerHalloween(data.data.halloweenThemeEnabled);
+          }
+        })
+        .catch(() => {});
+    };
+
+    fetchSettings();
+    const interval = setInterval(fetchSettings, 10000);
+    const handleFocus = () => fetchSettings();
+    window.addEventListener("focus", handleFocus);
+
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+      window.removeEventListener("focus", handleFocus);
+    };
   }, []);
 
   const [vnpayNotice, setVnpayNotice] = useState<{ type: "success" | "error" | "info"; message: string } | null>(null);
