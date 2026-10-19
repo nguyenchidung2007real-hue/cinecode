@@ -160,6 +160,14 @@ export const CustomerAtmosphere: React.FC<CustomerAtmosphereProps> = ({ isHallow
           <div className="absolute bottom-10 left-[15%] w-2 h-2 rounded-full bg-orange-400 shadow-[0_0_12px_#FF7518] animate-float-ember" />
           <div className="absolute bottom-24 right-[25%] w-2.5 h-2.5 rounded-full bg-purple-400 shadow-[0_0_12px_#A855F7] animate-float-ember" style={{ animationDelay: "1.8s" }} />
           <div className="absolute bottom-32 left-[40%] w-1.5 h-1.5 rounded-full bg-amber-300 shadow-[0_0_10px_#F59E0B] animate-float-ember" style={{ animationDelay: "2.6s" }} />
+
+          {/* E. Lớp Sương Mù Điện Ảnh Trôi Bồng Bềnh (Drifting Cinematic Eerie Fog) */}
+          <div className="absolute -bottom-16 left-0 right-0 h-64 w-[140%] -ml-[20%] pointer-events-none opacity-25 animate-fog-drift-1 bg-gradient-to-t from-orange-950/40 via-purple-900/30 to-transparent blur-3xl" />
+          <div className="absolute top-1/3 left-0 right-0 h-80 w-[140%] -ml-[20%] pointer-events-none opacity-15 animate-fog-drift-2 bg-gradient-to-b from-purple-950/30 via-orange-950/20 to-transparent blur-3xl" />
+
+          {/* F. Vầng Sáng Lồng Đèn Bí Ngô 2 Góc Dưới Màn Hình (Jack-o'-lantern Corner Aura) */}
+          <div className="absolute -bottom-20 -left-20 w-80 h-80 rounded-full bg-gradient-to-tr from-[#FF7518]/20 via-[#B24000]/10 to-transparent blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-20 -right-20 w-80 h-80 rounded-full bg-gradient-to-tl from-purple-800/25 via-[#FF7518]/15 to-transparent blur-3xl pointer-events-none" />
         </div>
       )}
 

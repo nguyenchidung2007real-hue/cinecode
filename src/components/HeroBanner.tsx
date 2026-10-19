@@ -9,6 +9,7 @@ interface HeroBannerProps {
   movies?: Movie[];
   onWatchTrailer: (movie: Movie) => void;
   onBookTicket: (movie: Movie) => void;
+  isHalloween?: boolean;
 }
 
 interface DesignedBanner {
@@ -30,12 +31,31 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
   movies = [],
   onWatchTrailer,
   onBookTicket,
+  isHalloween = false,
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
-  // Danh mục 5 Banner ngang Key Visual nghệ thuật điện ảnh tràn viền Cinematic
+  // Danh mục Banner ngang Key Visual nghệ thuật điện ảnh tràn viền Cinematic
   const designedBanners: DesignedBanner[] = [
+    ...(isHalloween
+      ? [
+          {
+            id: "b-exhuma-halloween",
+            movieId: "exhuma",
+            movieTitle: "QUẬT MỘ TRÙNG MA (EXHUMA)",
+            tagline: "ĐÊM KINH HOÀNG HALLOWEEN • SIÊU PHẨM KINH DỊ TÂM LINH",
+            releaseNote:
+              "Bộ đôi pháp sư trẻ khai quật một ngôi mộ bí ẩn tại vùng hẻo lánh, vô tình giải phóng thế lực tà ác đáng sợ. Thưởng thức âm thanh Dolby Atmos rùng rợn sống động.",
+            badge: "🎃 ĐỀ XUẤT HALLOWEEN",
+            formatTag: "2D Phụ Đề • Dolby 7.1",
+            bgImage: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=1600&auto=format&fit=crop&q=80",
+            posterImage: "https://images.unsplash.com/photo-1509248961158-e54f6934749c?w=800&auto=format&fit=crop&q=80",
+            accentColor: "#FF7518",
+            ageRating: "T18",
+          },
+        ]
+      : []),
     {
       id: "b-conan",
       movieId: "conan-movie-27",
@@ -121,7 +141,9 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
 
   return (
     <section
-      className="relative w-full min-h-[80vh] flex items-center select-none overflow-hidden bg-[#0B0C10]"
+      className={`relative w-full min-h-[80vh] flex items-center select-none overflow-hidden transition-colors duration-500 ${
+        isHalloween ? "bg-transparent" : "bg-[#0B0C10]"
+      }`}
       aria-label="Hero Banner CineMax"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
@@ -136,8 +158,20 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
         />
 
         {/* 2. Lớp phủ Gradient đen điện ảnh mờ dần về phía trái và phía dưới */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0B0C10] via-[#0B0C10]/80 via-40% to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0B0C10] via-[#0B0C10]/40 to-transparent" />
+        <div
+          className={`absolute inset-0 bg-gradient-to-r transition-colors duration-500 ${
+            isHalloween
+              ? "from-[#07020d] via-[#07020d]/85 via-40% to-transparent"
+              : "from-[#0B0C10] via-[#0B0C10]/80 via-40% to-transparent"
+          }`}
+        />
+        <div
+          className={`absolute inset-0 bg-gradient-to-t transition-colors duration-500 ${
+            isHalloween
+              ? "from-[#07020d] via-[#07020d]/50 to-transparent"
+              : "from-[#0B0C10] via-[#0B0C10]/40 to-transparent"
+          }`}
+        />
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-transparent" />
       </div>
 

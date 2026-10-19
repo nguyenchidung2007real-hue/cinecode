@@ -17,6 +17,7 @@ import SemanticSearchModal from "@/components/SemanticSearchModal";
 import { MovieCarousel } from "@/components/MovieCarousel";
 import { Footer } from "@/components/Footer";
 import { CustomerAtmosphere } from "@/components/CustomerAtmosphere";
+import { HalloweenMovieShowcase } from "@/components/HalloweenMovieShowcase";
 import { useBookingStore } from "@/store/useBookingStore";
 
 import { Sparkles, Flame, Film, Clapperboard, Award, SearchX, Smile, Compass, Brain, Heart, Tag, Gift, Percent, Ticket, CheckCircle2, X, Clock, Calendar, Check, Copy, ArrowRight, Info, Armchair, Popcorn, Headphones, Crown, Star } from "lucide-react";
@@ -126,6 +127,7 @@ const GENRE_FILTERS = ["Tất cả", "Hành động", "Khoa học viễn tưởn
 
 const MOOD_FILTERS = [
   { id: "all", label: "Tất cả phim", icon: Compass, color: "from-blue-500/20 to-cyan-500/20 text-cyan-300" },
+  { id: "halloween", label: "🎃 Phim Kinh Dị", icon: Flame, color: "from-orange-600/30 to-purple-600/30 text-orange-400 border border-orange-500/40" },
   { id: "blockbuster", label: "Bom tấn hành động", icon: Flame, color: "from-red-500/20 to-orange-500/20 text-orange-300" },
   { id: "mindblown", label: "Khoa học viễn tưởng", icon: Film, color: "from-purple-500/20 to-indigo-500/20 text-purple-300" },
   { id: "chill", label: "Hoạt hình & Hài", icon: Smile, color: "from-emerald-500/20 to-teal-500/20 text-emerald-300" },
@@ -139,8 +141,8 @@ export default function HomePage() {
   const [selectedGenre, setSelectedGenre] = useState("Tất cả");
   const [selectedMood, setSelectedMood] = useState("all");
 
-  // Tab chuyển đổi phim chuẩn rạp (Đang chiếu / Sắp chiếu / Suất chiếu đặc biệt)
-  const [activeCommercialTab, setActiveCommercialTab] = useState<"now_playing" | "upcoming" | "trending">("now_playing");
+  // Tab chuyển đổi phim chuẩn rạp (Đang chiếu / Sắp chiếu / Suất chiếu đặc biệt / Phim Halloween)
+  const [activeCommercialTab, setActiveCommercialTab] = useState<"now_playing" | "upcoming" | "trending" | "halloween">("now_playing");
 
   // State các Modal
   const [activeDetailMovie, setActiveDetailMovie] = useState<Movie | null>(null);
@@ -315,6 +317,27 @@ export default function HomePage() {
   const nowPlayingMovies = useMemo(() => movies.filter((m) => m.status === "now_playing"), [movies]);
   const trendingMovies = useMemo(() => movies.filter((m) => m.status === "trending"), [movies]);
   const upcomingMovies = useMemo(() => movies.filter((m) => m.status === "upcoming"), [movies]);
+  const horrorMovies = useMemo(() => {
+    return movies.filter((m) => {
+      const isExplicitHorror = m.genres.some(
+        (g) =>
+          g.toLowerCase().includes("kinh dị") ||
+          g.toLowerCase().includes("horror") ||
+          g.toLowerCase().includes("giật gân") ||
+          g.toLowerCase().includes("tâm linh") ||
+          g.toLowerCase().includes("bí ẩn")
+      );
+      const halloweenIds = [
+        "exhuma",
+        "the-nun-2",
+        "smile-2",
+        "a-quiet-place-day-one",
+        "alien-romulus",
+        "chuyen-ma-gan-nha",
+      ];
+      return isExplicitHorror || halloweenIds.includes(String(m.id));
+    });
+  }, [movies]);
 
   // Lọc theo tìm kiếm, thể loại và tâm trạng (Mood-based)
   const filteredMovies = useMemo(() => {
@@ -329,7 +352,22 @@ export default function HomePage() {
       const matchGenre = selectedGenre === "Tất cả" || m.genres.includes(selectedGenre);
 
       let matchMood = true;
-      if (selectedMood === "blockbuster") {
+      if (selectedMood === "halloween") {
+        matchMood =
+          m.genres.some((g) =>
+            ["Kinh dị", "Giật gân", "Bí ẩn", "Tâm linh"].some((genreKey) =>
+              g.toLowerCase().includes(genreKey.toLowerCase())
+            )
+          ) ||
+          [
+            "exhuma",
+            "the-nun-2",
+            "smile-2",
+            "a-quiet-place-day-one",
+            "alien-romulus",
+            "chuyen-ma-gan-nha",
+          ].includes(String(m.id));
+      } else if (selectedMood === "blockbuster") {
         matchMood = m.genres.some((g) => ["Hành động", "Phiêu lưu"].includes(g));
       } else if (selectedMood === "mindblown") {
         matchMood = m.genres.some((g) => ["Khoa học viễn tưởng", "Kinh dị"].includes(g));
@@ -346,7 +384,7 @@ export default function HomePage() {
   return (
     <div className={`min-h-screen flex flex-col transition-colors duration-500 relative ${
       isCustomerHalloween
-        ? "bg-[#090412] text-neutral-100 selection:bg-[#FF7518] selection:text-white"
+        ? "halloween-page-bg text-neutral-100 selection:bg-[#FF7518] selection:text-white"
         : "bg-background selection:bg-accent-red selection:text-white"
     }`}>
       {/* Hiệu ứng không gian rạp chiếu & Lễ hội Halloween */}
@@ -483,6 +521,7 @@ export default function HomePage() {
                 movies={movies}
                 onWatchTrailer={setActiveDetailMovie}
                 onBookTicket={setActiveBookingMovie}
+                isHalloween={isCustomerHalloween}
               />
             </section>
 
@@ -497,15 +536,24 @@ export default function HomePage() {
               />
             </section>
 
+            {/* 2.5. KHU VỰC ĐỀ XUẤT ĐIỆN ẢNH HALLOWEEN (CHỈ HIỂN THỊ KHI BẬT THEME HALLOWEEN) */}
+            {isCustomerHalloween && (
+              <HalloweenMovieShowcase
+                movies={movies}
+                onBookTicket={setActiveBookingMovie}
+                onWatchTrailer={setActiveDetailMovie}
+              />
+            )}
+
             {/* 3. KHU VỰC "MOVIE SELECTION": TIÊU ĐỀ KẺ ĐÔI & TRƯỢT 4 PHIM */}
             {/* 3. KHU VỰC "MOVIE SELECTION": DANH SÁCH PHIM ĐANG CHIẾU & SẮP CHIẾU */}
             <div id="commercial-tabs" className="max-w-[1040px] 2xl:max-w-[1080px] mx-auto px-2 sm:px-4 mt-16 scroll-mt-24">
               
               {/* Tiêu đề Section chuẩn Điện Ảnh: Căn trái, thanh dọc đỏ */}
               <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-6 gap-3">
-                <div className="border-l-4 border-[#E50914] pl-4">
-                  <span className="text-xs font-bold text-[#E50914] uppercase tracking-wider block mb-1">
-                    Danh Sách Phim Chiếu Rạp
+                <div className={`border-l-4 pl-4 ${isCustomerHalloween ? "border-[#FF7518]" : "border-[#E50914]"}`}>
+                  <span className={`text-xs font-bold uppercase tracking-wider block mb-1 ${isCustomerHalloween ? "text-[#FF7518]" : "text-[#E50914]"}`}>
+                    {isCustomerHalloween ? "🎃 Lễ Hội Điện Ảnh Rùng Rợn" : "Danh Sách Phim Chiếu Rạp"}
                   </span>
                   <h2 className="font-heading text-2xl sm:text-4xl font-bold uppercase text-white tracking-tight">
                     PHIM ĐIỆN ẢNH CINEMAX
@@ -515,18 +563,39 @@ export default function HomePage() {
 
               {/* Thanh Chuyển Tab Phim (Khử hoàn toàn dấu vết AI giám sát server) */}
               <div className="flex items-center gap-4 sm:gap-8 border-b border-white/10 pb-4 overflow-x-auto scrollbar-none">
+                {isCustomerHalloween && (
+                  <button
+                    type="button"
+                    onClick={() => setActiveCommercialTab("halloween")}
+                    className={`font-heading text-base sm:text-xl font-bold tracking-wide transition-all flex items-center gap-2 pb-3 -mb-4.5 border-b-2 cursor-pointer uppercase ${
+                      activeCommercialTab === "halloween"
+                        ? "text-[#FF7518] border-[#FF7518]"
+                        : "text-orange-300/70 border-transparent hover:text-orange-400"
+                    }`}
+                  >
+                    <span>🎃 PHIM HALLOWEEN</span>
+                    <span className="text-xs px-2.5 py-0.5 rounded-md bg-orange-500/20 text-orange-300 font-bold border border-orange-500/30">
+                      {horrorMovies.length}
+                    </span>
+                  </button>
+                )}
+
                 <button
                   type="button"
                   onClick={() => setActiveCommercialTab("now_playing")}
                   className={`font-heading text-base sm:text-xl font-bold tracking-wide transition-all flex items-center gap-2 pb-3 -mb-4.5 border-b-2 cursor-pointer uppercase ${
                     activeCommercialTab === "now_playing"
-                      ? "text-[#E50914] border-[#E50914]"
+                      ? isCustomerHalloween ? "text-[#FF7518] border-[#FF7518]" : "text-[#E50914] border-[#E50914]"
                       : "text-[#9CA3AF] border-transparent hover:text-white"
                   }`}
                 >
                   <Film className="w-4 h-4" />
                   <span>PHIM ĐANG CHIẾU</span>
-                  <span className="text-xs px-2.5 py-0.5 rounded-md bg-[#E50914]/20 text-[#E50914] font-bold border border-[#E50914]/30">
+                  <span className={`text-xs px-2.5 py-0.5 rounded-md font-bold border ${
+                    isCustomerHalloween
+                      ? "bg-orange-500/20 text-orange-300 border-orange-500/30"
+                      : "bg-[#E50914]/20 text-[#E50914] border-[#E50914]/30"
+                  }`}>
                     {nowPlayingMovies.length}
                   </span>
                 </button>
@@ -536,7 +605,7 @@ export default function HomePage() {
                   onClick={() => setActiveCommercialTab("upcoming")}
                   className={`font-heading text-base sm:text-xl font-bold tracking-wide transition-all flex items-center gap-2 pb-3 -mb-4.5 border-b-2 cursor-pointer uppercase ${
                     activeCommercialTab === "upcoming"
-                      ? "text-[#E50914] border-[#E50914]"
+                      ? isCustomerHalloween ? "text-[#FF7518] border-[#FF7518]" : "text-[#E50914] border-[#E50914]"
                       : "text-[#9CA3AF] border-transparent hover:text-white"
                   }`}
                 >
@@ -552,13 +621,17 @@ export default function HomePage() {
                   onClick={() => setActiveCommercialTab("trending")}
                   className={`font-heading text-base sm:text-xl font-bold tracking-wide transition-all hidden sm:flex items-center gap-2 pb-3 -mb-4.5 border-b-2 cursor-pointer uppercase ${
                     activeCommercialTab === "trending"
-                      ? "text-[#E50914] border-[#E50914]"
+                      ? isCustomerHalloween ? "text-[#FF7518] border-[#FF7518]" : "text-[#E50914] border-[#E50914]"
                       : "text-[#9CA3AF] border-transparent hover:text-white"
                   }`}
                 >
-                  <Flame className="w-4 h-4 text-[#E50914]" />
+                  <Flame className={`w-4 h-4 ${isCustomerHalloween ? "text-orange-400" : "text-[#E50914]"}`} />
                   <span>SUẤT CHIẾU ĐẶC BIỆT</span>
-                  <span className="text-xs px-2.5 py-0.5 rounded-md bg-[#E50914]/20 text-[#E50914] font-bold border border-[#E50914]/30">
+                  <span className={`text-xs px-2.5 py-0.5 rounded-md font-bold border ${
+                    isCustomerHalloween
+                      ? "bg-orange-500/20 text-orange-300 border-orange-500/30"
+                      : "bg-[#E50914]/20 text-[#E50914] border-[#E50914]/30"
+                  }`}>
                     HOT
                   </span>
                 </button>
@@ -568,7 +641,9 @@ export default function HomePage() {
               <div className="mt-6">
                 <MovieCarousel
                   movies={
-                    activeCommercialTab === "now_playing"
+                    activeCommercialTab === "halloween"
+                      ? horrorMovies
+                      : activeCommercialTab === "now_playing"
                       ? nowPlayingMovies
                       : activeCommercialTab === "upcoming"
                       ? upcomingMovies
