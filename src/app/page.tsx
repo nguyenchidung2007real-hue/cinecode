@@ -18,6 +18,7 @@ import { MovieCarousel } from "@/components/MovieCarousel";
 import { Footer } from "@/components/Footer";
 import { CustomerAtmosphere } from "@/components/CustomerAtmosphere";
 import { HalloweenMovieShowcase } from "@/components/HalloweenMovieShowcase";
+import { CustomerLoginModal } from "@/components/CustomerLoginModal";
 import { useBookingStore } from "@/store/useBookingStore";
 
 import { Sparkles, Flame, Film, Clapperboard, Award, SearchX, Smile, Compass, Brain, Heart, Tag, Gift, Percent, Ticket, CheckCircle2, X, Clock, Calendar, Check, Copy, ArrowRight, Info, Armchair, Popcorn, Headphones, Crown, Star } from "lucide-react";
@@ -149,6 +150,12 @@ export default function HomePage() {
   const [activeBookingMovie, setActiveBookingMovie] = useState<Movie | null>(null);
   const [bookingInitialSeats, setBookingInitialSeats] = useState<string[]>([]);
   const [bookingInitialShowtimeId, setBookingInitialShowtimeId] = useState<string | undefined>(undefined);
+  const [isCustomerLoginOpen, setIsCustomerLoginOpen] = useState(false);
+  const [pendingBookingMovie, setPendingBookingMovie] = useState<{
+    movie: Movie;
+    initialSeats?: string[];
+    initialShowtimeId?: string;
+  } | null>(null);
   const [isAiChatOpen, setIsAiChatOpen] = useState(false);
   const [isMyTicketsOpen, setIsMyTicketsOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -327,6 +334,47 @@ export default function HomePage() {
     }
   };
 
+  // Kiểm tra đăng nhập khách hàng trước khi vào quy trình mua vé
+  const handleRequestBooking = (
+    movie: Movie,
+    initialSeats: string[] = [],
+    initialShowtimeId?: string
+  ) => {
+    let isAuth = false;
+    try {
+      const phone = localStorage.getItem("cinemax_customer_phone");
+      if (phone && phone.trim()) {
+        isAuth = true;
+      }
+    } catch {}
+
+    if (!isAuth) {
+      setPendingBookingMovie({ movie, initialSeats, initialShowtimeId });
+      setIsCustomerLoginOpen(true);
+      return;
+    }
+
+    if (initialShowtimeId) {
+      setBookingInitialShowtimeId(initialShowtimeId);
+    }
+    setBookingInitialSeats(initialSeats);
+    setActiveBookingMovie(movie);
+  };
+
+  const handleCustomerLoginSuccess = (info: { name: string; phone: string; email?: string }) => {
+    setCustomerInfo({ name: info.name, phone: info.phone });
+    setIsCustomerLoginOpen(false);
+
+    if (pendingBookingMovie) {
+      if (pendingBookingMovie.initialShowtimeId) {
+        setBookingInitialShowtimeId(pendingBookingMovie.initialShowtimeId);
+      }
+      setBookingInitialSeats(pendingBookingMovie.initialSeats || []);
+      setActiveBookingMovie(pendingBookingMovie.movie);
+      setPendingBookingMovie(null);
+    }
+  };
+
   // Phim nổi bật nhất cho Hero Banner
   const heroMovie = movies[0]; // Dune: Phần Hai
 
@@ -419,6 +467,7 @@ export default function HomePage() {
         onOpenAiChat={() => setIsAiChatOpen(true)}
         onOpenMyTickets={() => setIsMyTicketsOpen(true)}
         onOpenSearch={() => setIsSearchOpen(true)}
+        onOpenLogin={() => setIsCustomerLoginOpen(true)}
         ticketCount={ticketCount}
         customerInfo={customerInfo}
         announcement={liveAnnouncement}
@@ -513,7 +562,7 @@ export default function HomePage() {
                     key={movie.id}
                     movie={movie}
                     onOpenDetail={setActiveDetailMovie}
-                    onBookTicket={setActiveBookingMovie}
+                    onBookTicket={(m) => handleRequestBooking(m)}
                     isHalloween={isCustomerHalloween}
                   />
                 ))}
@@ -543,7 +592,7 @@ export default function HomePage() {
               <HeroBanner
                 movies={movies}
                 onWatchTrailer={setActiveDetailMovie}
-                onBookTicket={setActiveBookingMovie}
+                onBookTicket={(m) => handleRequestBooking(m)}
                 isHalloween={isCustomerHalloween}
               />
             </section>
@@ -553,8 +602,7 @@ export default function HomePage() {
               <QuickBookingBar
                 movies={movies}
                 onQuickBook={(movie, cinemaName, date, time, format, showtimeId) => {
-                  setBookingInitialShowtimeId(showtimeId);
-                  setActiveBookingMovie(movie);
+                  handleRequestBooking(movie, [], showtimeId);
                 }}
               />
             </section>
@@ -563,7 +611,7 @@ export default function HomePage() {
             {isCustomerHalloween && (
               <HalloweenMovieShowcase
                 movies={movies}
-                onBookTicket={setActiveBookingMovie}
+                onBookTicket={(m) => handleRequestBooking(m)}
                 onWatchTrailer={setActiveDetailMovie}
               />
             )}
@@ -673,7 +721,7 @@ export default function HomePage() {
                       : trendingMovies
                   }
                   onOpenDetail={setActiveDetailMovie}
-                  onBookTicket={setActiveBookingMovie}
+                  onBookTicket={(m) => handleRequestBooking(m)}
                   isHalloween={isCustomerHalloween}
                 />
               </div>
@@ -684,7 +732,7 @@ export default function HomePage() {
               <CinemaShowtimeMatrix
                 movies={movies}
                 onSelectShowtime={(movie, cinemaName, date, time, format) => {
-                  setActiveBookingMovie(movie);
+                  handleRequestBooking(movie);
                 }}
               />
             </div>
@@ -745,7 +793,7 @@ export default function HomePage() {
                         type="button"
                         onClick={() => {
                           const target = movies.find((m) => m.status === "now_playing") || movies[0];
-                          if (target) setActiveBookingMovie(target);
+                          if (target) handleRequestBooking(target);
                         }}
                         className="px-7 py-3.5 rounded-lg bg-[#E50914] hover:bg-[#b80710] text-white font-heading font-bold text-sm uppercase tracking-wider shadow-xl shadow-red-600/40 flex items-center gap-2.5 transform hover:scale-105 active:scale-95 transition-all cursor-pointer border border-red-500/40"
                       >
@@ -1233,7 +1281,7 @@ export default function HomePage() {
                   <button
                     onClick={() => {
                       const target = movies.find((m) => m.status === "now_playing") || movies[0];
-                      if (target) setActiveBookingMovie(target);
+                      if (target) handleRequestBooking(target);
                     }}
                     className="w-full mt-5 py-2.5 rounded-lg bg-white/10 hover:bg-[#E50914] text-white font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer border border-white/10 hover:border-[#E50914]"
                   >
@@ -1286,7 +1334,7 @@ export default function HomePage() {
                   <button
                     onClick={() => {
                       const target = movies.find((m) => m.status === "now_playing") || movies[0];
-                      if (target) setActiveBookingMovie(target);
+                      if (target) handleRequestBooking(target);
                     }}
                     className="w-full mt-5 py-2.5 rounded-lg bg-[#E50914] hover:bg-[#b80710] text-white font-bold text-xs transition-colors flex items-center justify-center gap-1.5 shadow-lg shadow-red-600/40 cursor-pointer"
                   >
@@ -1336,7 +1384,7 @@ export default function HomePage() {
                   <button
                     onClick={() => {
                       const target = movies.find((m) => m.status === "now_playing") || movies[0];
-                      if (target) setActiveBookingMovie(target);
+                      if (target) handleRequestBooking(target);
                     }}
                     className="w-full mt-5 py-2.5 rounded-lg bg-white/10 hover:bg-[#E50914] text-white font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer border border-white/10 hover:border-[#E50914]"
                   >
@@ -1466,7 +1514,7 @@ export default function HomePage() {
         onClose={() => setActiveDetailMovie(null)}
         onBookTicket={(m) => {
           setActiveDetailMovie(null);
-          setActiveBookingMovie(m);
+          handleRequestBooking(m);
         }}
       />
 
@@ -1484,6 +1532,16 @@ export default function HomePage() {
         onBookingSuccess={handleBookingSuccess}
       />
 
+      {/* Modal Đăng Nhập Thành Viên CineMax Khi Khách Vào Đặt Vé */}
+      <CustomerLoginModal
+        isOpen={isCustomerLoginOpen}
+        onClose={() => {
+          setIsCustomerLoginOpen(false);
+          setPendingBookingMovie(null);
+        }}
+        onLoginSuccess={handleCustomerLoginSuccess}
+      />
+
       {/* Modal Ví Vé Của Tôi */}
       <MyTicketsModal
         isOpen={isMyTicketsOpen}
@@ -1496,11 +1554,7 @@ export default function HomePage() {
         onToggle={() => setIsAiChatOpen(!isAiChatOpen)}
         movies={movies}
         onSelectMovieForBooking={(movie, seats, showtimeId) => {
-          if (showtimeId) {
-            setBookingInitialShowtimeId(showtimeId);
-          }
-          setActiveBookingMovie(movie);
-          setBookingInitialSeats(seats || []);
+          handleRequestBooking(movie, seats || [], showtimeId);
           setIsAiChatOpen(false);
         }}
         onOpenMyTickets={() => setIsMyTicketsOpen(true)}
@@ -1513,7 +1567,7 @@ export default function HomePage() {
         open={isSearchOpen}
         onOpenChange={setIsSearchOpen}
         onBookMovie={(movie) => {
-          setActiveBookingMovie(movie);
+          handleRequestBooking(movie);
         }}
         onSelectMovie={(movie) => {
           setActiveDetailMovie(movie);
@@ -1620,7 +1674,7 @@ export default function HomePage() {
                   setSelectedPromo(null);
                   const target = movies.find((m) => m.status === "now_playing") || movies[0];
                   if (target) {
-                    setActiveBookingMovie(target);
+                    handleRequestBooking(target);
                   }
                 }}
                 className="px-5 py-2 rounded-lg bg-[#E50914] hover:bg-[#b80710] text-white font-heading font-bold text-xs uppercase tracking-wider transition-colors flex items-center gap-1.5 shadow-lg shadow-red-600/40 cursor-pointer border border-red-500/40"

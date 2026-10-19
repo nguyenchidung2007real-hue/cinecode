@@ -9,6 +9,7 @@ interface NavbarProps {
   onOpenMyTickets: () => void;
   ticketCount: number;
   onOpenAiChat?: () => void;
+  onOpenLogin?: () => void;
   customerInfo?: { name: string; phone: string } | null;
   announcement?: {
     enabled: boolean;
@@ -27,6 +28,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenSearch,
   onOpenMyTickets,
   ticketCount,
+  onOpenLogin,
   customerInfo,
   announcement,
   isHalloween = false,
@@ -140,15 +142,28 @@ export const Navbar: React.FC<NavbarProps> = ({
             Tin Mới & Ưu Đãi
           </a>
           <span className="hidden sm:inline text-white/20">•</span>
-          <Link
-            href="/dashboard"
-            className={`flex items-center gap-1.5 font-medium transition-colors ${
-              isHalloween ? "text-orange-200/80 hover:text-[#FF7518]" : "text-[#9CA3AF] hover:text-[#E50914]"
-            }`}
-          >
-            <User className={`w-3.5 h-3.5 ${isHalloween ? "text-[#FF7518]" : "text-[#E50914]"}`} />
-            <span>{customerInfo ? `Thành viên: ${customerInfo.name}` : "Đăng ký / Đăng nhập CineMax"}</span>
-          </Link>
+          {customerInfo ? (
+            <Link
+              href="/dashboard"
+              className={`flex items-center gap-1.5 font-medium transition-colors ${
+                isHalloween ? "text-orange-200/80 hover:text-[#FF7518]" : "text-[#9CA3AF] hover:text-[#E50914]"
+              }`}
+            >
+              <User className={`w-3.5 h-3.5 ${isHalloween ? "text-[#FF7518]" : "text-[#E50914]"}`} />
+              <span>Thành viên: {customerInfo.name}</span>
+            </Link>
+          ) : (
+            <button
+              type="button"
+              onClick={onOpenLogin}
+              className={`flex items-center gap-1.5 font-medium transition-colors cursor-pointer ${
+                isHalloween ? "text-orange-200/80 hover:text-[#FF7518]" : "text-[#9CA3AF] hover:text-[#E50914]"
+              }`}
+            >
+              <User className={`w-3.5 h-3.5 ${isHalloween ? "text-[#FF7518]" : "text-[#E50914]"}`} />
+              <span>Đăng ký / Đăng nhập CineMax</span>
+            </button>
+          )}
           <span className="text-white/20">•</span>
           <div className="flex items-center gap-1 text-[#9CA3AF] cursor-pointer hover:text-white">
             <span>🇻🇳 VN</span>
