@@ -50,7 +50,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
             badge: "🎃 ĐỀ XUẤT HALLOWEEN",
             formatTag: "2D Phụ Đề • Dolby 7.1",
             bgImage: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=1600&auto=format&fit=crop&q=80",
-            posterImage: "https://images.unsplash.com/photo-1509248961158-e54f6934749c?w=800&auto=format&fit=crop&q=80",
+            posterImage: "/images/posters/exhuma.jpg",
             accentColor: "#FF7518",
             ageRating: "T18",
           },

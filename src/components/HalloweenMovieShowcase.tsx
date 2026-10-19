@@ -35,6 +35,9 @@ export const HalloweenMovieShowcase: React.FC<HalloweenMovieShowcaseProps> = ({
       "a-quiet-place-day-one",
       "alien-romulus",
       "chuyen-ma-gan-nha",
+      "terrifier-3",
+      "the-conjuring-3",
+      "longlegs",
     ];
     return isExplicitHorror || halloweenIds.includes(String(m.id));
   });
@@ -45,6 +48,7 @@ export const HalloweenMovieShowcase: React.FC<HalloweenMovieShowcaseProps> = ({
       return (
         m.id === "exhuma" ||
         m.id === "the-nun-2" ||
+        m.id === "the-conjuring-3" ||
         m.id === "chuyen-ma-gan-nha" ||
         m.genres.some((g) => g.toLowerCase().includes("tâm linh"))
       );
@@ -52,7 +56,9 @@ export const HalloweenMovieShowcase: React.FC<HalloweenMovieShowcaseProps> = ({
     if (activeFilter === "thriller") {
       return (
         m.id === "smile-2" ||
-        m.genres.some((g) => g.toLowerCase().includes("tâm lý") || g.toLowerCase().includes("giật gân"))
+        m.id === "terrifier-3" ||
+        m.id === "longlegs" ||
+        m.genres.some((g) => g.toLowerCase().includes("tâm lý") || g.toLowerCase().includes("giật gân") || g.toLowerCase().includes("tội phạm"))
       );
     }
     if (activeFilter === "monster") {

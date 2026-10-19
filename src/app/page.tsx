@@ -334,6 +334,9 @@ export default function HomePage() {
         "a-quiet-place-day-one",
         "alien-romulus",
         "chuyen-ma-gan-nha",
+        "terrifier-3",
+        "the-conjuring-3",
+        "longlegs",
       ];
       return isExplicitHorror || halloweenIds.includes(String(m.id));
     });
@@ -355,7 +358,7 @@ export default function HomePage() {
       if (selectedMood === "halloween") {
         matchMood =
           m.genres.some((g) =>
-            ["Kinh dị", "Giật gân", "Bí ẩn", "Tâm linh"].some((genreKey) =>
+            ["Kinh dị", "Giật gân", "Bí ẩn", "Tâm linh", "Tội phạm"].some((genreKey) =>
               g.toLowerCase().includes(genreKey.toLowerCase())
             )
           ) ||
@@ -366,6 +369,9 @@ export default function HomePage() {
             "a-quiet-place-day-one",
             "alien-romulus",
             "chuyen-ma-gan-nha",
+            "terrifier-3",
+            "the-conjuring-3",
+            "longlegs",
           ].includes(String(m.id));
       } else if (selectedMood === "blockbuster") {
         matchMood = m.genres.some((g) => ["Hành động", "Phiêu lưu"].includes(g));
