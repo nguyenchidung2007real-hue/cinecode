@@ -9,12 +9,14 @@ interface MovieCarouselProps {
   movies: Movie[];
   onOpenDetail: (movie: Movie) => void;
   onBookTicket: (movie: Movie) => void;
+  isHalloween?: boolean;
 }
 
 export const MovieCarousel: React.FC<MovieCarouselProps> = ({
   movies,
   onOpenDetail,
   onBookTicket,
+  isHalloween = false,
 }) => {
   const [startIndex, setStartIndex] = useState(0);
 
@@ -42,6 +44,7 @@ export const MovieCarousel: React.FC<MovieCarouselProps> = ({
             movie={movie}
             onOpenDetail={onOpenDetail}
             onBookTicket={onBookTicket}
+            isHalloween={isHalloween}
           />
         ))}
       </div>

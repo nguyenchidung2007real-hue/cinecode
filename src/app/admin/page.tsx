@@ -36,6 +36,14 @@ import {
   Flame,
   Radio,
   Eye,
+  BarChart3,
+  Activity,
+  Cpu,
+  Zap,
+  Award,
+  Info,
+  X,
+  Check,
 } from "lucide-react";
 import AdminSeatsMoviesAuditTab from "@/components/admin/AdminSeatsMoviesAuditTab";
 import AdminOrdersAndReviewsTab from "@/components/admin/AdminOrdersAndReviewsTab";
@@ -227,6 +235,171 @@ export default function AdminDashboardPage() {
     occupancyRate: "78%",
     activeShowtimes: 8,
   });
+
+  // Bộ điều khiển biểu đồ doanh thu (Revenue Chart Period)
+  const [revenuePeriod, setRevenuePeriod] = useState<"today" | "7days" | "month">("today");
+  const [hoveredChartBar, setHoveredChartBar] = useState<number | null>(null);
+
+  // Modal xem nhanh sơ đồ 102 ghế phòng chiếu
+  const [quickSeatModalRoom, setQuickSeatModalRoom] = useState<{
+    name: string;
+    movie: string;
+    showtime: string;
+    occupiedCount: number;
+    totalSeats: number;
+    status: string;
+    statusColor: string;
+  } | null>(null);
+
+  // Dữ liệu biểu đồ doanh thu
+  const chartData = useMemo(() => {
+    if (revenuePeriod === "today") {
+      return [
+        { label: "08:00", ticket: 280000, fnb: 110000 },
+        { label: "10:00", ticket: 490000, fnb: 190000 },
+        { label: "12:00", ticket: 780000, fnb: 290000 },
+        { label: "14:00", ticket: 650000, fnb: 240000 },
+        { label: "16:00", ticket: 920000, fnb: 380000 },
+        { label: "18:00", ticket: 1420000, fnb: 510000 },
+        { label: "20:00", ticket: 1280000, fnb: 430000 },
+        { label: "22:00", ticket: 380000, fnb: 100000 },
+      ];
+    } else if (revenuePeriod === "7days") {
+      return [
+        { label: "T2", ticket: 4100000, fnb: 1450000 },
+        { label: "T3", ticket: 4600000, fnb: 1680000 },
+        { label: "T4 (45k)", ticket: 7200000, fnb: 2850000 },
+        { label: "T5", ticket: 4900000, fnb: 1820000 },
+        { label: "T6", ticket: 8400000, fnb: 3200000 },
+        { label: "T7", ticket: 12100000, fnb: 4650000 },
+        { label: "CN", ticket: 11400000, fnb: 4350000 },
+      ];
+    } else {
+      return [
+        { label: "Tuần 1", ticket: 38200000, fnb: 13900000 },
+        { label: "Tuần 2", ticket: 44100000, fnb: 16400000 },
+        { label: "Tuần 3", ticket: 51600000, fnb: 19200000 },
+        { label: "Tuần 4", ticket: 48900000, fnb: 18200000 },
+      ];
+    }
+  }, [revenuePeriod]);
+
+  // Top 5 Phim doanh thu cao nhất hôm nay
+  const TOP_5_MOVIES_TODAY = [
+    {
+      id: "dune-2",
+      rank: 1,
+      title: "Dune: Phần Hai",
+      format: "IMAX Laser 4K",
+      tickets: 48,
+      percent: 42,
+      revenue: 3550000,
+      poster: "/images/posters/dune-2.jpg",
+      badgeColor: "bg-amber-500 text-black",
+    },
+    {
+      id: "exhuma",
+      rank: 2,
+      title: "Quật Mộ Trùng Ma (Exhuma)",
+      format: "Laser HD • Atmos",
+      tickets: 39,
+      percent: 35,
+      revenue: 2925000,
+      poster: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=200&auto=format&fit=crop&q=80",
+      badgeColor: "bg-slate-300 text-black",
+    },
+    {
+      id: "conan-movie-27",
+      rank: 3,
+      title: "Conan: Ngôi Sao 5 Cánh 1 Triệu Đô",
+      format: "2D Phụ Đề",
+      tickets: 15,
+      percent: 13,
+      revenue: 1125000,
+      poster: "/images/posters/conan-movie-27.jpg",
+      badgeColor: "bg-amber-700 text-white",
+    },
+    {
+      id: "godzilla-x-kong",
+      rank: 4,
+      title: "Godzilla x Kong: Đế Chế Mới",
+      format: "4DX Dynamic",
+      tickets: 7,
+      percent: 6,
+      revenue: 525000,
+      poster: "/images/posters/godzilla-x-kong.jpg",
+      badgeColor: "bg-white/10 text-neutral-300",
+    },
+    {
+      id: "doraemon",
+      rank: 5,
+      title: "Doraemon: Bản Giao Hưởng",
+      format: "2D Lồng Tiếng",
+      tickets: 3,
+      percent: 4,
+      revenue: 325000,
+      poster: "/images/posters/doraemon-earth-symphony.jpg",
+      badgeColor: "bg-white/10 text-neutral-300",
+    },
+  ];
+
+  // 6 Sự kiện thời gian thực (Live Stream Logs)
+  const LIVE_AUDIT_LOGS = [
+    {
+      id: "log-1",
+      time: "14:32",
+      icon: "🟢",
+      tag: "Scanner Check-in",
+      tagColor: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
+      content: "NV Đào Duy Minh vừa quét vé hợp lệ bk-9821 (Ghế E5, E6 - Phòng 01) qua /scanner.",
+      meta: "HMAC Signed • Anti-Replay Passed",
+    },
+    {
+      id: "log-2",
+      time: "14:30",
+      icon: "💳",
+      tag: "VietQR Napas",
+      tagColor: "bg-blue-500/20 text-blue-400 border-blue-500/30",
+      content: "Khách 0981***234 vừa thanh toán VietQR 185.000₫ (2 vé VIP + 1 Combo Solo).",
+      meta: "Napas 247 Instant • IPN Verified",
+    },
+    {
+      id: "log-3",
+      time: "14:29",
+      icon: "⏳",
+      tag: "Redis Lua Hold",
+      tagColor: "bg-amber-500/20 text-amber-400 border-amber-500/30",
+      content: "Redis Lua Engine vừa khóa tạm thời ghế F7, F8 (TTL: 284s).",
+      meta: "Atomic Lock • TTL 300s Count-down",
+    },
+    {
+      id: "log-4",
+      time: "14:25",
+      icon: "🛡️",
+      tag: "Anti-Replay Guard",
+      tagColor: "bg-red-500/20 text-red-400 border-red-500/30",
+      content: "Scanner Gate vừa chặn 1 lượt quét vé trùng lặp (Anti-Replay bk-7712).",
+      meta: "Rejected: AlreadyCheckedIn at 14:12",
+    },
+    {
+      id: "log-5",
+      time: "14:20",
+      icon: "🎟️",
+      tag: "Web Booking",
+      tagColor: "bg-purple-500/20 text-purple-400 border-purple-500/30",
+      content: "Khách vừa đặt vé trực tuyến suất 20:00 Phòng Beta 02 qua website.",
+      meta: "Orphan Seat Verified (0 single gap)",
+    },
+    {
+      id: "log-6",
+      time: "14:18",
+      icon: "🤖",
+      tag: "Groq Llama 3.3",
+      tagColor: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
+      content: "Groq Llama 3.3 70B AI vừa tư vấn đặt 2 vé Sweetbox cho khách hàng.",
+      meta: "Inference 182 tps • Latency 0.4s",
+    },
+  ];
 
   // Showtime Scheduler & Collision Engine State
   const [showtimesList, setShowtimesList] = useState<ShowTime[]>(MOCK_SHOWTIMES);
@@ -689,586 +862,933 @@ export default function AdminDashboardPage() {
             </div>
           )}
 
-          {/* 4 Cards Thống Kê Tổng Quan (Glassmorphism + Sparklines + Operations Telemetry) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Thẻ 1: Doanh Thu Thực Tế vs Mục Tiêu */}
-            <div className={`p-5 rounded-2xl border transition-all relative overflow-hidden group shadow-lg ${
-              isHalloween
-                ? "bg-[#150B24]/90 border-orange-500/25 hover:border-orange-500/50 hover:shadow-[0_4px_24px_rgba(255,117,24,0.15)]"
-                : "bg-[#111625]/90 border-white/10 hover:border-amber-500/40 hover:shadow-[0_4px_24px_rgba(245,158,11,0.12)]"
-            }`}>
-              <div className="flex items-center justify-between text-neutral-400 mb-2">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">Doanh thu hôm nay</span>
-                <div className={`p-2 rounded-xl ${isHalloween ? "bg-orange-500/20 text-orange-400" : "bg-amber-500/20 text-amber-400"}`}>
-                  <DollarSign className="w-4 h-4" />
-                </div>
-              </div>
-              <div className="text-2xl font-black text-white tracking-tight">{formatVND(stats.todayRevenue)}</div>
-              <div className="mt-2.5">
-                <div className="flex items-center justify-between text-[11px] text-neutral-400 mb-1">
-                  <span>KPI ngày: 12.000.000 ₫</span>
-                  <span className="text-emerald-400 font-bold">70.4%</span>
-                </div>
-                <div className="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
-                  <div
-                    className={`h-full rounded-full ${isHalloween ? "bg-gradient-to-r from-orange-500 to-amber-400" : "bg-gradient-to-r from-amber-500 to-emerald-400"}`}
-                    style={{ width: "70.4%" }}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Thẻ 2: Vé Đã Bán Ra & Điểm Danh Khách */}
-            <div className={`p-5 rounded-2xl border transition-all relative overflow-hidden group shadow-lg ${
-              isHalloween
-                ? "bg-[#150B24]/90 border-orange-500/25 hover:border-orange-500/50 hover:shadow-[0_4px_24px_rgba(255,117,24,0.15)]"
-                : "bg-[#111625]/90 border-white/10 hover:border-red-500/40 hover:shadow-[0_4px_24px_rgba(229,9,20,0.12)]"
-            }`}>
-              <div className="flex items-center justify-between text-neutral-400 mb-2">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">Vé đã xuất vé</span>
-                <div className={`p-2 rounded-xl ${isHalloween ? "bg-orange-500/20 text-orange-400" : "bg-red-500/20 text-red-500"}`}>
-                  <Ticket className="w-4 h-4" />
-                </div>
-              </div>
-              <div className="text-2xl font-black text-white tracking-tight">
-                {stats.ticketsSold} <span className="text-sm font-normal text-neutral-400">vé</span>
-              </div>
-              <div className="flex items-center justify-between mt-3 text-[11px]">
-                <span className="text-neutral-400">Đã vào phòng: <strong className="text-emerald-400 font-mono">89/112</strong></span>
-                <span className="text-red-400 font-semibold">Cao điểm: 19:15</span>
-              </div>
-            </div>
-
-            {/* Thẻ 3: Doanh Số Bắp Nước F&B (Concessions) */}
-            <div className={`p-5 rounded-2xl border transition-all relative overflow-hidden group shadow-lg ${
-              isHalloween
-                ? "bg-[#150B24]/90 border-orange-500/25 hover:border-orange-500/50 hover:shadow-[0_4px_24px_rgba(255,117,24,0.15)]"
-                : "bg-[#111625]/90 border-white/10 hover:border-orange-500/40 hover:shadow-[0_4px_24px_rgba(249,115,22,0.12)]"
-            }`}>
-              <div className="flex items-center justify-between text-neutral-400 mb-2">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">F&B Bắp Nước (Concessions)</span>
-                <div className={`p-2 rounded-xl ${isHalloween ? "bg-orange-500/20 text-orange-400" : "bg-orange-500/20 text-orange-400"}`}>
-                  <Popcorn className="w-4 h-4" />
-                </div>
-              </div>
-              <div className="text-2xl font-black text-white tracking-tight">3.240.000 ₫</div>
-              <div className="flex items-center justify-between mt-3 text-[11px]">
-                <span className="text-neutral-400">Tỷ lệ gắn kèm (Attach Rate):</span>
-                <span className="text-amber-400 font-bold">38.3%</span>
-              </div>
-            </div>
-
-            {/* Thẻ 4: Tỷ Lệ Lấp Đầy Ghế */}
-            <div className={`p-5 rounded-2xl border transition-all relative overflow-hidden group shadow-lg ${
-              isHalloween
-                ? "bg-[#150B24]/90 border-orange-500/25 hover:border-orange-500/50 hover:shadow-[0_4px_24px_rgba(255,117,24,0.15)]"
-                : "bg-[#111625]/90 border-white/10 hover:border-emerald-500/40 hover:shadow-[0_4px_24px_rgba(16,185,129,0.12)]"
-            }`}>
-              <div className="flex items-center justify-between text-neutral-400 mb-2">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">Tỷ lệ lấp đầy ghế</span>
-                <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400">
-                  <Users className="w-4 h-4" />
-                </div>
-              </div>
-              <div className="text-2xl font-black text-white tracking-tight">{stats.occupancyRate}</div>
-              <div className="mt-3">
-                <div className="flex items-center justify-between text-[11px] text-neutral-400 mb-1">
-                  <span>3 Phòng Chiếu Hoạt Động</span>
-                  <span className="text-emerald-400 font-bold">Cao điểm</span>
-                </div>
-                <div className="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
-                  <div
-                    className={`h-full rounded-full ${isHalloween ? "bg-gradient-to-r from-purple-500 to-orange-500" : "bg-gradient-to-r from-emerald-500 to-cyan-500"}`}
-                    style={{ width: "78%" }}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* TAB 1: TỔNG QUAN RẠP & TRUNG TÂM ĐIỀU HÀNH */}
+          {/* TAB 1: TỔNG QUAN RẠP & TRUNG TÂM ĐIỀU HÀNH THỜI GIAN THỰC (6 KHU VỰC CỐT LÕI) */}
           {activeTab === "overview" && (
             <div className="space-y-6">
-              {/* BỘ ĐIỀU KHIỂN PHÁT SÓNG TRỰC TIẾP LÊN TRANG KHÁCH (LIVE BROADCAST CONTROLLER) */}
-              <div className={`p-5 sm:p-6 rounded-2xl border shadow-2xl relative overflow-hidden transition-all ${
-                isHalloween
-                  ? "bg-gradient-to-br from-[#1C0E32] to-[#120820] border-orange-500/30 shadow-orange-500/10"
-                  : "bg-gradient-to-br from-[#181B26] to-[#11141D] border-white/10 shadow-black/40"
-              }`}>
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-white/10">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-lg ${
-                      isHalloween ? "bg-orange-500/20 text-[#FF7518]" : "bg-red-500/20 text-[#E50914]"
-                    }`}>
-                      <Megaphone className="w-5 h-5 animate-pulse" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-extrabold text-sm sm:text-base text-white">
-                          Bộ Điều Khiển Phát Sóng Lên Trang Khách Hàng (Live Announcement Banner)
-                        </h3>
-                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase flex items-center gap-1.5 ${
-                          announcementSettings.enabled
-                            ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 animate-pulse"
-                            : "bg-neutral-500/20 text-neutral-400 border border-white/10"
-                        }`}>
-                          <span className={`w-1.5 h-1.5 rounded-full ${announcementSettings.enabled ? "bg-emerald-400" : "bg-neutral-500"}`} />
-                          {announcementSettings.enabled ? "Đang phát sóng trực tiếp" : "Tạm dừng"}
-                        </span>
-                      </div>
-                      <p className="text-xs text-neutral-400 mt-0.5">
-                        Mọi cập nhật tại đây hiển thị ngay trên thanh thông báo ở đầu website khách hàng (<code className="text-cyan-400 font-mono">/</code>) không cần reload trang.
-                      </p>
+              {/* 6. THANH THAO TÁC NHANH & TRẠNG THÁI HẠ TẦNG KỸ THUẬT (SYSTEM HEALTH & TECH BADGES) */}
+              <div className="flex items-center gap-2.5 overflow-x-auto scrollbar-none pb-1">
+                <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs shrink-0 ${
+                  isHalloween ? "bg-purple-950/40 border-orange-500/30" : "bg-white/5 border-white/10"
+                }`}>
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#34d399]" />
+                  <span className="font-bold text-neutral-300">Upstash Redis Lua:</span>
+                  <span className="text-emerald-400 font-mono font-semibold">Online (14ms • TTL 300s)</span>
+                </div>
+                <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs shrink-0 ${
+                  isHalloween ? "bg-purple-950/40 border-orange-500/30" : "bg-white/5 border-white/10"
+                }`}>
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#34d399]" />
+                  <span className="font-bold text-neutral-300">Groq Llama 3.3 70B:</span>
+                  <span className="text-cyan-400 font-mono font-semibold">Ready (182 tps)</span>
+                </div>
+                <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs shrink-0 ${
+                  isHalloween ? "bg-purple-950/40 border-orange-500/30" : "bg-white/5 border-white/10"
+                }`}>
+                  <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                  <span className="font-bold text-neutral-300">Showtime Collision:</span>
+                  <span className="text-emerald-400 font-mono font-semibold">0 Xung đột (Buffer 25p)</span>
+                </div>
+                <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs shrink-0 ${
+                  isHalloween ? "bg-purple-950/40 border-orange-500/30" : "bg-white/5 border-white/10"
+                }`}>
+                  <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                  <span className="font-bold text-neutral-300">Cổng VietQR Napas:</span>
+                  <span className="text-emerald-400 font-mono font-semibold">Active (Auto IPN)</span>
+                </div>
+                <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs shrink-0 ${
+                  isHalloween ? "bg-purple-950/40 border-orange-500/30" : "bg-white/5 border-white/10"
+                }`}>
+                  <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                  <span className="font-bold text-neutral-300">Orphan Seat Rule:</span>
+                  <span className="text-emerald-400 font-mono font-semibold">Active (Zero-gap)</span>
+                </div>
+                <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs shrink-0 ${
+                  isHalloween ? "bg-purple-950/40 border-orange-500/30" : "bg-white/5 border-white/10"
+                }`}>
+                  <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                  <span className="font-bold text-neutral-300">Scanner Gate:</span>
+                  <span className="text-amber-400 font-mono font-semibold">HMAC Anti-Replay</span>
+                </div>
+              </div>
+
+              {/* 1. HÀNG 1: 4 THẺ CHỈ SỐ KPI THỜI GIAN THỰC (TOP STAT CARDS) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Thẻ 1: Tổng Doanh Thu Hôm Nay */}
+                <div className={`p-5 rounded-2xl border transition-all relative overflow-hidden group shadow-lg ${
+                  isHalloween
+                    ? "bg-[#150B24]/90 border-orange-500/25 hover:border-orange-500/50 hover:shadow-[0_4px_24px_rgba(255,117,24,0.15)]"
+                    : "bg-[#111625]/90 border-white/10 hover:border-amber-500/40 hover:shadow-[0_4px_24px_rgba(245,158,11,0.12)]"
+                }`}>
+                  <div className="flex items-center justify-between text-neutral-400 mb-1.5">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">Tổng doanh thu hôm nay</span>
+                    <div className={`p-2 rounded-xl ${isHalloween ? "bg-orange-500/20 text-orange-400" : "bg-amber-500/20 text-amber-400"}`}>
+                      <DollarSign className="w-4 h-4" />
                     </div>
                   </div>
-
-                  <div className="flex items-center gap-2.5 shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => setAnnouncementSettings(prev => ({ ...prev, enabled: !prev.enabled }))}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
-                        announcementSettings.enabled
-                          ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/30"
-                          : "bg-neutral-800 text-neutral-400 border-white/10 hover:text-white"
-                      }`}
-                    >
-                      {announcementSettings.enabled ? "Bật Phát Sóng (ON)" : "Tắt Phát Sóng (OFF)"}
-                    </button>
-
-                    <a
-                      href="/"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="px-3 py-1.5 rounded-xl text-xs font-bold bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white border border-white/10 transition-all flex items-center gap-1.5"
-                    >
-                      <Eye className="w-3.5 h-3.5 text-cyan-400" />
-                      <span className="hidden sm:inline">Xem Trang Khách</span>
-                      <ExternalLink className="w-3 h-3 text-neutral-400" />
-                    </a>
+                  <div className="flex items-baseline gap-2">
+                    <div className="text-2xl font-black text-white tracking-tight">{formatVND(stats.todayRevenue)}</div>
+                    <span className="text-[10px] font-black text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20 flex items-center gap-0.5">
+                      <TrendingUp className="w-3 h-3" /> +18.5%
+                    </span>
+                  </div>
+                  <div className="mt-2.5 pt-2 border-t border-white/5 flex items-center justify-between text-[11px] text-neutral-400">
+                    <span>Vé: <strong className="text-white">6.200.000₫</strong></span>
+                    <span className="text-white/20">•</span>
+                    <span>Bắp nước (F&B): <strong className="text-amber-400">2.250.000₫</strong></span>
                   </div>
                 </div>
 
-                {/* Form chỉnh sửa nội dung thông báo */}
-                <div className="pt-4 space-y-4">
+                {/* Thẻ 2: Vé Đã Bán Ra & Đang Giữ Chỗ (Khoe Redis Lua Hold 300s) */}
+                <div className={`p-5 rounded-2xl border transition-all relative overflow-hidden group shadow-lg ${
+                  isHalloween
+                    ? "bg-[#150B24]/90 border-orange-500/25 hover:border-orange-500/50 hover:shadow-[0_4px_24px_rgba(255,117,24,0.15)]"
+                    : "bg-[#111625]/90 border-white/10 hover:border-red-500/40 hover:shadow-[0_4px_24px_rgba(229,9,20,0.12)]"
+                }`}>
+                  <div className="flex items-center justify-between text-neutral-400 mb-1.5">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">Vé đã xuất / Giữ chỗ</span>
+                    <div className={`p-2 rounded-xl ${isHalloween ? "bg-orange-500/20 text-orange-400" : "bg-red-500/20 text-red-500"}`}>
+                      <Ticket className="w-4 h-4" />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <div className="text-2xl font-black text-white tracking-tight">
+                      {stats.ticketsSold} <span className="text-xs font-normal text-neutral-400">vé</span>
+                    </div>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-amber-500/20 text-amber-300 border border-amber-500/40 animate-pulse flex items-center gap-1 shadow-[0_0_12px_rgba(245,158,11,0.3)]">
+                      <Flame className="w-3 h-3 text-amber-400" />
+                      <span>8 ghế giữ (Redis TTL 300s)</span>
+                    </span>
+                  </div>
+                  <div className="mt-2.5 pt-2 border-t border-white/5 flex items-center justify-between text-[11px]">
+                    <span className="text-neutral-400">Đã vào phòng: <strong className="text-emerald-400 font-mono">94/112 khách</strong></span>
+                    <span className="text-cyan-400 font-semibold">Tỷ lệ: 84%</span>
+                  </div>
+                </div>
+
+                {/* Thẻ 3: Tỷ Lệ Lấp Đầy (Khoe Orphan Seat Rule) */}
+                <div className={`p-5 rounded-2xl border transition-all relative overflow-hidden group shadow-lg ${
+                  isHalloween
+                    ? "bg-[#150B24]/90 border-orange-500/25 hover:border-orange-500/50 hover:shadow-[0_4px_24px_rgba(255,117,24,0.15)]"
+                    : "bg-[#111625]/90 border-white/10 hover:border-emerald-500/40 hover:shadow-[0_4px_24px_rgba(16,185,129,0.12)]"
+                }`}>
+                  <div className="flex items-center justify-between text-neutral-400 mb-1.5">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">Tỷ lệ lấp đầy phòng</span>
+                    <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400">
+                      <Users className="w-4 h-4" />
+                    </div>
+                  </div>
+                  <div className="flex items-baseline gap-2">
+                    <div className="text-2xl font-black text-white tracking-tight">{stats.occupancyRate}</div>
+                    <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
+                      +14% tối ưu
+                    </span>
+                  </div>
+                  <div className="mt-2.5 pt-2 border-t border-white/5 flex items-center justify-between text-[11px] text-neutral-400">
+                    <span className="truncate">Nhờ Orphan Seat Rule (Chặn ghế đơn)</span>
+                    <span className="text-emerald-400 font-bold shrink-0">228/306 ghế</span>
+                  </div>
+                </div>
+
+                {/* Thẻ 4: Suất Chiếu & Soát Vé Telemetry */}
+                <div className={`p-5 rounded-2xl border transition-all relative overflow-hidden group shadow-lg ${
+                  isHalloween
+                    ? "bg-[#150B24]/90 border-orange-500/25 hover:border-orange-500/50 hover:shadow-[0_4px_24px_rgba(255,117,24,0.15)]"
+                    : "bg-[#111625]/90 border-white/10 hover:border-blue-500/40 hover:shadow-[0_4px_24px_rgba(59,130,246,0.12)]"
+                }`}>
+                  <div className="flex items-center justify-between text-neutral-400 mb-1.5">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">Suất chiếu & Soát vé</span>
+                    <div className="p-2 rounded-xl bg-blue-500/20 text-blue-400">
+                      <ScanLine className="w-4 h-4" />
+                    </div>
+                  </div>
+                  <div className="flex items-baseline gap-2">
+                    <div className="text-2xl font-black text-white tracking-tight">8/12 <span className="text-xs font-normal text-neutral-400">suất mở</span></div>
+                    <span className="text-[10px] font-bold text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded border border-cyan-500/20">
+                      Cao điểm tối
+                    </span>
+                  </div>
+                  <div className="mt-2.5 pt-2 border-t border-white/5 flex items-center justify-between text-[11px]">
+                    <span className="text-neutral-400">Soát vé: <strong className="text-white">94/112 khách</strong></span>
+                    <span className="text-emerald-400 font-semibold flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> /scanner
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 2 & 3. HÀNG 2: BIỂU ĐỒ DOANH THU (65%) & TOP 5 PHIM HOT (35%) */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                {/* Cột trái (65% -> 8 / 12 cols): Biểu đồ doanh thu tương tác */}
+                <div className={`lg:col-span-8 p-5 sm:p-6 rounded-2xl border shadow-xl flex flex-col justify-between transition-all ${
+                  isHalloween ? "bg-[#140B22] border-orange-500/20" : "bg-[#111625] border-white/10"
+                }`}>
                   <div>
-                    <label className="block text-xs font-bold text-neutral-300 mb-1.5">
-                      Nội Dung Thông Báo Phát Sóng (Hiển thị đầu trang khách hàng)
-                    </label>
+                    {/* Header Biểu Đồ & Nút Chọn Kỳ */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-white/10">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <BarChart3 className={`w-4 h-4 ${isHalloween ? "text-orange-400" : "text-[#E50914]"}`} />
+                          <h3 className="font-black text-sm sm:text-base text-white">Biến Động Doanh Thu Vé & Bắp Nước (F&B)</h3>
+                        </div>
+                        <p className="text-xs text-neutral-400 mt-0.5">
+                          Phân tích theo khung giờ thực tế • Tự động tính tỷ lệ gắn kèm Concession
+                        </p>
+                      </div>
+
+                      {/* Nút Chuyển Nhanh: Hôm Nay / 7 Ngày / Tháng Này */}
+                      <div className="flex items-center gap-1 p-1 bg-black/40 rounded-xl border border-white/10 shrink-0 self-start sm:self-auto">
+                        {[
+                          { id: "today", label: "Hôm nay" },
+                          { id: "7days", label: "7 ngày qua" },
+                          { id: "month", label: "Tháng này" },
+                        ].map((tab) => (
+                          <button
+                            key={tab.id}
+                            type="button"
+                            onClick={() => setRevenuePeriod(tab.id as any)}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                              revenuePeriod === tab.id
+                                ? isHalloween
+                                  ? "bg-orange-500 text-white shadow-md shadow-orange-500/30"
+                                  : "bg-[#E50914] text-white shadow-md shadow-red-900/40"
+                                : "text-neutral-400 hover:text-white"
+                            }`}
+                          >
+                            {tab.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Legend & Summary Info */}
+                    <div className="flex items-center justify-between flex-wrap gap-3 py-3 text-xs">
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-1.5">
+                          <span className={`w-3 h-3 rounded-sm ${isHalloween ? "bg-[#FF7518]" : "bg-[#E50914]"}`} />
+                          <span className="text-neutral-300 font-semibold">Doanh Thu Vé</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-3 h-3 rounded-sm bg-[#F59E0B]" />
+                          <span className="text-neutral-300 font-semibold">Bắp Nước (F&B)</span>
+                        </div>
+                      </div>
+                      <div className="text-neutral-400 text-[11px]">
+                        {revenuePeriod === "today"
+                          ? "Cao điểm rạp: 18:00 – 21:00"
+                          : revenuePeriod === "7days"
+                          ? "Kỷ lục tuần: Thứ 7 (16.75M) & Thứ 4 (10.05M)"
+                          : "Tăng trưởng tháng: +24.8%"}
+                      </div>
+                    </div>
+
+                    {/* Interactive Stacked Bar Chart Graphic */}
+                    <div className="pt-4 pb-2">
+                      <div className="h-56 flex items-end justify-between gap-2 sm:gap-3 px-2 border-b border-white/10 relative">
+                        {chartData.map((d, idx) => {
+                          const maxVal = Math.max(...chartData.map((x) => x.ticket + x.fnb)) * 1.15;
+                          const ticketHeight = Math.max(6, (d.ticket / maxVal) * 100);
+                          const fnbHeight = Math.max(4, (d.fnb / maxVal) * 100);
+                          const isHovered = hoveredChartBar === idx;
+
+                          return (
+                            <div
+                              key={d.label}
+                              onMouseEnter={() => setHoveredChartBar(idx)}
+                              onMouseLeave={() => setHoveredChartBar(null)}
+                              className="flex-1 flex flex-col items-center justify-end h-full relative group cursor-pointer"
+                            >
+                              {/* Hover Tooltip */}
+                              {isHovered && (
+                                <div className="absolute -top-24 z-30 min-w-[170px] p-2.5 rounded-xl bg-black/90 border border-white/20 shadow-2xl text-[11px] text-left pointer-events-none animate-in fade-in zoom-in-95">
+                                  <div className="font-bold text-white border-b border-white/10 pb-1 mb-1">
+                                    {revenuePeriod === "today" ? `Khung giờ: ${d.label}` : d.label}
+                                  </div>
+                                  <div className="flex items-center justify-between text-neutral-300">
+                                    <span>🎟️ Tiền vé:</span>
+                                    <strong className="text-white">{formatVND(d.ticket)}</strong>
+                                  </div>
+                                  <div className="flex items-center justify-between text-amber-300">
+                                    <span>🍿 Bắp nước:</span>
+                                    <strong>{formatVND(d.fnb)}</strong>
+                                  </div>
+                                  <div className="flex items-center justify-between text-emerald-400 pt-1 border-t border-white/10 font-bold">
+                                    <span>Tổng:</span>
+                                    <span>{formatVND(d.ticket + d.fnb)}</span>
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Stacked Bars */}
+                              <div className="w-full max-w-[40px] flex flex-col items-center justify-end rounded-t-lg overflow-hidden transition-all duration-300 group-hover:scale-105">
+                                {/* F&B Portion (Top) */}
+                                <div
+                                  className="w-full bg-[#F59E0B] transition-all duration-500"
+                                  style={{ height: `${fnbHeight}%` }}
+                                />
+                                {/* Ticket Portion (Bottom) */}
+                                <div
+                                  className={`w-full transition-all duration-500 ${
+                                    isHalloween
+                                      ? "bg-gradient-to-t from-orange-600 to-[#FF7518]"
+                                      : "bg-gradient-to-t from-red-700 to-[#E50914]"
+                                  }`}
+                                  style={{ height: `${ticketHeight}%` }}
+                                />
+                              </div>
+
+                              {/* Label */}
+                              <span className={`text-[10px] mt-2 block font-semibold truncate transition-colors ${
+                                isHovered ? "text-white font-bold" : "text-neutral-400"
+                              }`}>
+                                {d.label}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Summary Metric Strip */}
+                  <div className="mt-4 pt-3 border-t border-white/5 grid grid-cols-3 gap-2 text-center text-xs">
+                    <div className="p-2 rounded-xl bg-white/5">
+                      <span className="text-[10px] text-neutral-400 uppercase font-semibold block">Tổng Kỳ Chọn</span>
+                      <span className="font-black text-white text-sm">
+                        {formatVND(chartData.reduce((acc, curr) => acc + curr.ticket + curr.fnb, 0))}
+                      </span>
+                    </div>
+                    <div className="p-2 rounded-xl bg-white/5">
+                      <span className="text-[10px] text-neutral-400 uppercase font-semibold block">Tỷ Lệ Đính Kèm F&B</span>
+                      <span className="font-black text-amber-400 text-sm">36.3%</span>
+                    </div>
+                    <div className="p-2 rounded-xl bg-white/5">
+                      <span className="text-[10px] text-neutral-400 uppercase font-semibold block">Doanh Thu TB / Khách</span>
+                      <span className="font-black text-emerald-400 text-sm">75.400 ₫</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Cột phải (35% -> 4 / 12 cols): Top 5 Phim Doanh Thu Cao Nhất */}
+                <div className={`lg:col-span-4 p-5 sm:p-6 rounded-2xl border shadow-xl flex flex-col justify-between transition-all ${
+                  isHalloween ? "bg-[#140B22] border-orange-500/20" : "bg-[#111625] border-white/10"
+                }`}>
+                  <div>
+                    <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                      <div>
+                        <h3 className="font-black text-sm sm:text-base text-white flex items-center gap-2">
+                          <Award className="w-4 h-4 text-amber-400" />
+                          <span>Top 5 Phim Hôm Nay</span>
+                        </h3>
+                        <p className="text-xs text-neutral-400 mt-0.5">Xếp hạng theo tổng doanh thu phòng vé</p>
+                      </div>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-300 border border-amber-500/20">
+                        100% Thị phần
+                      </span>
+                    </div>
+
+                    {/* Danh sách 5 Phim */}
+                    <div className="space-y-3 pt-3">
+                      {TOP_5_MOVIES_TODAY.map((item) => (
+                        <div
+                          key={item.id}
+                          className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 transition-all group"
+                        >
+                          <div className="flex items-center gap-3">
+                            {/* Rank Badge */}
+                            <span className={`w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-black shrink-0 ${item.badgeColor}`}>
+                              {item.rank}
+                            </span>
+
+                            {/* Poster Thumbnail */}
+                            <img
+                              src={item.poster}
+                              alt={item.title}
+                              className="w-8 h-11 object-cover rounded-md border border-white/10 shrink-0"
+                            />
+
+                            {/* Info */}
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between gap-1">
+                                <h4 className="font-bold text-xs text-white truncate group-hover:text-amber-300 transition-colors">
+                                  {item.title}
+                                </h4>
+                                <span className="font-mono text-xs font-bold text-white shrink-0">
+                                  {item.tickets} vé
+                                </span>
+                              </div>
+                              <div className="flex items-center justify-between text-[10px] text-neutral-400 mt-0.5">
+                                <span className="truncate">{item.format}</span>
+                                <span className="text-amber-400 font-semibold">{item.percent}%</span>
+                              </div>
+
+                              {/* Progress bar */}
+                              <div className="w-full bg-white/10 rounded-full h-1 mt-1.5 overflow-hidden">
+                                <div
+                                  className={`h-full rounded-full ${
+                                    item.rank === 1
+                                      ? "bg-amber-400"
+                                      : item.rank === 2
+                                      ? "bg-slate-300"
+                                      : item.rank === 3
+                                      ? "bg-amber-600"
+                                      : "bg-white/40"
+                                  }`}
+                                  style={{ width: `${item.percent}%` }}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="pt-3 mt-2 border-t border-white/5 flex items-center justify-between text-[11px] text-neutral-400">
+                    <span>Đã bán: <strong className="text-white font-mono">112 vé</strong></span>
+                    <button
+                      onClick={() => setActiveTab("movies")}
+                      className="text-xs font-bold text-cyan-400 hover:underline flex items-center gap-1"
+                    >
+                      <span>Quản lý kho phim</span>
+                      <ChevronRight className="w-3 h-3" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* 4 & 5. HÀNG 3: TRẠNG THÁI PHÒNG CHIẾU TRỰC TIẾP (60%) & NHẬT KÝ THỜI GIAN THỰC (40%) */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                {/* Cột trái (60% -> 7 / 12 cols): Live Auditorium Monitor */}
+                <div className={`lg:col-span-7 p-5 sm:p-6 rounded-2xl border shadow-xl transition-all ${
+                  isHalloween ? "bg-[#140B22] border-orange-500/20" : "bg-[#111625] border-white/10"
+                }`}>
+                  <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/10">
+                    <div>
+                      <h3 className="font-black text-sm sm:text-base text-white flex items-center gap-2">
+                        <Building2 className={`w-4 h-4 ${isHalloween ? "text-orange-400" : "text-[#E50914]"}`} />
+                        <span>Trạng Thái Phòng Chiếu Trực Tiếp (Live Monitor)</span>
+                      </h3>
+                      <p className="text-xs text-neutral-400 mt-0.5">
+                        Beta Cinemas Xuân Thủy (HITC Cầu Giấy) • Theo dõi tỷ lệ lấp đầy & dọn phòng 15p
+                      </p>
+                    </div>
+                    <span className="text-xs text-emerald-400 font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 shrink-0">
+                      3 Phòng Hoạt Động
+                    </span>
+                  </div>
+
+                  <div className="space-y-3.5">
+                    {/* Phòng 1: Beta 01 */}
+                    <div className="p-4 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 transition-all space-y-2">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-sm text-white">Phòng Beta 01 (Dolby 7.1)</span>
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded border bg-purple-500/10 text-purple-300 border-purple-500/20">
+                              Đang Chiếu (Phút 85/166)
+                            </span>
+                          </div>
+                          <div className="text-xs text-neutral-400 mt-1">
+                            Phim: <strong className="text-white">Dune: Phần Hai</strong> • Suất: <span className="text-amber-400 font-semibold">18:45 – 21:30</span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 sm:self-start">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setQuickSeatModalRoom({
+                                name: "Phòng Beta 01 (Dolby 7.1)",
+                                movie: "Dune: Phần Hai",
+                                showtime: "18:45 – 21:30",
+                                occupiedCount: 72,
+                                totalSeats: 102,
+                                status: "Đang Chiếu",
+                                statusColor: "text-purple-400",
+                              })
+                            }
+                            className="px-3 py-1.5 rounded-lg text-xs font-bold bg-white/10 hover:bg-white/20 text-cyan-300 border border-cyan-500/30 transition-all flex items-center gap-1.5 shadow-sm"
+                          >
+                            <Armchair className="w-3.5 h-3.5" />
+                            <span>Xem sơ đồ 102 ghế</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Progress bar đổi màu theo lấp đầy: 72/102 = 70.5% (Cam) */}
+                      <div>
+                        <div className="flex items-center justify-between text-[11px] text-neutral-400 mb-1">
+                          <span>Tiến độ lấp đầy: <strong className="text-amber-400 font-mono">72/102 ghế (70.5%)</strong></span>
+                          <span className="text-cyan-400 font-medium">Buffer dọn buồng: 15p</span>
+                        </div>
+                        <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-gradient-to-r from-amber-500 to-orange-500 transition-all duration-500"
+                            style={{ width: "70.5%" }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Phòng 2: Beta 02 */}
+                    <div className="p-4 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 transition-all space-y-2">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-sm text-white">Phòng Beta 02 (Laser HD - Atmos)</span>
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded border bg-amber-500/10 text-amber-300 border-amber-500/20 animate-pulse">
+                              Đón Khách (Còn 8p)
+                            </span>
+                          </div>
+                          <div className="text-xs text-neutral-400 mt-1">
+                            Phim: <strong className="text-white">Quật Mộ Trùng Ma</strong> • Suất: <span className="text-amber-400 font-semibold">20:00 – 22:15</span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 sm:self-start">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setQuickSeatModalRoom({
+                                name: "Phòng Beta 02 (Laser HD - Atmos)",
+                                movie: "Quật Mộ Trùng Ma",
+                                showtime: "20:00 – 22:15",
+                                occupiedCount: 84,
+                                totalSeats: 102,
+                                status: "Đón Khách",
+                                statusColor: "text-amber-400",
+                              })
+                            }
+                            className="px-3 py-1.5 rounded-lg text-xs font-bold bg-white/10 hover:bg-white/20 text-cyan-300 border border-cyan-500/30 transition-all flex items-center gap-1.5 shadow-sm"
+                          >
+                            <Armchair className="w-3.5 h-3.5" />
+                            <span>Xem sơ đồ 102 ghế</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Progress bar đổi màu theo lấp đầy: 84/102 = 82.3% (Đỏ - Sắp full) */}
+                      <div>
+                        <div className="flex items-center justify-between text-[11px] text-neutral-400 mb-1">
+                          <span>Tiến độ lấp đầy: <strong className="text-red-400 font-mono">84/102 ghế (82.3% - Sắp Full)</strong></span>
+                          <span className="text-emerald-400 font-medium">84 khách đã check-in</span>
+                        </div>
+                        <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-gradient-to-r from-orange-500 to-red-600 transition-all duration-500"
+                            style={{ width: "82.3%" }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Phòng 3: Beta 03 */}
+                    <div className="p-4 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 transition-all space-y-2">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-sm text-white">Phòng Beta 03 (Standard)</span>
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded border bg-emerald-500/10 text-emerald-300 border-emerald-500/20">
+                              Đang Mở Bán Online
+                            </span>
+                          </div>
+                          <div className="text-xs text-neutral-400 mt-1">
+                            Phim: <strong className="text-white">Conan: Ngôi Sao 5 Cánh</strong> • Suất: <span className="text-amber-400 font-semibold">21:15 – 22:50</span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 sm:self-start">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setQuickSeatModalRoom({
+                                name: "Phòng Beta 03 (Standard)",
+                                movie: "Conan: Ngôi Sao 5 Cánh",
+                                showtime: "21:15 – 22:50",
+                                occupiedCount: 45,
+                                totalSeats: 102,
+                                status: "Mở Bán Online",
+                                statusColor: "text-emerald-400",
+                              })
+                            }
+                            className="px-3 py-1.5 rounded-lg text-xs font-bold bg-white/10 hover:bg-white/20 text-cyan-300 border border-cyan-500/30 transition-all flex items-center gap-1.5 shadow-sm"
+                          >
+                            <Armchair className="w-3.5 h-3.5" />
+                            <span>Xem sơ đồ 102 ghế</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Progress bar đổi màu: 45/102 = 44.1% (Xanh lục) */}
+                      <div>
+                        <div className="flex items-center justify-between text-[11px] text-neutral-400 mb-1">
+                          <span>Tiến độ lấp đầy: <strong className="text-emerald-400 font-mono">45/102 ghế (44.1%)</strong></span>
+                          <span className="text-neutral-400 font-medium">Còn 57 ghế trống</span>
+                        </div>
+                        <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-gradient-to-r from-blue-500 to-emerald-500 transition-all duration-500"
+                            style={{ width: "44.1%" }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Cột phải (40% -> 5 / 12 cols): Nhật Ký Giao Dịch & Soát Vé Thời Gian Thực */}
+                <div className={`lg:col-span-5 p-5 sm:p-6 rounded-2xl border shadow-xl flex flex-col justify-between transition-all ${
+                  isHalloween ? "bg-[#140B22] border-orange-500/20" : "bg-[#111625] border-white/10"
+                }`}>
+                  <div>
+                    <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                      <div>
+                        <h3 className="font-black text-sm sm:text-base text-white flex items-center gap-2">
+                          <Activity className="w-4 h-4 text-emerald-400" />
+                          <span>Nhật Ký Giao Dịch & Soát Vé Live</span>
+                        </h3>
+                        <p className="text-xs text-neutral-400 mt-0.5">Sự kiện thời gian thực trong toàn hệ thống</p>
+                      </div>
+                      <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                        Live Feed
+                      </span>
+                    </div>
+
+                    {/* Danh sách 6 Sự Kiện Mới Nhất */}
+                    <div className="space-y-3 pt-3">
+                      {LIVE_AUDIT_LOGS.map((log) => (
+                        <div
+                          key={log.id}
+                          className="p-2.5 rounded-xl bg-white/5 border border-white/5 hover:border-white/15 transition-all text-xs"
+                        >
+                          <div className="flex items-center justify-between gap-2 mb-1">
+                            <span className="font-mono text-[11px] font-bold text-neutral-400 flex items-center gap-1.5">
+                              <span>{log.icon}</span>
+                              <span>{log.time}</span>
+                            </span>
+                            <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold border ${log.tagColor}`}>
+                              {log.tag}
+                            </span>
+                          </div>
+                          <p className="text-neutral-200 text-xs leading-snug">{log.content}</p>
+                          <div className="text-[10px] text-neutral-400 font-mono mt-1 pt-1 border-t border-white/5">
+                            {log.meta}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="pt-3 mt-2 border-t border-white/5 flex items-center justify-between text-[11px] text-neutral-400">
+                    <span>Đã ghi nhận: <strong className="text-white font-mono">1.428 events/ngày</strong></span>
+                    <Link
+                      href="/staff/scanner"
+                      className="text-xs font-bold text-emerald-400 hover:underline flex items-center gap-1"
+                    >
+                      <span>Mở Cổng Soát Vé /scanner</span>
+                      <ChevronRight className="w-3 h-3" />
+                    </Link>
+                  </div>
+                </div>
+              </div>
+
+              {/* BỘ ĐIỀU KHIỂN CHIẾN DỊCH: LIVE BROADCAST & HALLOWEEN TRANG KHÁCH (THU GỌN CHUYÊN NGHIỆP) */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {/* Khối Phát Sóng Thông Báo Trang Khách */}
+                <div className={`p-4 sm:p-5 rounded-2xl border transition-all ${
+                  isHalloween ? "bg-[#140B22] border-orange-500/20" : "bg-[#14151B] border-white/10"
+                }`}>
+                  <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                    <div className="flex items-center gap-2.5">
+                      <Megaphone className={`w-4 h-4 ${isHalloween ? "text-orange-400" : "text-[#E50914]"}`} />
+                      <h4 className="font-bold text-xs sm:text-sm text-white">Live Broadcast Thông Báo Khách</h4>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setAnnouncementSettings((prev) => ({ ...prev, enabled: !prev.enabled }))}
+                      className={`px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-all ${
+                        announcementSettings.enabled
+                          ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
+                          : "bg-white/5 text-neutral-400 border-white/10"
+                      }`}
+                    >
+                      {announcementSettings.enabled ? "BẬT" : "TẮT"}
+                    </button>
+                  </div>
+                  <div className="pt-3 space-y-2.5">
                     <input
                       type="text"
                       value={announcementSettings.text}
-                      onChange={(e) => setAnnouncementSettings(prev => ({ ...prev, text: e.target.value }))}
-                      placeholder="Ví dụ: 🔥 Ưu đãi thành viên CineMax: Tặng ngay voucher bắp phô mai nóng hổi khi đặt vé qua website!"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/15 text-xs text-white placeholder:text-neutral-500 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all"
+                      onChange={(e) => setAnnouncementSettings((prev) => ({ ...prev, text: e.target.value }))}
+                      placeholder="Nội dung thông báo hiển thị đầu website khách..."
+                      className="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/15 text-xs text-white focus:outline-none focus:border-red-500"
                     />
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div>
-                      <label className="block text-[11px] font-bold text-neutral-400 mb-1">
-                        Loại Sự Kiện / Màu Sắc Banner
-                      </label>
-                      <select
-                        value={announcementSettings.type}
-                        onChange={(e) => setAnnouncementSettings(prev => ({ ...prev, type: e.target.value as any }))}
-                        className="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/15 text-xs text-white focus:outline-none focus:border-red-500"
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[11px] text-neutral-400 truncate">
+                        {announcementSaveSuccess ? "✅ Đã lưu lên máy chủ!" : "* Đồng bộ tức thì"}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={handleSaveAnnouncement}
+                        disabled={isSavingAnnouncement}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold text-white transition-all shadow-md ${
+                          isHalloween ? "bg-orange-500 hover:bg-orange-600" : "bg-[#E50914] hover:bg-[#c81007]"
+                        }`}
                       >
-                        <option value="promo">🔥 Khuyến Mãi Rạp (Đỏ Điện Ảnh)</option>
-                        <option value="alert">⚠️ Cảnh Báo / Suất Chiếu (Vàng Hổ Phách)</option>
-                        <option value="event">🎪 Sự Kiện / Lễ Hội (Tím Huyền Bí)</option>
-                        <option value="maintenance">🔧 Bảo Trì Kỹ Thuật (Xanh Lam)</option>
-                      </select>
+                        {isSavingAnnouncement ? "Đang lưu..." : "Lưu & Bắn Lên Web"}
+                      </button>
                     </div>
-
-                    <div>
-                      <label className="block text-[11px] font-bold text-neutral-400 mb-1">
-                        Nhãn Nút Bấm Kêu Gọi (Action Text)
-                      </label>
-                      <input
-                        type="text"
-                        value={announcementSettings.actionText}
-                        onChange={(e) => setAnnouncementSettings(prev => ({ ...prev, actionText: e.target.value }))}
-                        placeholder="Ví dụ: Xem Ưu Đãi"
-                        className="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/15 text-xs text-white focus:outline-none focus:border-red-500"
-                      >
-                      </input>
-                    </div>
-
-                    <div>
-                      <label className="block text-[11px] font-bold text-neutral-400 mb-1">
-                        Liên Kết Đích (Action URL)
-                      </label>
-                      <input
-                        type="text"
-                        value={announcementSettings.actionUrl}
-                        onChange={(e) => setAnnouncementSettings(prev => ({ ...prev, actionUrl: e.target.value }))}
-                        placeholder="Ví dụ: #promo-section"
-                        className="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/15 text-xs text-white focus:outline-none focus:border-red-500"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Customer Preview Strip */}
-                  <div className="p-3 rounded-xl bg-black/30 border border-white/5 space-y-1.5">
-                    <div className="flex items-center justify-between text-[11px] text-neutral-400">
-                      <span className="font-semibold text-neutral-300">Xem Trước Giao Diện Khách Hàng (Live Preview):</span>
-                      <span className="text-[10px] text-cyan-400 font-mono">Real-time Header Strip</span>
-                    </div>
-                    <div className={`p-2 rounded-lg text-xs font-medium flex items-center justify-center gap-2 text-center transition-all ${
-                      announcementSettings.type === "alert"
-                        ? "bg-amber-950/70 text-amber-200 border border-amber-500/30"
-                        : announcementSettings.type === "event"
-                        ? "bg-purple-950/70 text-purple-200 border border-purple-500/30"
-                        : announcementSettings.type === "maintenance"
-                        ? "bg-blue-950/70 text-blue-200 border border-blue-500/30"
-                        : "bg-red-950/70 text-red-100 border border-red-500/30"
-                    }`}>
-                      <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-white/10">
-                        {announcementSettings.type === "alert" ? "⚠️ Cảnh Báo" : announcementSettings.type === "event" ? "🎪 Sự Kiện" : announcementSettings.type === "maintenance" ? "🔧 Bảo Trì" : "🔥 Khuyến Mãi"}
-                      </span>
-                      <span className="truncate">{announcementSettings.text || "(Chưa nhập nội dung)"}</span>
-                      {announcementSettings.actionText && (
-                        <span className="font-bold underline text-white ml-1">{announcementSettings.actionText} →</span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Action & Feedback */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
-                    {announcementSaveSuccess ? (
-                      <span className="text-xs text-emerald-400 font-bold flex items-center gap-1.5 animate-in fade-in">
-                        <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
-                        <span>Đã đồng bộ lên hệ thống máy chủ và phát trực tiếp tới trang khách!</span>
-                      </span>
-                    ) : (
-                      <span className="text-[11px] text-neutral-400">
-                        * Nhấn nút bên phải để ghi đè cài đặt vào máy chủ rạp và cập nhật trang khách hàng ngay lập tức.
-                      </span>
-                    )}
-
-                    <button
-                      type="button"
-                      onClick={handleSaveAnnouncement}
-                      disabled={isSavingAnnouncement}
-                      className={`px-5 py-2.5 rounded-xl text-xs font-black text-white transition-all shadow-lg flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 ${
-                        isHalloween
-                          ? "bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 shadow-orange-500/20"
-                          : "bg-gradient-to-r from-[#E50914] to-rose-600 hover:from-[#c81007] hover:to-rose-700 shadow-red-900/30"
-                      }`}
-                    >
-                      <Radio className={`w-4 h-4 ${isSavingAnnouncement ? "animate-spin" : ""}`} />
-                      <span>{isSavingAnnouncement ? "Đang Bắn Thông Báo..." : "🚀 Lưu & Bắn Lên Trang Khách Ngay"}</span>
-                    </button>
                   </div>
                 </div>
-              </div>
 
-              {/* BỘ ĐIỀU KHIỂN CHỦ ĐỀ HALLOWEEN TRANG KHÁCH HÀNG (FESTIVE CAMPAIGN CONTROLLER) */}
-              <div className={`p-5 rounded-2xl border transition-all ${
-                customerHalloweenEnabled
-                  ? "bg-gradient-to-r from-[#1E0E32] via-[#2D124D] to-[#1E0E32] border-orange-500/40 shadow-[0_4px_30px_rgba(255,117,24,0.18)]"
-                  : isHalloween
-                  ? "bg-[#140B22] border-orange-500/20"
-                  : "bg-[#14151B] border-white/10"
-              }`}>
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0 shadow-lg ${
+                {/* Khối Điều Khiển Halloween Trang Khách */}
+                <div className={`p-4 sm:p-5 rounded-2xl border transition-all ${
+                  customerHalloweenEnabled
+                    ? "bg-gradient-to-r from-[#1E0E32] to-[#2D124D] border-orange-500/40 shadow-lg shadow-orange-500/10"
+                    : isHalloween
+                    ? "bg-[#140B22] border-orange-500/20"
+                    : "bg-[#14151B] border-white/10"
+                }`}>
+                  <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-base">{customerHalloweenEnabled ? "🎃" : "👻"}</span>
+                      <h4 className="font-bold text-xs sm:text-sm text-white">Chủ Đề Halloween Trang Khách</h4>
+                    </div>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-black border ${
                       customerHalloweenEnabled
-                        ? "bg-gradient-to-tr from-orange-500 to-purple-600 shadow-orange-500/40 animate-pulse"
-                        : "bg-white/10 text-neutral-400"
+                        ? "bg-orange-500/20 text-orange-300 border-orange-500/40"
+                        : "bg-white/10 text-neutral-400 border-white/10"
                     }`}>
-                      {customerHalloweenEnabled ? "🎃" : "👻"}
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-black text-sm text-white">
-                          Giao Diện Lễ Hội Halloween Trang Khách Hàng (Customer Theme Switcher)
-                        </h3>
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-black tracking-wide border ${
-                          customerHalloweenEnabled
-                            ? "bg-orange-500/20 text-orange-300 border-orange-500/40"
-                            : "bg-white/10 text-neutral-400 border-white/10"
-                        }`}>
-                          {customerHalloweenEnabled ? "ĐANG BẬT TRÊN WEBSITE" : "ĐANG TẮT"}
-                        </span>
-                      </div>
-                      <p className="text-xs text-neutral-400 mt-0.5">
-                        Khi kích hoạt, toàn bộ trang chủ bán vé của khách (<span className="text-white font-mono text-[11px]">/</span>) sẽ chuyển sang tông màu Cam Neon Bí Ngô (#FF7518), banner lễ hội và hiệu ứng mạng nhện rùng rợn.
-                      </p>
-                    </div>
+                      {customerHalloweenEnabled ? "ĐANG BẬT" : "ĐANG TẮT"}
+                    </span>
                   </div>
-
-                  <div className="flex items-center gap-2.5 shrink-0">
+                  <div className="pt-3 flex items-center justify-between gap-3 text-xs">
+                    <p className="text-neutral-400 text-xs">
+                      Bật sắc Cam Neon (#FF7518), bầy dơi, hộp quà tặng và banner lễ hội cho toàn bộ khách hàng.
+                    </p>
                     <button
                       type="button"
                       onClick={handleToggleCustomerHalloween}
                       disabled={isTogglingCustomerHalloween}
-                      className={`px-4 py-2.5 rounded-xl text-xs font-black transition-all flex items-center gap-2 shadow-lg disabled:opacity-50 ${
+                      className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all shrink-0 shadow-md ${
                         customerHalloweenEnabled
-                          ? "bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-700 hover:to-rose-800 text-white shadow-red-900/30"
-                          : "bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white shadow-orange-500/30"
+                          ? "bg-red-600 hover:bg-red-700 text-white"
+                          : "bg-orange-500 hover:bg-orange-600 text-white"
                       }`}
                     >
-                      <span>{customerHalloweenEnabled ? "👻 Tắt Halloween Trang Khách" : "🎃 Bật Halloween Trang Khách Ngay"}</span>
+                      {customerHalloweenEnabled ? "Tắt Halloween" : "Bật Halloween"}
                     </button>
-
-                    <a
-                      href="/"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="px-3 py-2.5 rounded-xl text-xs font-bold bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white border border-white/10 transition-all flex items-center gap-1.5"
-                      title="Mở trang chủ khách hàng để xem ngay thay đổi"
-                    >
-                      <Eye className="w-3.5 h-3.5 text-cyan-400" />
-                      <span className="hidden md:inline">Kiểm Tra Trực Tiếp</span>
-                      <ExternalLink className="w-3 h-3 text-neutral-400" />
-                    </a>
-                  </div>
-                </div>
-
-                {/* Live Status Indicators */}
-                <div className="pt-3 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                  <div className="flex items-center gap-2 p-2.5 rounded-xl bg-black/30 border border-white/5">
-                    <span className="text-base">🎨</span>
-                    <div>
-                      <div className="text-[10px] text-neutral-400 uppercase font-bold">Màu Chủ Đạo Website Khách</div>
-                      <div className="text-white font-semibold">
-                        {customerHalloweenEnabled ? "🎃 Cam Neon #FF7518 & Tím Huyền Bí" : "🎬 Đỏ Điện Ảnh #E50914 & Đen Vũ Trụ"}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 p-2.5 rounded-xl bg-black/30 border border-white/5">
-                    <span className="text-base">🎪</span>
-                    <div>
-                      <div className="text-[10px] text-neutral-400 uppercase font-bold">Banner Header Khách</div>
-                      <div className="text-white font-semibold">
-                        {customerHalloweenEnabled ? "🎃 Banner Lễ Hội Ma Halloween 2026" : "✨ Banner Khuyến Mãi Tiêu Chuẩn"}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 p-2.5 rounded-xl bg-black/30 border border-white/5">
-                    <span className="text-base">⚡</span>
-                    <div>
-                      <div className="text-[10px] text-neutral-400 uppercase font-bold">Thời Gian Đồng Bộ</div>
-                      <div className="text-emerald-400 font-semibold">Tức thì (Real-time qua Store API)</div>
-                    </div>
                   </div>
                 </div>
               </div>
+            </div>
+          )}
 
-              {/* LƯỚI CHI TIẾT VẬN HÀNH PHÒNG CHIẾU & QUẦY VÉ */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Cột trái (2 phần): Trạng thái 3 phòng chiếu thời gian thực */}
-                <div className="lg:col-span-2 space-y-6">
-                  <div className={`p-5 rounded-2xl border shadow-xl ${
-                    isHalloween ? "bg-[#140B22] border-orange-500/20" : "bg-[#14151B] border-white/10"
-                  }`}>
-                    <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <h3 className="font-bold text-base text-white flex items-center gap-2">
-                          <Building2 className={`w-4 h-4 ${isHalloween ? "text-[#FF7518]" : "text-[#E50914]"}`} />
-                          <span>Trung Tâm Điều Hành 3 Phòng Chiếu Tại HITC Xuân Thủy</span>
-                        </h3>
-                        <p className="text-xs text-neutral-400 mt-0.5">
-                          Theo dõi thời gian chiếu thực tế, đếm ngược tan phòng và chuẩn bị buffer vệ sinh 15 phút.
-                        </p>
-                      </div>
-                      <span className="text-xs text-emerald-400 font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 shrink-0">
-                        3 Phòng Hoạt Động
-                      </span>
+          {/* =========================================================================
+              POPUP MODAL XEM NHANH SƠ ĐỒ 102 GHẾ PHÒNG CHIẾU (QUICK AUDITORIUM SEAT MAP)
+              ========================================================================= */}
+          {quickSeatModalRoom && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-300">
+              <div className={`relative w-full max-w-4xl p-6 sm:p-7 rounded-3xl border shadow-2xl text-white space-y-4 max-h-[92vh] overflow-y-auto ${
+                isHalloween
+                  ? "bg-[#140822] border-orange-500/40 shadow-orange-500/20"
+                  : "bg-[#0E111A] border-white/15 shadow-black/80"
+              }`}>
+                {/* Header Modal */}
+                <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-300 flex items-center justify-center">
+                      <Armchair className="w-5 h-5" />
                     </div>
-
-                    <div className="space-y-3.5">
-                      {/* Phòng 1 */}
-                      <div className={`p-4 rounded-xl border transition-all ${
-                        isHalloween ? "bg-purple-950/20 border-orange-500/20 hover:border-orange-500/40" : "bg-white/5 border-white/5 hover:border-white/15"
-                      }`}>
-                        <div className="flex items-center justify-between mb-2">
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className="font-bold text-sm text-white">Phòng Beta 01 (Dolby 7.1)</span>
-                              <span className="text-[10px] font-bold px-2 py-0.5 rounded border bg-purple-500/10 text-purple-300 border-purple-500/20">
-                                Đang Chiếu (Phút 85/166)
-                              </span>
-                            </div>
-                            <div className="text-xs text-neutral-400 mt-1">
-                              Phim: <strong className="text-white">Dune: Phần Hai</strong> • Suất: <span className="text-amber-400 font-semibold">18:45 – 21:30</span>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <span className="text-xs text-neutral-300 font-mono font-bold">72/90 ghế (80%)</span>
-                            <div className="text-[11px] text-cyan-400 mt-0.5">Buffer dọn buồng: 15p</div>
-                          </div>
-                        </div>
-                        <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden mt-2">
-                          <div
-                            className={`h-full rounded-full transition-all duration-500 ${
-                              isHalloween ? "bg-gradient-to-r from-purple-500 to-orange-500" : "bg-gradient-to-r from-[#E50914] to-amber-500"
-                            }`}
-                            style={{ width: "80%" }}
-                          />
-                        </div>
-                        <div className="flex items-center justify-between text-[11px] text-neutral-400 mt-2">
-                          <span>Đội dọn buồng: Chuẩn bị vào ca lúc 21:30</span>
-                          <span className="text-emerald-400 font-medium">Chiếu ổn định</span>
-                        </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-black text-base text-white">{quickSeatModalRoom.name}</h3>
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border bg-white/5 ${quickSeatModalRoom.statusColor}`}>
+                          {quickSeatModalRoom.status}
+                        </span>
                       </div>
-
-                      {/* Phòng 2 */}
-                      <div className={`p-4 rounded-xl border transition-all ${
-                        isHalloween ? "bg-purple-950/20 border-orange-500/20 hover:border-orange-500/40" : "bg-white/5 border-white/5 hover:border-white/15"
-                      }`}>
-                        <div className="flex items-center justify-between mb-2">
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className="font-bold text-sm text-white">Phòng Beta 02 (Laser HD - Atmos)</span>
-                              <span className="text-[10px] font-bold px-2 py-0.5 rounded border bg-amber-500/10 text-amber-300 border-amber-500/20 animate-pulse">
-                                Trailer & Đón Khách (Còn 8p)
-                              </span>
-                            </div>
-                            <div className="text-xs text-neutral-400 mt-1">
-                              Phim: <strong className="text-white">Quật Mộ Trùng Ma</strong> • Suất: <span className="text-amber-400 font-semibold">20:00 – 22:15</span>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <span className="text-xs text-neutral-300 font-mono font-bold">76/84 ghế (90%)</span>
-                            <div className="text-[11px] text-emerald-400 mt-0.5">76 khách đã vào</div>
-                          </div>
-                        </div>
-                        <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden mt-2">
-                          <div
-                            className={`h-full rounded-full transition-all duration-500 ${
-                              isHalloween ? "bg-gradient-to-r from-purple-500 to-orange-500" : "bg-gradient-to-r from-emerald-500 to-cyan-500"
-                            }`}
-                            style={{ width: "90%" }}
-                          />
-                        </div>
-                        <div className="flex items-center justify-between text-[11px] text-neutral-400 mt-2">
-                          <span>Cửa phòng: Đang mở đón khách</span>
-                          <span className="text-amber-400 font-medium">Bắt đầu lúc 20:00</span>
-                        </div>
-                      </div>
-
-                      {/* Phòng 3 */}
-                      <div className={`p-4 rounded-xl border transition-all ${
-                        isHalloween ? "bg-purple-950/20 border-orange-500/20 hover:border-orange-500/40" : "bg-white/5 border-white/5 hover:border-white/15"
-                      }`}>
-                        <div className="flex items-center justify-between mb-2">
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className="font-bold text-sm text-white">Phòng Beta 03 (Standard)</span>
-                              <span className="text-[10px] font-bold px-2 py-0.5 rounded border bg-emerald-500/10 text-emerald-300 border-emerald-500/20">
-                                Đang Mở Bán Online
-                              </span>
-                            </div>
-                            <div className="text-xs text-neutral-400 mt-1">
-                              Phim: <strong className="text-white">Những Mảnh Ghép Cảm Xúc 2</strong> • Suất: <span className="text-amber-400 font-semibold">21:15 – 22:50</span>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <span className="text-xs text-neutral-300 font-mono font-bold">45/70 vé (64%)</span>
-                            <div className="text-[11px] text-cyan-400 mt-0.5">Còn 25 ghế</div>
-                          </div>
-                        </div>
-                        <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden mt-2">
-                          <div
-                            className={`h-full rounded-full transition-all duration-500 ${
-                              isHalloween ? "bg-gradient-to-r from-purple-500 to-orange-500" : "bg-gradient-to-r from-blue-500 to-emerald-500"
-                            }`}
-                            style={{ width: "64%" }}
-                          />
-                        </div>
-                        <div className="flex items-center justify-between text-[11px] text-neutral-400 mt-2">
-                          <span>Hệ thống đặt vé: Mở bán trực tuyến</span>
-                          <span className="text-neutral-400 font-medium">Suất kế tiếp</span>
-                        </div>
-                      </div>
+                      <p className="text-xs text-neutral-400 mt-0.5">
+                        Phim: <strong className="text-white">{quickSeatModalRoom.movie}</strong> • Suất chiếu: <span className="text-amber-400 font-semibold">{quickSeatModalRoom.showtime}</span>
+                      </p>
                     </div>
                   </div>
 
-                  {/* THỐNG KÊ QUẦY BẮP NƯỚC F&B CONCESSIONS */}
-                  <div className={`p-5 rounded-2xl border ${
-                    isHalloween
-                      ? "bg-gradient-to-br from-orange-500/10 via-[#140B22] to-[#140B22] border-orange-500/25"
-                      : "bg-gradient-to-br from-orange-500/10 via-[#14151B] to-[#14151B] border-orange-500/20"
-                  }`}>
-                    <div className="flex items-start gap-3">
-                      <div className={`p-2.5 rounded-xl ${
-                        isHalloween ? "bg-orange-500/20 text-[#FF7518]" : "bg-orange-500/20 text-orange-400"
-                      }`}>
-                        <Popcorn className="w-5 h-5" />
+                  <button
+                    onClick={() => setQuickSeatModalRoom(null)}
+                    className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-neutral-300 hover:text-white transition-all"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* Màn Hình Chiếu Cong */}
+                <div className="py-2 text-center">
+                  <div className="w-3/4 mx-auto h-2 bg-gradient-to-r from-transparent via-cyan-400 to-transparent rounded-full shadow-[0_0_16px_#38bdf8]" />
+                  <span className="text-[10px] font-black uppercase tracking-widest text-cyan-300 mt-1 block">
+                    MÀN HÌNH CHIẾU CONG DOLBY ATMOS
+                  </span>
+                </div>
+
+                {/* Sơ Đồ 102 Ghế Trực Quan (A -> K) */}
+                <div className="py-3 px-2 sm:px-4 bg-black/40 rounded-2xl border border-white/5 space-y-2 overflow-x-auto">
+                  {/* Rows A, B, C, D: Ghế Thường (10 ghế mỗi hàng) */}
+                  {["A", "B", "C", "D"].map((rowLetter, rowIdx) => (
+                    <div key={rowLetter} className="flex items-center justify-center gap-1.5 sm:gap-2">
+                      <span className="w-5 text-center text-xs font-mono font-bold text-neutral-400">{rowLetter}</span>
+                      <div className="flex items-center gap-1 sm:gap-1.5">
+                        {Array.from({ length: 10 }).map((_, seatIdx) => {
+                          const seatNumber = seatIdx + 1;
+                          const seatCode = `${rowLetter}${seatNumber}`;
+                          const globalSeatIdx = rowIdx * 10 + seatIdx;
+                          const isOccupied = globalSeatIdx < quickSeatModalRoom.occupiedCount - 8;
+                          const isHeldByRedis = globalSeatIdx >= quickSeatModalRoom.occupiedCount - 8 && globalSeatIdx < quickSeatModalRoom.occupiedCount;
+
+                          return (
+                            <div
+                              key={seatCode}
+                              title={
+                                isHeldByRedis
+                                  ? `Ghế ${seatCode} (Standard) • Đang khóa bởi Redis Lua Engine (TTL: 284s)`
+                                  : isOccupied
+                                  ? `Ghế ${seatCode} (Standard) • Đã xuất vé`
+                                  : `Ghế ${seatCode} (Standard) • Đang trống`
+                              }
+                              className={`w-6 h-6 sm:w-7 sm:h-7 rounded text-[10px] font-mono flex items-center justify-center border transition-all select-none ${
+                                isHeldByRedis
+                                  ? "bg-amber-500/30 text-amber-300 border-amber-400 animate-pulse font-bold shadow-[0_0_8px_rgba(245,158,11,0.4)]"
+                                  : isOccupied
+                                  ? "bg-red-950/80 text-red-300 border-red-800/60"
+                                  : "bg-white/5 text-neutral-300 border-white/10 hover:border-white/30"
+                              }`}
+                            >
+                              {seatNumber}
+                            </div>
+                          );
+                        })}
                       </div>
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between">
-                          <h4 className="font-bold text-sm text-white">Doanh Số Quầy Bắp Nước Concession</h4>
-                          <span className="text-xs font-bold text-amber-400">3.240.000 ₫ (38.3% doanh thu)</span>
-                        </div>
-                        <p className="text-xs text-neutral-300 mt-1 leading-relaxed">
-                          Top món bán chạy nhất: <strong className="text-white">Beta Combo Bắp Phô Mai 60oz + 2 Coke</strong> (48 phần) & <strong className="text-white">Sweetbox Couple Bắp Caramel</strong> (29 phần). Tồn kho bắp hạt và phô mai nóng đảm bảo phục vụ 100% cho khung giờ cao điểm tối nay.
-                        </p>
-                      </div>
+                      <span className="w-5 text-center text-xs font-mono font-bold text-neutral-400">{rowLetter}</span>
                     </div>
+                  ))}
+
+                  {/* Rows E, F, G, H, J: Ghế VIP (11 ghế mỗi hàng) */}
+                  {["E", "F", "G", "H", "J"].map((rowLetter, rowIdx) => (
+                    <div key={rowLetter} className="flex items-center justify-center gap-1.5 sm:gap-2">
+                      <span className="w-5 text-center text-xs font-mono font-bold text-amber-400">{rowLetter}</span>
+                      <div className="flex items-center gap-1 sm:gap-1.5">
+                        {Array.from({ length: 11 }).map((_, seatIdx) => {
+                          const seatNumber = seatIdx + 1;
+                          const seatCode = `${rowLetter}${seatNumber}`;
+                          const globalSeatIdx = 40 + rowIdx * 11 + seatIdx;
+                          const isOccupied = globalSeatIdx < quickSeatModalRoom.occupiedCount - 8;
+                          const isHeldByRedis = globalSeatIdx >= quickSeatModalRoom.occupiedCount - 8 && globalSeatIdx < quickSeatModalRoom.occupiedCount;
+
+                          return (
+                            <div
+                              key={seatCode}
+                              title={
+                                isHeldByRedis
+                                  ? `Ghế ${seatCode} (VIP Sweet Spot) • Đang khóa bởi Redis Lua Engine (TTL: 284s)`
+                                  : isOccupied
+                                  ? `Ghế ${seatCode} (VIP Sweet Spot) • Đã xuất vé`
+                                  : `Ghế ${seatCode} (VIP Sweet Spot) • Đang trống`
+                              }
+                              className={`w-6 h-6 sm:w-7 sm:h-7 rounded text-[10px] font-mono flex items-center justify-center border transition-all select-none ${
+                                isHeldByRedis
+                                  ? "bg-amber-500/30 text-amber-300 border-amber-400 animate-pulse font-bold shadow-[0_0_8px_rgba(245,158,11,0.4)]"
+                                  : isOccupied
+                                  ? "bg-red-950/80 text-red-300 border-red-800/60"
+                                  : "bg-purple-950/30 text-purple-200 border-purple-500/30 hover:border-purple-400"
+                              }`}
+                            >
+                              {seatNumber}
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <span className="w-5 text-center text-xs font-mono font-bold text-amber-400">{rowLetter}</span>
+                    </div>
+                  ))}
+
+                  {/* Row K: Ghế Đôi Sweetbox (7 cặp ghế đôi) */}
+                  <div className="flex items-center justify-center gap-1.5 sm:gap-2 pt-1">
+                    <span className="w-5 text-center text-xs font-mono font-bold text-rose-400">K</span>
+                    <div className="flex items-center gap-2">
+                      {Array.from({ length: 7 }).map((_, pairIdx) => {
+                        const seatCode = `K${pairIdx * 2 + 1}-${pairIdx * 2 + 2}`;
+                        const isOccupied = pairIdx < 4;
+                        return (
+                          <div
+                            key={seatCode}
+                            title={`Ghế đôi ${seatCode} (Sweetbox Couple) • ${isOccupied ? "Đã bán" : "Đang trống"}`}
+                            className={`w-12 h-6 sm:w-14 sm:h-7 rounded text-[10px] font-mono flex items-center justify-center border transition-all select-none ${
+                              isOccupied
+                                ? "bg-rose-950/80 text-rose-300 border-rose-800/60"
+                                : "bg-rose-950/30 text-rose-200 border-rose-500/30 hover:border-rose-400"
+                            }`}
+                          >
+                            {seatCode}
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <span className="w-5 text-center text-xs font-mono font-bold text-rose-400">K</span>
                   </div>
                 </div>
 
-                {/* Cột phải: Cổng Soát Vé PWA & HMAC Check-in */}
-                <div className={`p-5 rounded-2xl border shadow-xl space-y-4 ${
-                  isHalloween ? "bg-[#140B22] border-orange-500/20" : "bg-[#14151B] border-white/10"
-                }`}>
-                  <div className="flex items-center gap-3">
-                    <div className={`p-2.5 rounded-xl ${
-                      isHalloween ? "bg-orange-500/20 text-[#FF7518]" : "bg-[#E50914]/20 text-[#E50914]"
-                    }`}>
-                      <QrCode className="w-5 h-5" />
+                {/* Seat Legend & Highlights */}
+                <div className="flex items-center justify-between flex-wrap gap-3 pt-2 text-xs">
+                  <div className="flex items-center gap-4 flex-wrap">
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-3.5 h-3.5 rounded bg-white/5 border border-white/20" />
+                      <span className="text-neutral-300">Ghế trống sẵn sàng</span>
                     </div>
-                    <div>
-                      <h3 className="font-bold text-sm text-white">Cổng Soát Vé & Điểm Danh Khách</h3>
-                      <span className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1 mt-0.5">
-                        <ShieldCheck className="w-3.5 h-3.5" />
-                        Chống vé kép & gian lận nguyên tử
-                      </span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-3.5 h-3.5 rounded bg-red-950 border border-red-800" />
+                      <span className="text-neutral-300">Đã bán</span>
                     </div>
-                  </div>
-
-                  <p className="text-xs text-neutral-400 leading-relaxed">
-                    Hệ thống soát vé quét mã QR qua PWA Scanner của nhân viên tại cửa rạp. Ngăn chặn tuyệt đối tình trạng quét 2 lần hoặc vé giả mạo.
-                  </p>
-
-                  <div className="p-3.5 rounded-xl bg-white/5 border border-white/10 space-y-2 text-xs text-neutral-300">
-                    <div className="flex items-center justify-between">
-                      <span className="text-neutral-400">Khách đã quét QR:</span>
-                      <span className="font-bold text-emerald-400 font-mono">89 / 112 khách</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-3.5 h-3.5 rounded bg-amber-500/30 border border-amber-400 animate-pulse" />
+                      <span className="text-amber-300 font-bold">Khóa Redis Lua (TTL 300s)</span>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-neutral-400">Phương thức:</span>
-                      <span className="font-semibold text-white">Camera QR Real-time</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-neutral-400">Bảo mật nguyên tử:</span>
-                      <span className="text-amber-400 font-mono text-[11px]">HMAC SHA-256</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-neutral-400">Trạng thái cổng:</span>
-                      <span className="text-emerald-400 font-semibold flex items-center gap-1">
-                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                        Đang mở soát vé
-                      </span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-3.5 h-3.5 rounded bg-rose-950/40 border border-rose-500/30" />
+                      <span className="text-rose-300">Sweetbox Đôi</span>
                     </div>
                   </div>
 
-                  <Link
-                    href="/staff/scanner"
-                    className={`w-full py-3 rounded-xl text-white text-xs font-bold transition-all shadow-lg flex items-center justify-center gap-2 group ${
-                      isHalloween
-                        ? "bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 shadow-orange-500/20"
-                        : "bg-gradient-to-r from-[#E50914] to-rose-600 hover:from-[#c81007] hover:to-rose-700 shadow-red-900/30"
-                    }`}
-                  >
-                    <QrCode className="w-4 h-4" />
-                    <span>Mở Máy Quét Vé /staff/scanner</span>
-                    <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-                  </Link>
+                  <div className="text-[11px] text-emerald-400 font-bold flex items-center gap-1">
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    <span>Orphan Seat Rule Active (Chặn ghế đơn độc)</span>
+                  </div>
+                </div>
+
+                {/* Footer Modal Action */}
+                <div className="pt-3 border-t border-white/10 flex items-center justify-between gap-3">
+                  <span className="text-xs text-neutral-400">
+                    Tổng: <strong className="text-white font-mono">{quickSeatModalRoom.totalSeats} ghế</strong> | Đang lấp đầy: <strong className="text-amber-400 font-mono">{quickSeatModalRoom.occupiedCount} ghế</strong>
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setQuickSeatModalRoom(null);
+                        setActiveTab("seats");
+                      }}
+                      className="px-4 py-2 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white border border-white/15 transition-all"
+                    >
+                      Mở Tab Quản Lý Sơ Đồ Đầy Đủ
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setQuickSeatModalRoom(null)}
+                      className={`px-4 py-2 rounded-xl text-xs font-black text-white transition-all shadow-md ${
+                        isHalloween ? "bg-orange-500 hover:bg-orange-600" : "bg-[#E50914] hover:bg-[#c81007]"
+                      }`}
+                    >
+                      Đóng Popup
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

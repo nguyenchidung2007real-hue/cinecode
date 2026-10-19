@@ -16,6 +16,7 @@ import { CinemaShowtimeMatrix } from "@/components/CinemaShowtimeMatrix";
 import SemanticSearchModal from "@/components/SemanticSearchModal";
 import { MovieCarousel } from "@/components/MovieCarousel";
 import { Footer } from "@/components/Footer";
+import { CustomerAtmosphere } from "@/components/CustomerAtmosphere";
 import { useBookingStore } from "@/store/useBookingStore";
 
 import { Sparkles, Flame, Film, Clapperboard, Award, SearchX, Smile, Compass, Brain, Heart, Tag, Gift, Percent, Ticket, CheckCircle2, X, Clock, Calendar, Check, Copy, ArrowRight, Info, Armchair, Popcorn, Headphones, Crown, Star } from "lucide-react";
@@ -343,11 +344,14 @@ export default function HomePage() {
   }, [movies, searchQuery, selectedGenre, selectedMood]);
 
   return (
-    <div className={`min-h-screen flex flex-col transition-colors duration-500 ${
+    <div className={`min-h-screen flex flex-col transition-colors duration-500 relative ${
       isCustomerHalloween
         ? "bg-[#090412] text-neutral-100 selection:bg-[#FF7518] selection:text-white"
         : "bg-background selection:bg-accent-red selection:text-white"
     }`}>
+      {/* Hiệu ứng không gian rạp chiếu & Lễ hội Halloween */}
+      <CustomerAtmosphere isHalloween={isCustomerHalloween} />
+
       {/* Header thanh điều hướng */}
       <Navbar
         onSearchChange={setSearchQuery}
@@ -449,6 +453,7 @@ export default function HomePage() {
                     movie={movie}
                     onOpenDetail={setActiveDetailMovie}
                     onBookTicket={setActiveBookingMovie}
+                    isHalloween={isCustomerHalloween}
                   />
                 ))}
               </div>
@@ -571,6 +576,7 @@ export default function HomePage() {
                   }
                   onOpenDetail={setActiveDetailMovie}
                   onBookTicket={setActiveBookingMovie}
+                  isHalloween={isCustomerHalloween}
                 />
               </div>
             </div>
