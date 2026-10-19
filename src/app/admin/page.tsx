@@ -27,6 +27,9 @@ import {
   LogOut,
   Armchair,
   Star,
+  LayoutDashboard,
+  Receipt,
+  ScanLine,
 } from "lucide-react";
 import AdminSeatsMoviesAuditTab from "@/components/admin/AdminSeatsMoviesAuditTab";
 import AdminOrdersAndReviewsTab from "@/components/admin/AdminOrdersAndReviewsTab";
@@ -51,6 +54,30 @@ export default function AdminDashboardPage() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Chế độ giao diện Halloween (Spooky Theme 🎃 ⇄ Normal Cinema 🎬)
+  const [isHalloween, setIsHalloween] = useState(false);
+
+  useEffect(() => {
+    try {
+      const savedTheme = localStorage.getItem("cinemax_admin_theme");
+      if (savedTheme === "halloween") {
+        setIsHalloween(true);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }, []);
+
+  const toggleHalloweenTheme = () => {
+    const next = !isHalloween;
+    setIsHalloween(next);
+    try {
+      localStorage.setItem("cinemax_admin_theme", next ? "halloween" : "normal");
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   // Thống kê giả lập
   const [stats, setStats] = useState({
@@ -210,835 +237,1123 @@ export default function AdminDashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0B0C10] text-neutral-100 flex flex-col font-sans">
-      {/* Top Navbar */}
-      <header className="border-b border-white/10 bg-[#12141c]/90 backdrop-blur-md sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link
-              href="/"
-              className="flex items-center gap-1.5 text-xs text-neutral-400 hover:text-white transition-colors bg-white/5 hover:bg-white/10 px-2.5 py-1.5 rounded-lg border border-white/10 mr-1"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Trang Bán Vé</span>
-            </Link>
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#e71a0f] to-amber-500 flex items-center justify-center shadow-lg shadow-[#e71a0f]/20">
-              <Building2 className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-black text-sm tracking-wide text-white uppercase">CINEMAX CULTUREPLEX</span>
-                <span className="px-2 py-0.5 text-[10px] font-black rounded-full bg-[#e71a0f]/20 text-[#ff4d42] border border-[#e71a0f]/30">
-                  ADMIN PORTAL
+    <div className={`min-h-screen flex font-sans transition-colors duration-300 ${
+      isHalloween ? "bg-[#0A0510] text-purple-100" : "bg-[#090D16] text-neutral-100"
+    }`}>
+      {/* 1. SIDEBAR BÊN TRÁI (Modern 260px Sidebar) */}
+      <aside className={`w-[260px] shrink-0 border-r flex flex-col justify-between sticky top-0 h-screen z-30 transition-colors duration-300 ${
+        isHalloween
+          ? "bg-[#0E071A] border-orange-500/20 shadow-[4px_0_24px_rgba(255,117,24,0.06)]"
+          : "bg-[#0B0F19] border-white/10 shadow-[4px_0_24px_rgba(0,0,0,0.5)]"
+      }`}>
+        {/* Brand Logo & Header */}
+        <div>
+          <div className={`h-16 px-5 border-b flex items-center justify-between ${
+            isHalloween ? "border-orange-500/20" : "border-white/10"
+          }`}>
+            <Link href="/" className="flex items-center gap-2.5 group">
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center shadow-lg transition-transform group-hover:scale-105 ${
+                isHalloween
+                  ? "bg-gradient-to-tr from-[#FF7518] to-purple-600 shadow-orange-500/30"
+                  : "bg-gradient-to-tr from-[#E50914] to-amber-500 shadow-red-900/30"
+              }`}>
+                <Film className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <div className="flex items-center leading-none">
+                  <span className="font-black text-sm tracking-tight text-white">CINE</span>
+                  <span className={`font-black text-sm tracking-tight ${isHalloween ? "text-[#FF7518]" : "text-[#E50914]"}`}>MAX</span>
+                </div>
+                <span className={`text-[9px] font-extrabold uppercase tracking-widest ${
+                  isHalloween ? "text-orange-400" : "text-neutral-400"
+                }`}>
+                  {isHalloween ? "🎃 Spooky Admin" : "Cinema Admin"}
                 </span>
               </div>
-              <p className="text-[11px] text-neutral-400 hidden sm:block">Trung Tâm Điều Hành Toàn Diện Rạp Chiếu Phim</p>
-            </div>
+            </Link>
+            <span className={`px-2 py-0.5 text-[9px] font-black rounded-full border ${
+              isHalloween
+                ? "bg-orange-500/20 text-orange-400 border-orange-500/30"
+                : "bg-red-500/20 text-red-400 border-red-500/30"
+            }`}>
+              2026
+            </span>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3">
+          {/* Navigation Menu */}
+          <div className="p-3 space-y-1">
+            <div className={`px-3 py-2 text-[10px] font-bold uppercase tracking-wider ${
+              isHalloween ? "text-orange-400/70" : "text-neutral-400"
+            }`}>
+              Quản Trị Hệ Thống
+            </div>
+            {[
+              { id: "overview", label: "Tổng Quan Rạp", icon: LayoutDashboard },
+              { id: "movies", label: "Quản Lý Phim", icon: Film },
+              { id: "showtimes", label: "Lịch Chiếu & Scheduler", icon: Calendar },
+              { id: "seats", label: "Sơ Đồ Ghế & Audit", icon: Armchair },
+              { id: "orders-reviews", label: "Đơn Vé & Đánh Giá", icon: Receipt },
+              { id: "tickets", label: "Soát Vé & Check-in", icon: ScanLine },
+              { id: "pricing", label: "Bảng Giá Vé & F&B", icon: Sliders },
+            ].map((tab) => {
+              const Icon = tab.icon;
+              const active = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as any)}
+                  className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all text-left ${
+                    active
+                      ? isHalloween
+                        ? "bg-gradient-to-r from-orange-500/25 to-purple-500/20 text-orange-300 border border-orange-500/40 shadow-lg shadow-orange-500/10"
+                        : "bg-gradient-to-r from-[#E50914]/20 to-red-600/10 text-white border border-[#E50914]/40 shadow-lg shadow-red-900/20"
+                      : isHalloween
+                      ? "text-purple-200/70 hover:text-white hover:bg-purple-900/20 border border-transparent"
+                      : "text-neutral-400 hover:text-white hover:bg-white/5 border border-transparent"
+                  }`}
+                >
+                  <Icon className={`w-4 h-4 shrink-0 ${
+                    active
+                      ? isHalloween ? "text-[#FF7518]" : "text-[#E50914]"
+                      : "text-neutral-400"
+                  }`} />
+                  <span className="truncate">{tab.label}</span>
+                  {active && (
+                    <span className={`ml-auto w-1.5 h-1.5 rounded-full ${
+                      isHalloween ? "bg-[#FF7518] shadow-[0_0_8px_#FF7518]" : "bg-[#E50914] shadow-[0_0_8px_#E50914]"
+                    }`} />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Quick Links & Bottom Bar */}
+        <div className={`p-3 border-t space-y-1.5 ${
+          isHalloween ? "border-orange-500/20" : "border-white/10"
+        }`}>
+          <div className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider ${
+            isHalloween ? "text-orange-400/70" : "text-neutral-400"
+          }`}>
+            Cổng Chức Năng
+          </div>
+          <Link
+            href="/staff/scanner"
+            className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all border ${
+              isHalloween
+                ? "bg-orange-500/10 hover:bg-orange-500/20 text-orange-300 border-orange-500/30"
+                : "bg-white/5 hover:bg-white/10 text-neutral-300 border-white/5"
+            }`}
+          >
+            <span className="flex items-center gap-2">
+              <QrCode className="w-3.5 h-3.5 text-amber-400" />
+              <span>Máy Quét Vé PWA</span>
+            </span>
+            <ChevronRight className="w-3.5 h-3.5 text-neutral-400" />
+          </Link>
+          <Link
+            href="/staff"
+            className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-sky-400 bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/20 transition-all"
+          >
+            <span className="flex items-center gap-2">
+              <Users className="w-3.5 h-3.5 text-sky-400" />
+              <span>Cổng Nhân Viên</span>
+            </span>
+            <ChevronRight className="w-3.5 h-3.5 text-sky-400/60" />
+          </Link>
+          <Link
+            href="/"
+            className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-neutral-400 hover:text-white bg-white/5 hover:bg-white/10 border border-white/5 transition-all"
+          >
+            <span className="flex items-center gap-2">
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Trang Bán Vé</span>
+            </span>
+          </Link>
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-red-300 bg-red-950/40 hover:bg-red-950/80 border border-red-800/40 transition-all"
+          >
+            <span className="flex items-center gap-2">
+              <LogOut className="w-3.5 h-3.5 text-red-400" />
+              <span>Đăng Xuất Admin</span>
+            </span>
+          </button>
+        </div>
+      </aside>
+
+      {/* 2. MAIN WORKSPACE AREA */}
+      <div className="flex-1 min-w-0 flex flex-col min-h-screen overflow-x-hidden">
+        {/* Top Header */}
+        <header className={`h-16 px-6 border-b sticky top-0 z-20 backdrop-blur-md flex items-center justify-between gap-4 transition-colors duration-300 ${
+          isHalloween ? "bg-[#0A0510]/90 border-orange-500/20" : "bg-[#090D16]/90 border-white/10"
+        }`}>
+          {/* Breadcrumb / Page Title */}
+          <div className="flex items-center gap-3">
+            <h1 className="text-base font-black tracking-tight text-white flex items-center gap-2">
+              {isHalloween && <span className="animate-bounce">🎃</span>}
+              <span>Trang Quản Trị Hệ Thống</span>
+            </h1>
+            <span className="hidden sm:inline text-neutral-600">/</span>
+            <span className="hidden sm:inline text-xs text-neutral-400 font-medium">
+              Beta Cinemas Xuân Thủy (HITC Cầu Giấy)
+            </span>
+          </div>
+
+          {/* Action Buttons: Halloween Toggle, Sync Data, Admin Profile */}
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            {/* Halloween Theme Toggle Button */}
+            <button
+              onClick={toggleHalloweenTheme}
+              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl font-bold text-xs transition-all border shadow-lg ${
+                isHalloween
+                  ? "bg-gradient-to-r from-orange-600/30 to-purple-600/30 hover:from-orange-600/40 hover:to-purple-600/40 text-orange-300 border-orange-500/40 shadow-orange-500/20"
+                  : "bg-white/5 hover:bg-white/10 text-neutral-300 border-white/10"
+              }`}
+              title="Chuyển đổi giao diện Halloween 🎃 ⇄ Bình thường 🎬"
+            >
+              {isHalloween ? (
+                <>
+                  <span className="text-base">🎃</span>
+                  <span className="text-xs font-black tracking-wide text-orange-400">Halloween Mode</span>
+                </>
+              ) : (
+                <>
+                  <span className="text-base">🎬</span>
+                  <span className="text-xs font-semibold text-neutral-300">Normal Mode</span>
+                </>
+              )}
+            </button>
+
+            {/* Sync Data Button */}
             <button
               onClick={handleSyncBeta}
               disabled={isSyncing}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold bg-[#e71a0f] hover:bg-[#c81007] text-white transition-all shadow-md shadow-[#e71a0f]/20 disabled:opacity-50"
+              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold text-white transition-all shadow-md disabled:opacity-50 ${
+                isHalloween
+                  ? "bg-[#FF7518] hover:bg-[#e0620f] shadow-orange-500/20"
+                  : "bg-[#E50914] hover:bg-[#c81007] shadow-red-900/30"
+              }`}
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? "animate-spin" : ""}`} />
-              <span className="hidden md:inline">{isSyncing ? "Đang Cập Nhật..." : "Làm Mới Dữ Liệu"}</span>
+              <span className="hidden md:inline">{isSyncing ? "Đang Đồng Bộ..." : "Làm Mới Dữ Liệu"}</span>
             </button>
-            <Link
-              href="/staff"
-              className="text-xs px-3 py-1.5 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/30 text-sky-400 transition-colors font-bold"
-            >
-              Cổng Nhân Viên
-            </Link>
-            <Link
-              href="/dashboard"
-              className="text-xs px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-300 transition-colors hidden sm:block"
-            >
-              Khách Hàng
-            </Link>
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-red-950/40 hover:bg-red-950/80 border border-red-800/60 text-red-300 transition-colors font-semibold"
-              title="Đăng xuất quản trị"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Đăng Xuất</span>
-            </button>
-          </div>
-        </div>
-      </header>
 
-      {/* Main Body */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 w-full flex-1 flex flex-col gap-6">
-        {/* Sync Status Banner */}
-        {syncStatus && (
-          <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 flex items-center justify-between text-xs animate-in fade-in">
-            <div className="flex items-center gap-2.5">
-              <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
-              <div>
-                <strong>{syncStatus.message}</strong>
-                <p className="text-emerald-400/80 text-[11px] mt-0.5">
-                  Cập nhật lúc: {new Date(syncStatus.syncedAt).toLocaleTimeString("vi-VN")} | Nguồn: {syncStatus.source} | Phim: {syncStatus.totalMovies} | Suất chiếu: {syncStatus.totalShowtimes}
-                </p>
+            {/* Admin Profile Pill */}
+            <div className={`hidden lg:flex items-center gap-2.5 px-3 py-1.5 rounded-xl border ${
+              isHalloween ? "bg-purple-950/40 border-orange-500/20" : "bg-white/5 border-white/10"
+            }`}>
+              <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-amber-500 to-rose-500 flex items-center justify-center text-[11px] font-black text-white">
+                AD
+              </div>
+              <div className="text-left">
+                <div className="text-xs font-bold text-white leading-tight">Admin (cinemax2026)</div>
+                <div className="text-[10px] text-emerald-400 font-medium flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>Đang trực tuyến</span>
+                </div>
               </div>
             </div>
-            <button onClick={() => setSyncStatus(null)} className="text-emerald-400 hover:text-white px-2 py-1">✕</button>
           </div>
-        )}
+        </header>
 
-        {/* 4 Cards Thống Kê Tổng Quan */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="p-4 rounded-xl bg-[#13151f] border border-white/10 shadow-lg hover:border-amber-500/30 transition-all">
-            <div className="flex items-center justify-between text-neutral-400 mb-2">
-              <span className="text-xs font-bold uppercase tracking-wider">Doanh thu hôm nay</span>
-              <DollarSign className="w-4 h-4 text-amber-400" />
-            </div>
-            <div className="text-2xl font-black text-white">{formatVND(stats.todayRevenue)}</div>
-            <div className="flex items-center gap-1 text-[11px] text-emerald-400 mt-2 font-semibold">
-              <TrendingUp className="w-3 h-3" />
-              <span>+18.5% so với hôm qua</span>
-            </div>
-          </div>
-
-          <div className="p-4 rounded-xl bg-[#13151f] border border-white/10 shadow-lg hover:border-[#e71a0f]/40 transition-all">
-            <div className="flex items-center justify-between text-neutral-400 mb-2">
-              <span className="text-xs font-bold uppercase tracking-wider">Vé đã bán ra</span>
-              <Ticket className="w-4 h-4 text-[#e71a0f]" />
-            </div>
-            <div className="text-2xl font-black text-white">{stats.ticketsSold} <span className="text-xs font-normal text-neutral-400">vé</span></div>
-            <div className="text-[11px] text-neutral-400 mt-2">Cao điểm: Suất 19:15 & 21:30</div>
-          </div>
-
-          <div className="p-4 rounded-xl bg-[#13151f] border border-white/10 shadow-lg hover:border-cyan-500/30 transition-all">
-            <div className="flex items-center justify-between text-neutral-400 mb-2">
-              <span className="text-xs font-bold uppercase tracking-wider">Suất chiếu hôm nay</span>
-              <Calendar className="w-4 h-4 text-cyan-400" />
-            </div>
-            <div className="text-2xl font-black text-white">{stats.activeShowtimes} <span className="text-xs font-normal text-neutral-400">suất</span></div>
-            <div className="text-[11px] text-cyan-400/90 mt-2">Phòng Beta 01, 02, 03</div>
-          </div>
-
-          <div className="p-4 rounded-xl bg-[#13151f] border border-white/10 shadow-lg hover:border-emerald-500/30 transition-all">
-            <div className="flex items-center justify-between text-neutral-400 mb-2">
-              <span className="text-xs font-bold uppercase tracking-wider">Tỷ lệ lấp đầy ghế</span>
-              <Users className="w-4 h-4 text-emerald-400" />
-            </div>
-            <div className="text-2xl font-black text-white">{stats.occupancyRate}</div>
-            <div className="text-[11px] text-emerald-400 mt-2">Tập trung hàng VIP & Sweetbox</div>
-          </div>
-        </div>
-
-        {/* Tab Navigation */}
-        <div className="flex border-b border-white/10 gap-2 overflow-x-auto pb-px">
-          {[
-            { id: "overview", label: "Tổng Quan Rạp", icon: Building2 },
-            { id: "showtimes", label: "Lịch Chiếu Beta Xuân Thủy", icon: Calendar },
-            { id: "seats", label: "Sơ Đồ Ghế & Audit", icon: Armchair },
-            { id: "movies", label: "Quản Lý Phim", icon: Film },
-            { id: "orders-reviews", label: "Đơn Vé & Đánh Giá", icon: Star },
-            { id: "tickets", label: "Soát Vé & Check-in", icon: QrCode },
-            { id: "pricing", label: "Bảng Giá Vé Sinh Viên", icon: Sliders },
-          ].map((tab) => {
-            const Icon = tab.icon;
-            const active = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center gap-2 px-4 py-3 text-xs font-bold transition-all border-b-2 whitespace-nowrap ${
-                  active
-                    ? "border-accent-red text-accent-red bg-accent-red/5"
-                    : "border-transparent text-neutral-400 hover:text-white hover:bg-white/5"
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                <span>{tab.label}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* TAB 1: TỔNG QUAN RẠP */}
-        {activeTab === "overview" && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Cột trái: Thông tin rạp & Trạng thái phòng */}
-            <div className="lg:col-span-2 space-y-6">
-              <div className="p-5 rounded-2xl bg-[#14151B] border border-white/10 shadow-xl">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-bold text-base text-white flex items-center gap-2">
-                    <Building2 className="w-4 h-4 text-accent-red" />
-                    <span>Trạng Thái Phòng Chiếu Tại HITC Xuân Thủy</span>
-                  </h3>
-                  <span className="text-xs text-neutral-400">3 Phòng đang mở</span>
+        {/* Content Workspace */}
+        <main className="p-6 max-w-7xl w-full mx-auto space-y-6 flex-1">
+          {/* Halloween Active Banner */}
+          {isHalloween && (
+            <div className="p-3.5 rounded-2xl bg-gradient-to-r from-orange-500/20 via-purple-900/30 to-orange-500/20 border border-orange-500/30 text-orange-200 text-xs flex items-center justify-between shadow-lg shadow-orange-500/10 animate-in fade-in">
+              <div className="flex items-center gap-2.5">
+                <span className="text-xl">🦇</span>
+                <div>
+                  <strong className="text-orange-300 font-bold">Chế Độ Halloween Spooky Đang Kích Hoạt!</strong>
+                  <p className="text-[11px] text-orange-200/80 mt-0.5">
+                    Toàn bộ bảng điều khiển quản trị viên được phủ sắc cam bí ngô neon và tím khói huyền bí theo chủ đề sự kiện.
+                  </p>
                 </div>
+              </div>
+              <span className="text-lg">🕸️ 🎃</span>
+            </div>
+          )}
 
-                <div className="space-y-3">
-                  {[
-                    { name: "Phòng Beta 01 (Dolby 7.1)", movie: "Dune: Phần Hai", time: "18:45 - 21:30", seats: "72/90 ghế", status: "Sắp chiếu" },
-                    { name: "Phòng Beta 02 (Laser HD)", movie: "Quật Mộ Trùng Ma", time: "19:15 - 21:30", seats: "84/90 ghế", status: "Đang mở bán" },
-                    { name: "Phòng Beta 03 (Standard)", movie: "Những Mảnh Ghép Cảm Xúc 2", time: "19:40 - 21:15", seats: "45/70 ghế", status: "Đang mở bán" },
-                  ].map((room, idx) => (
-                    <div key={idx} className="p-3.5 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between">
-                      <div>
-                        <div className="font-bold text-sm text-white">{room.name}</div>
-                        <div className="text-xs text-neutral-400 mt-0.5">
-                          {room.movie} • <span className="text-amber-400">{room.time}</span>
+          {/* Sync Status Banner */}
+          {syncStatus && (
+            <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 flex items-center justify-between text-xs animate-in fade-in">
+              <div className="flex items-center gap-2.5">
+                <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+                <div>
+                  <strong>{syncStatus.message}</strong>
+                  <p className="text-emerald-400/80 text-[11px] mt-0.5">
+                    Cập nhật lúc: {new Date(syncStatus.syncedAt).toLocaleTimeString("vi-VN")} | Nguồn: {syncStatus.source} | Phim: {syncStatus.totalMovies} | Suất chiếu: {syncStatus.totalShowtimes}
+                  </p>
+                </div>
+              </div>
+              <button onClick={() => setSyncStatus(null)} className="text-emerald-400 hover:text-white px-2 py-1">✕</button>
+            </div>
+          )}
+
+          {/* 4 Cards Thống Kê Tổng Quan (Glassmorphism + Sparklines + Glow) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Thẻ 1: Doanh Thu */}
+            <div className={`p-5 rounded-2xl border transition-all relative overflow-hidden group shadow-lg ${
+              isHalloween
+                ? "bg-[#150B24]/90 border-orange-500/25 hover:border-orange-500/50 hover:shadow-[0_4px_24px_rgba(255,117,24,0.15)]"
+                : "bg-[#111625]/90 border-white/10 hover:border-amber-500/40 hover:shadow-[0_4px_24px_rgba(245,158,11,0.12)]"
+            }`}>
+              <div className="flex items-center justify-between text-neutral-400 mb-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">Doanh thu hôm nay</span>
+                <div className={`p-2 rounded-xl ${isHalloween ? "bg-orange-500/20 text-orange-400" : "bg-amber-500/20 text-amber-400"}`}>
+                  <DollarSign className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="text-2xl font-black text-white tracking-tight">{formatVND(stats.todayRevenue)}</div>
+              <div className="flex items-center justify-between mt-3">
+                <div className="flex items-center gap-1 text-[11px] text-emerald-400 font-semibold">
+                  <TrendingUp className="w-3.5 h-3.5" />
+                  <span>+18.5% so với hôm qua</span>
+                </div>
+                {/* Mini Sparkline SVG */}
+                <svg className="w-16 h-6 text-emerald-400 overflow-visible" viewBox="0 0 60 20">
+                  <path
+                    d="M 0 16 Q 15 14, 25 10 T 45 6 T 60 2"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </div>
+            </div>
+
+            {/* Thẻ 2: Vé Đã Bán */}
+            <div className={`p-5 rounded-2xl border transition-all relative overflow-hidden group shadow-lg ${
+              isHalloween
+                ? "bg-[#150B24]/90 border-orange-500/25 hover:border-orange-500/50 hover:shadow-[0_4px_24px_rgba(255,117,24,0.15)]"
+                : "bg-[#111625]/90 border-white/10 hover:border-red-500/40 hover:shadow-[0_4px_24px_rgba(229,9,20,0.12)]"
+            }`}>
+              <div className="flex items-center justify-between text-neutral-400 mb-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">Vé đã bán ra</span>
+                <div className={`p-2 rounded-xl ${isHalloween ? "bg-orange-500/20 text-orange-400" : "bg-red-500/20 text-red-500"}`}>
+                  <Ticket className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="text-2xl font-black text-white tracking-tight">
+                {stats.ticketsSold} <span className="text-sm font-normal text-neutral-400">vé</span>
+              </div>
+              <div className="flex items-center justify-between mt-3">
+                <span className="text-[11px] text-neutral-400">Cao điểm: Suất 19:15</span>
+                {/* Mini Bars visual */}
+                <div className="flex items-end gap-1 h-5">
+                  <span className="w-1.5 h-2 bg-red-500/40 rounded-t" />
+                  <span className="w-1.5 h-3 bg-red-500/60 rounded-t" />
+                  <span className="w-1.5 h-5 bg-red-500 rounded-t" />
+                  <span className="w-1.5 h-4 bg-red-500/80 rounded-t" />
+                  <span className="w-1.5 h-2.5 bg-red-500/50 rounded-t" />
+                </div>
+              </div>
+            </div>
+
+            {/* Thẻ 3: Suất Chiếu Hôm Nay */}
+            <div className={`p-5 rounded-2xl border transition-all relative overflow-hidden group shadow-lg ${
+              isHalloween
+                ? "bg-[#150B24]/90 border-orange-500/25 hover:border-orange-500/50 hover:shadow-[0_4px_24px_rgba(255,117,24,0.15)]"
+                : "bg-[#111625]/90 border-white/10 hover:border-cyan-500/40 hover:shadow-[0_4px_24px_rgba(6,182,212,0.12)]"
+            }`}>
+              <div className="flex items-center justify-between text-neutral-400 mb-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">Suất chiếu hôm nay</span>
+                <div className={`p-2 rounded-xl ${isHalloween ? "bg-purple-500/20 text-purple-400" : "bg-cyan-500/20 text-cyan-400"}`}>
+                  <Calendar className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="text-2xl font-black text-white tracking-tight">
+                {stats.activeShowtimes} <span className="text-sm font-normal text-neutral-400">suất</span>
+              </div>
+              <div className="flex items-center justify-between mt-3 text-[11px] text-cyan-400/90">
+                <span>Beta 01, 02, 03</span>
+                <span className="flex items-center gap-1 font-semibold text-emerald-400">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  3 phòng mở
+                </span>
+              </div>
+            </div>
+
+            {/* Thẻ 4: Tỷ Lệ Lấp Đầy Ghế */}
+            <div className={`p-5 rounded-2xl border transition-all relative overflow-hidden group shadow-lg ${
+              isHalloween
+                ? "bg-[#150B24]/90 border-orange-500/25 hover:border-orange-500/50 hover:shadow-[0_4px_24px_rgba(255,117,24,0.15)]"
+                : "bg-[#111625]/90 border-white/10 hover:border-emerald-500/40 hover:shadow-[0_4px_24px_rgba(16,185,129,0.12)]"
+            }`}>
+              <div className="flex items-center justify-between text-neutral-400 mb-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">Tỷ lệ lấp đầy ghế</span>
+                <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400">
+                  <Users className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="text-2xl font-black text-white tracking-tight">{stats.occupancyRate}</div>
+              <div className="mt-3">
+                <div className="flex items-center justify-between text-[11px] text-neutral-400 mb-1">
+                  <span>VIP & Sweetbox</span>
+                  <span className="text-emerald-400 font-bold">78%</span>
+                </div>
+                <div className="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
+                  <div
+                    className={`h-full rounded-full ${isHalloween ? "bg-gradient-to-r from-purple-500 to-orange-500" : "bg-gradient-to-r from-emerald-500 to-cyan-500"}`}
+                    style={{ width: "78%" }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* TAB 1: TỔNG QUAN RẠP */}
+          {activeTab === "overview" && (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Cột trái: Thông tin rạp & Trạng thái phòng */}
+              <div className="lg:col-span-2 space-y-6">
+                <div className={`p-5 rounded-2xl border shadow-xl ${
+                  isHalloween ? "bg-[#140B22] border-orange-500/20" : "bg-[#14151B] border-white/10"
+                }`}>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-bold text-base text-white flex items-center gap-2">
+                      <Building2 className={`w-4 h-4 ${isHalloween ? "text-[#FF7518]" : "text-[#E50914]"}`} />
+                      <span>Trạng Thái Phòng Chiếu Tại HITC Xuân Thủy</span>
+                    </h3>
+                    <span className="text-xs text-neutral-400">3 Phòng đang mở</span>
+                  </div>
+
+                  <div className="space-y-3">
+                    {[
+                      { name: "Phòng Beta 01 (Dolby 7.1)", movie: "Dune: Phần Hai", time: "18:45 - 21:30", seats: "72/90", percent: 80, status: "Sắp chiếu", badgeColor: "bg-amber-500/10 text-amber-400 border-amber-500/20" },
+                      { name: "Phòng Beta 02 (Laser HD)", movie: "Quật Mộ Trùng Ma", time: "19:15 - 21:30", seats: "84/90", percent: 93, status: "Đang mở bán", badgeColor: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" },
+                      { name: "Phòng Beta 03 (Standard)", movie: "Những Mảnh Ghép Cảm Xúc 2", time: "19:40 - 21:15", seats: "45/70", percent: 64, status: "Đang mở bán", badgeColor: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" },
+                    ].map((room, idx) => (
+                      <div key={idx} className={`p-4 rounded-xl border transition-all ${
+                        isHalloween ? "bg-purple-950/20 border-orange-500/20 hover:border-orange-500/40" : "bg-white/5 border-white/5 hover:border-white/15"
+                      }`}>
+                        <div className="flex items-center justify-between mb-2">
+                          <div>
+                            <div className="font-bold text-sm text-white">{room.name}</div>
+                            <div className="text-xs text-neutral-400 mt-0.5">
+                              {room.movie} • <span className={isHalloween ? "text-orange-400 font-semibold" : "text-amber-400 font-semibold"}>{room.time}</span>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <span className={`text-[11px] font-bold px-2 py-0.5 rounded border ${room.badgeColor}`}>
+                              {room.status}
+                            </span>
+                            <div className="text-xs text-neutral-300 font-mono mt-1">{room.seats} ghế ({room.percent}%)</div>
+                          </div>
+                        </div>
+                        {/* Thanh Tiến Độ Lấp Đầy Phòng Chiếu */}
+                        <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden mt-2">
+                          <div
+                            className={`h-full rounded-full transition-all duration-500 ${
+                              isHalloween
+                                ? "bg-gradient-to-r from-purple-500 to-orange-500"
+                                : "bg-gradient-to-r from-[#E50914] to-amber-500"
+                            }`}
+                            style={{ width: `${room.percent}%` }}
+                          />
                         </div>
                       </div>
-                      <div className="text-right">
-                        <span className="text-xs font-bold text-emerald-400 px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20">
-                          {room.status}
+                    ))}
+                  </div>
+                </div>
+
+                {/* Crawler Info Box */}
+                <div className={`p-5 rounded-2xl border ${
+                  isHalloween
+                    ? "bg-gradient-to-br from-orange-500/10 via-[#140B22] to-[#140B22] border-orange-500/25"
+                    : "bg-gradient-to-br from-[#E50914]/10 via-[#14151B] to-[#14151B] border-[#E50914]/20"
+                }`}>
+                  <div className="flex items-start gap-3">
+                    <div className={`p-2 rounded-xl ${
+                      isHalloween ? "bg-orange-500/20 text-[#FF7518]" : "bg-[#E50914]/20 text-[#E50914]"
+                    }`}>
+                      <Sparkles className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-sm text-white">Dữ Liệu Mô Phỏng Rạp Chiếu (Curated Demo)</h4>
+                      <p className="text-xs text-neutral-300 mt-1 leading-relaxed">
+                        Dữ liệu lịch chiếu và sơ đồ phòng chiếu phục vụ thử nghiệm thuật toán chống xung đột (Showtime Collision Engine) và quy trình vận hành rạp Beta Xuân Thủy. Trong môi trường production thực tế, API đồng bộ từ <code>betacinemas.vn</code> yêu cầu xác thực bằng <code>ADMIN_SYNC_SECRET</code>.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Cột phải: Chuyển hướng Cổng Soát Vé PWA */}
+              <div className={`p-5 rounded-2xl border shadow-xl space-y-4 ${
+                isHalloween ? "bg-[#140B22] border-orange-500/20" : "bg-[#14151B] border-white/10"
+              }`}>
+                <div className="flex items-center gap-3">
+                  <div className={`p-2.5 rounded-xl ${
+                    isHalloween ? "bg-orange-500/20 text-[#FF7518]" : "bg-[#E50914]/20 text-[#E50914]"
+                  }`}>
+                    <QrCode className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-sm text-white">Cổng Soát Vé Nhanh</h3>
+                    <span className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1 mt-0.5">
+                      <ShieldCheck className="w-3.5 h-3.5" />
+                      Chống vé kép & gian lận nguyên tử
+                    </span>
+                  </div>
+                </div>
+
+                <p className="text-xs text-neutral-400 leading-relaxed">
+                  Để đảm bảo tính xác thực HMAC, ngăn chặn dùng vé hai lần và kiểm soát nhận bắp nước tại quầy, nhân viên sử dụng máy quét camera PWA chuyên dụng.
+                </p>
+
+                <div className="p-3 rounded-xl bg-white/5 border border-white/10 space-y-2 text-xs text-neutral-300">
+                  <div className="flex items-center justify-between">
+                    <span className="text-neutral-400">Phương thức:</span>
+                    <span className="font-semibold text-white">Camera Quét QR Real-time</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-neutral-400">Bảo mật:</span>
+                    <span className="text-amber-400 font-mono">STAFF_SCAN_SECRET</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-neutral-400">Trạng thái:</span>
+                    <span className="text-emerald-400 font-semibold">Sẵn sàng hoạt động</span>
+                  </div>
+                </div>
+
+                <Link
+                  href="/staff/scanner"
+                  className={`w-full py-3 rounded-xl text-white text-xs font-bold transition-all shadow-lg flex items-center justify-center gap-2 group ${
+                    isHalloween
+                      ? "bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 shadow-orange-500/20"
+                      : "bg-gradient-to-r from-[#E50914] to-rose-600 hover:from-[#c81007] hover:to-rose-700 shadow-red-900/30"
+                  }`}
+                >
+                  <QrCode className="w-4 h-4" />
+                  <span>Mở Máy Quét Vé /staff/scanner</span>
+                  <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                </Link>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 2: LỊCH CHIẾU BETA XUÂN THỦY & ENGINE KIỂM TRA XUNG ĐỘT */}
+          {activeTab === "showtimes" && (
+            <div className="space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-white/10">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-bold text-base text-white">Bộ Điều Phối & Lên Lịch Chiếu (Showtime Engine)</h3>
+                    <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
+                      Collision Engine Active
+                    </span>
+                  </div>
+                  <p className="text-xs text-neutral-400 mt-0.5">
+                    Beta Cinemas Xuân Thủy • Tự động tính toán thời lượng phim + 10p quảng cáo + 15p dọn buồng để ngăn chặn xung đột phòng chiếu
+                  </p>
+                </div>
+                <button
+                  onClick={handleSyncBeta}
+                  className="text-xs px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center gap-1.5 shrink-0 text-neutral-300"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? "" : ""}`} />
+                  <span>Cập nhật lịch Live</span>
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                {/* CỘT TRÁI (5 Cột): Form Thêm Suất Chiếu & Kiểm Tra Xung Đột */}
+                <div className="lg:col-span-5 space-y-4">
+                  <div className={`p-5 rounded-2xl border shadow-xl space-y-4 ${
+                    isHalloween ? "bg-[#140B22] border-orange-500/20" : "bg-[#14151B] border-white/10"
+                  }`}>
+                    <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                      <h4 className="font-bold text-sm text-white flex items-center gap-2">
+                        <Calendar className={`w-4 h-4 ${isHalloween ? "text-orange-400" : "text-[#E50914]"}`} />
+                        <span>Thêm Suất Chiếu Mới</span>
+                      </h4>
+                      <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                        Buffer 25p (10p trailer + 15p dọn)
+                      </span>
+                    </div>
+
+                    <form onSubmit={handleAddShowtime} className="space-y-3.5">
+                      {/* Chọn Phim */}
+                      <div>
+                        <label className="text-[11px] font-semibold text-neutral-400 block mb-1">Chọn Phim:</label>
+                        <select
+                          value={newMovieId}
+                          onChange={(e) => setNewMovieId(e.target.value)}
+                          className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-accent-red"
+                        >
+                          {MOCK_MOVIES.map((m) => (
+                            <option key={m.id} value={m.id} className="bg-[#14151B] text-white">
+                              {m.title} ({m.durationMinutes} phút - {m.ageRating})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Chọn Phòng */}
+                      <div>
+                        <label className="text-[11px] font-semibold text-neutral-400 block mb-1">Phòng Chiếu:</label>
+                        <select
+                          value={newRoomName}
+                          onChange={(e) => setNewRoomName(e.target.value)}
+                          className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-accent-red"
+                        >
+                          <option value="Phòng Beta 01 (Dolby 7.1)" className="bg-[#14151B] text-white">
+                            Phòng Beta 01 (Dolby 7.1)
+                          </option>
+                          <option value="Phòng Beta 02 (Laser HD)" className="bg-[#14151B] text-white">
+                            Phòng Beta 02 (Laser HD)
+                          </option>
+                          <option value="Phòng Beta 03 (Standard)" className="bg-[#14151B] text-white">
+                            Phòng Beta 03 (Standard)
+                          </option>
+                        </select>
+                      </div>
+
+                      {/* Ngày, Giờ, Định dạng */}
+                      <div className="grid grid-cols-3 gap-2.5">
+                        <div>
+                          <label className="text-[11px] font-semibold text-neutral-400 block mb-1">Ngày:</label>
+                          <input
+                            type="date"
+                            value={newDate}
+                            onChange={(e) => setNewDate(e.target.value)}
+                            className="w-full px-2.5 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-accent-red"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[11px] font-semibold text-neutral-400 block mb-1">Giờ Chiếu:</label>
+                          <input
+                            type="time"
+                            value={newTime}
+                            onChange={(e) => setNewTime(e.target.value)}
+                            className="w-full px-2.5 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-accent-red"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[11px] font-semibold text-neutral-400 block mb-1">Định Dạng:</label>
+                          <select
+                            value={newFormat}
+                            onChange={(e) => setNewFormat(e.target.value as any)}
+                            className="w-full px-2 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-accent-red"
+                          >
+                            <option value="2D Phụ Đề" className="bg-[#14151B] text-white">2D Phụ Đề</option>
+                            <option value="2D Lồng Tiếng" className="bg-[#14151B] text-white">2D Lồng Tiếng</option>
+                            <option value="IMAX Laser" className="bg-[#14151B] text-white">IMAX Laser</option>
+                            <option value="4DX" className="bg-[#14151B] text-white">4DX</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Live Collision Feedback Banner */}
+                      {!collisionResult.valid && (
+                        <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs">
+                          {collisionResult.errors.join(", ")}
+                        </div>
+                      )}
+
+                      {collisionResult.valid && collisionResult.ok && (
+                        <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs animate-in fade-in">
+                          <div className="font-bold flex items-center gap-2 mb-1">
+                            <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+                            <span>Khung Giờ Hợp Lệ & Khả Dụng!</span>
+                          </div>
+                          <p className="text-[11px] text-emerald-400/90 leading-relaxed">
+                            Phòng trống trong khoảng <strong>{collisionResult.occupied?.startTime}</strong> – <strong>{collisionResult.occupied?.endTime}</strong>. Tổng chiếm dụng phòng: <strong>{collisionResult.totalOccupiedMinutes} phút</strong> ({selectedMovie?.durationMinutes}p phim + {TRAILER_MINUTES}p trailer + {CLEANING_MINUTES}p dọn buồng).
+                          </p>
+                        </div>
+                      )}
+
+                      {collisionResult.valid && !collisionResult.ok && (
+                        <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-xs space-y-2.5 animate-in fade-in">
+                          <div className="font-bold flex items-center gap-2 text-red-400">
+                            <AlertTriangle className="w-4 h-4 text-red-400 shrink-0" />
+                            <span>PHÁT HIỆN {collisionResult.conflicts.length} XUNG ĐỘT PHÒNG CHIẾU!</span>
+                          </div>
+
+                          <div className="space-y-1.5">
+                            {collisionResult.conflicts.map((c, i) => (
+                              <div key={i} className="p-2 rounded-lg bg-red-950/40 border border-red-800/40 text-[11px]">
+                                <div className="flex items-center gap-1.5 mb-1 font-semibold">
+                                  {c.kind === "overlap" ? (
+                                    <span className="px-1.5 py-0.5 rounded bg-red-500/30 text-red-200 text-[10px] font-bold">
+                                      Xung đột trùng giờ phim
+                                    </span>
+                                  ) : (
+                                    <span className="px-1.5 py-0.5 rounded bg-amber-500/30 text-amber-200 text-[10px] font-bold">
+                                      Vi phạm đệm dọn phòng
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-neutral-300 leading-normal">{c.message}</p>
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* Gợi ý slot trống gần nhất */}
+                          {collisionResult.suggestions.length > 0 && (
+                            <div className="pt-2 border-t border-red-500/20">
+                              <div className="text-[11px] font-semibold text-neutral-300 mb-1.5 flex items-center gap-1">
+                                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                                <span>Gợi ý khung giờ trống gần nhất (Click để chọn):</span>
+                              </div>
+                              <div className="flex flex-wrap gap-1.5">
+                                {collisionResult.suggestions.map((s, idx) => (
+                                  <button
+                                    key={idx}
+                                    type="button"
+                                    onClick={() => {
+                                      setNewTime(s.time);
+                                      setNewDate(s.date);
+                                    }}
+                                    className="px-2.5 py-1.5 rounded-lg bg-white/10 hover:bg-emerald-500/20 hover:border-emerald-500/40 border border-white/10 text-white text-[11px] transition-all flex items-center gap-1.5 font-medium group"
+                                  >
+                                    <Clock className="w-3 h-3 text-cyan-400 group-hover:text-emerald-400" />
+                                    <span>{s.time}</span>
+                                    <span className="text-[10px] text-neutral-400 font-mono">
+                                      ({s.offsetMinutes > 0 ? `+${s.offsetMinutes}p` : `${s.offsetMinutes}p`})
+                                    </span>
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Schedule Success Message */}
+                      {scheduleSuccessMsg && (
+                        <div className="p-3 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-semibold flex items-center gap-2">
+                          <CheckCircle className="w-4 h-4 shrink-0 text-emerald-400" />
+                          <span>{scheduleSuccessMsg}</span>
+                        </div>
+                      )}
+
+                      <button
+                        type="submit"
+                        disabled={!collisionResult.ok}
+                        className={`w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-md ${
+                          collisionResult.ok
+                            ? isHalloween
+                              ? "bg-[#FF7518] hover:bg-[#e0620f] text-white shadow-orange-500/20 cursor-pointer"
+                              : "bg-[#E50914] hover:bg-[#c81007] text-white shadow-red-900/30 cursor-pointer"
+                            : "bg-neutral-800 text-neutral-500 border border-white/5 cursor-not-allowed"
+                        }`}
+                      >
+                        <PlusCircle className="w-4 h-4" />
+                        <span>{collisionResult.ok ? "Xác Nhận Thêm Suất Chiếu" : "Không Thể Thêm (Đang Trùng Lịch)"}</span>
+                      </button>
+                    </form>
+                  </div>
+                </div>
+
+                {/* CỘT PHẢI (7 Cột): Danh Sách Suất Chiếu Hiện Tại Tại Rạp */}
+                <div className="lg:col-span-7 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-sm text-white">Lịch Chiếu Đang Mở Bán</span>
+                      <span className="text-xs text-neutral-400 bg-white/5 px-2 py-0.5 rounded-full border border-white/10">
+                        {showtimesList.filter((st) => st.cinemaId === "beta-cinemas-xuan-thuy").length} suất
+                      </span>
+                    </div>
+
+                    {/* Filter phòng */}
+                    <div className="flex items-center gap-1.5 text-xs">
+                      {[
+                        { id: "all", label: "Tất cả" },
+                        { id: "Beta 01", label: "Phòng 01" },
+                        { id: "Beta 02", label: "Phòng 02" },
+                        { id: "Beta 03", label: "Phòng 03" },
+                      ].map((rf) => (
+                        <button
+                          key={rf.id}
+                          type="button"
+                          onClick={() => setSelectedRoomFilter(rf.id)}
+                          className={`px-2.5 py-1 rounded-lg font-medium transition-all ${
+                            selectedRoomFilter === rf.id
+                              ? isHalloween
+                                ? "bg-[#FF7518] text-white"
+                                : "bg-[#E50914] text-white"
+                              : "bg-white/5 text-neutral-400 hover:text-white hover:bg-white/10"
+                          }`}
+                        >
+                          {rf.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 max-h-[640px] overflow-y-auto pr-1">
+                    {showtimesList
+                      .filter(
+                        (st) =>
+                          st.cinemaId === "beta-cinemas-xuan-thuy" &&
+                          (selectedRoomFilter === "all" || st.roomName.includes(selectedRoomFilter))
+                      )
+                      .map((st) => {
+                        const movie = MOCK_MOVIES.find((m) => String(m.id) === String(st.movieId));
+                        const duration = movie?.durationMinutes ?? 120;
+                        const timeParts = st.time.split(":").map(Number);
+                        let occupiedEndStr = "";
+                        if (timeParts.length === 2 && !isNaN(timeParts[0]) && !isNaN(timeParts[1])) {
+                          const totalMins = timeParts[0] * 60 + timeParts[1] + duration + TRAILER_MINUTES + CLEANING_MINUTES;
+                          const endH = Math.floor(totalMins / 60) % 24;
+                          const endM = totalMins % 60;
+                          occupiedEndStr = `${String(endH).padStart(2, "0")}:${String(endM).padStart(2, "0")}`;
+                        }
+
+                        return (
+                          <div
+                            key={st.id}
+                            className={`p-4 rounded-xl border transition-all flex flex-col justify-between group ${
+                              isHalloween
+                                ? "bg-[#140B22] border-orange-500/20 hover:border-orange-500/40"
+                                : "bg-[#14151B] border-white/10 hover:border-white/20"
+                            }`}
+                          >
+                            <div>
+                              <div className="flex items-center justify-between mb-2">
+                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                                  isHalloween
+                                    ? "bg-orange-500/20 text-orange-400 border border-orange-500/30"
+                                    : "bg-red-500/20 text-red-400 border border-red-500/30"
+                                }`}>
+                                  {st.format}
+                                </span>
+                                <div className="flex items-center gap-2">
+                                  <span className={`text-sm font-black ${isHalloween ? "text-orange-400" : "text-amber-400"}`}>{st.time}</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteShowtime(st.id)}
+                                    title="Xóa suất chiếu này"
+                                    className="text-neutral-500 hover:text-red-400 p-1 rounded hover:bg-red-500/10 transition-colors"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              </div>
+
+                              <h4 className="font-bold text-sm text-white mb-1 line-clamp-1">
+                                {movie?.title || st.movieId}
+                              </h4>
+
+                              <p className="text-xs text-neutral-400 flex items-center gap-1 mb-2">
+                                <Building2 className="w-3 h-3 text-neutral-500" />
+                                <span>{st.roomName}</span>
+                              </p>
+
+                              <div className="p-2 rounded-lg bg-white/5 border border-white/5 text-[11px] text-neutral-400 space-y-0.5">
+                                <div>Thời lượng phim: <strong className="text-white">{duration} phút</strong></div>
+                                <div>
+                                  Chiếm phòng (đệm 25p):{" "}
+                                  <strong className="text-cyan-400 font-mono">
+                                    {st.time} – {occupiedEndStr}
+                                  </strong>
+                                </div>
+                                <div className="text-[10px] text-neutral-500">Ngày chiếu: {st.date}</div>
+                              </div>
+                            </div>
+
+                            <div className="mt-3 pt-2.5 border-t border-white/5 flex items-center justify-between text-xs">
+                              <span className="text-neutral-500 text-[11px]">Beta Cinemas Xuân Thủy</span>
+                              <span className="text-emerald-400 font-semibold text-[11px]">Đang mở bán</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 3: QUẢN LÝ PHIM */}
+          {activeTab === "movies" && (
+            <div className="space-y-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h3 className="font-black text-base text-white flex items-center gap-2">
+                    <Film className={`w-5 h-5 ${isHalloween ? "text-orange-400" : "text-[#E50914]"}`} />
+                    <span>Kho Phim Chiếu Rạp & Quản Lý Bản Quyền ({MOCK_MOVIES.length} phim)</span>
+                  </h3>
+                  <p className="text-xs text-neutral-400 mt-0.5">
+                    Quản lý phim đang chiếu, sắp chiếu và điều phối định dạng rạp (IMAX Laser, ScreenX, 4DX, 2D)
+                  </p>
+                </div>
+
+                <div className="relative w-full sm:w-72">
+                  <Search className="w-4 h-4 text-neutral-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Tìm phim theo tên hoặc thể loại..."
+                    className="w-full pl-9 pr-3 py-2 rounded-xl bg-black/40 border border-white/10 text-xs text-white placeholder:text-neutral-500 focus:outline-none focus:border-[#E50914]"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {MOCK_MOVIES.filter((m) => {
+                  if (!searchQuery.trim()) return true;
+                  const q = searchQuery.toLowerCase();
+                  return (
+                    m.title.toLowerCase().includes(q) ||
+                    (m.originalTitle && m.originalTitle.toLowerCase().includes(q)) ||
+                    m.genres.some((g) => g.toLowerCase().includes(q))
+                  );
+                }).map((movie) => {
+                  const ageColor =
+                    movie.ageRating === "P"
+                      ? "bg-emerald-500 text-white"
+                      : movie.ageRating === "T13"
+                      ? "bg-amber-500 text-white"
+                      : movie.ageRating === "T16"
+                      ? "bg-orange-500 text-white"
+                      : movie.ageRating === "T18"
+                      ? "bg-red-600 text-white"
+                      : "bg-blue-500 text-white";
+
+                  return (
+                    <div
+                      key={movie.id}
+                      className={`p-4 rounded-2xl border transition-all flex flex-col justify-between shadow-lg group ${
+                        isHalloween
+                          ? "bg-[#140B22] border-orange-500/20 hover:border-orange-500/40"
+                          : "bg-[#13151f] border-white/10 hover:border-white/20"
+                      }`}
+                    >
+                      <div className="flex gap-4">
+                        {/* Poster với Age Badge */}
+                        <div className="relative w-20 h-28 shrink-0 rounded-xl overflow-hidden bg-neutral-900 border border-white/10 shadow-md">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={movie.posterPath}
+                            alt={movie.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                          <span
+                            className={`absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[9px] font-black uppercase shadow-md ${ageColor}`}
+                          >
+                            {movie.ageRating}
+                          </span>
+                        </div>
+
+                        {/* Thông tin phim */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h4 className="font-extrabold text-sm text-white truncate">{movie.title}</h4>
+                            <span className="text-[10px] text-amber-400 font-bold flex items-center gap-0.5">
+                              <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                              {movie.voteAverage}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-neutral-400 italic line-clamp-1 mt-0.5">
+                            {movie.originalTitle}
+                          </p>
+
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            {movie.genres.map((g, i) => (
+                              <span
+                                key={i}
+                                className="px-2 py-0.5 rounded text-[9px] font-semibold bg-white/5 text-neutral-300 border border-white/5"
+                              >
+                                {g}
+                              </span>
+                            ))}
+                            <span className="px-2 py-0.5 rounded text-[9px] font-semibold bg-white/5 text-neutral-400">
+                              {movie.durationMinutes} phút
+                            </span>
+                          </div>
+
+                          <p className="text-[11px] text-neutral-400 mt-2 line-clamp-2 leading-relaxed">
+                            {movie.overview}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between text-xs">
+                        <span className="text-[11px] font-bold text-emerald-400 flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                          Đang Khai Thác
                         </span>
-                        <div className="text-xs text-neutral-400 mt-1">{room.seats}</div>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setNewMovieId(String(movie.id));
+                            setActiveTab("showtimes");
+                          }}
+                          className={`px-3 py-1.5 rounded-lg border text-xs font-bold transition-all flex items-center gap-1 ${
+                            isHalloween
+                              ? "bg-orange-500/20 hover:bg-orange-500 text-orange-300 hover:text-white border-orange-500/40"
+                              : "bg-[#E50914]/20 hover:bg-[#E50914] text-[#ff6b62] hover:text-white border-[#E50914]/40"
+                          }`}
+                        >
+                          <Calendar className="w-3.5 h-3.5" />
+                          <span>Xếp Lịch Suất Chiếu</span>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* TAB 4: SOÁT VÉ & CHECK-IN */}
+          {activeTab === "tickets" && (
+            <div className={`p-8 rounded-2xl border max-w-2xl mx-auto w-full space-y-6 text-center shadow-2xl ${
+              isHalloween ? "bg-[#140B22] border-orange-500/20" : "bg-[#14151B] border-white/10"
+            }`}>
+              <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-2 shadow-lg ${
+                isHalloween
+                  ? "bg-orange-500/20 text-orange-400 shadow-orange-500/20"
+                  : "bg-[#E50914]/20 text-[#E50914] shadow-red-900/30"
+              }`}>
+                <QrCode className="w-8 h-8" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-white">Hệ Thống Soát Vé Điện Tử - Beta Xuân Thủy</h3>
+                <p className="text-xs text-neutral-400 mt-1.5 max-w-md mx-auto leading-relaxed">
+                  Hệ thống soát vé tập trung chống gian lận đa luồng. Mọi lượt soát vé thông qua ứng dụng máy quét PWA để xác thực chữ ký HMAC và đánh dấu nguyên tử (Atomic Check-in) trên Redis/Store.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-left">
+                <div className="p-3.5 rounded-xl bg-white/5 border border-white/5">
+                  <div className="font-bold text-xs text-white mb-1 flex items-center gap-1.5">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Chống Vé Kép</span>
+                  </div>
+                  <p className="text-[11px] text-neutral-400 leading-snug">
+                    Ngăn chặn 100% tình huống dùng lại vé hoặc hai máy quét cùng lúc.
+                  </p>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-white/5 border border-white/5">
+                  <div className="font-bold text-xs text-white mb-1 flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Kiểm Soát F&B</span>
+                  </div>
+                  <p className="text-[11px] text-neutral-400 leading-snug">
+                    Hiển thị chi tiết combo bắp nước để nhân viên giao đúng món cho khách.
+                  </p>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-white/5 border border-white/5">
+                  <div className="font-bold text-xs text-white mb-1 flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>Âm Báo Trực Quan</span>
+                  </div>
+                  <p className="text-[11px] text-neutral-400 leading-snug">
+                    Web Audio Synth phản hồi âm thanh hợp lệ hoặc từ chối tức thì.
+                  </p>
+                </div>
+              </div>
+
+              <div className="pt-3 flex flex-col sm:flex-row items-center justify-center gap-3">
+                <Link
+                  href="/staff"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-bold transition-all border border-white/15 group"
+                >
+                  <Users className="w-4 h-4 text-sky-400" />
+                  <span>Cổng Vận Hành Nhân Viên (/staff)</span>
+                </Link>
+                <Link
+                  href="/staff/scanner"
+                  className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-white text-xs font-black transition-all shadow-xl group ${
+                    isHalloween
+                      ? "bg-[#FF7518] hover:bg-[#e0620f] shadow-orange-500/25"
+                      : "bg-[#E50914] hover:bg-[#c81007] shadow-red-900/30"
+                  }`}
+                >
+                  <QrCode className="w-4 h-4" />
+                  <span>Máy Quét Camera QR (/staff/scanner)</span>
+                  <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                </Link>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 5: BẢNG GIÁ VÉ */}
+          {activeTab === "pricing" && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className={`p-5 rounded-2xl border space-y-4 ${
+                isHalloween ? "bg-[#140B22] border-orange-500/20" : "bg-[#14151B] border-white/10"
+              }`}>
+                <h3 className="font-bold text-base text-white flex items-center gap-2">
+                  <Ticket className={`w-4 h-4 ${isHalloween ? "text-orange-400" : "text-[#E50914]"}`} />
+                  <span>Bảng Giá Vé Rạp Beta Xuân Thủy</span>
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 rounded-xl bg-white/5">
+                    <div>
+                      <div className="font-bold text-sm text-white">Ghế Thường (Standard)</div>
+                      <div className="text-xs text-neutral-400">Các hàng ghế đầu và rìa (A - D)</div>
+                    </div>
+                    <div className="text-base font-black text-amber-400">55.000 đ</div>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 rounded-xl bg-white/5">
+                    <div>
+                      <div className="font-bold text-sm text-white">Ghế VIP (Sweet Spot)</div>
+                      <div className="text-xs text-neutral-400">Tầm nhìn hoàn hảo, góc 36-40° (E - H)</div>
+                    </div>
+                    <div className="text-base font-black text-amber-400">75.000 đ</div>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 rounded-xl bg-white/5">
+                    <div>
+                      <div className="font-bold text-sm text-white">Ghế Đôi (Sweetbox Couple)</div>
+                      <div className="text-xs text-neutral-400">Ghế sofa đôi hàng cuối riêng tư (K)</div>
+                    </div>
+                    <div className="text-base font-black text-amber-400">130.000 đ</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className={`p-5 rounded-2xl border space-y-4 ${
+                isHalloween ? "bg-[#140B22] border-orange-500/20" : "bg-[#14151B] border-white/10"
+              }`}>
+                <h3 className="font-bold text-base text-white flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-amber-400" />
+                  <span>Menu Bắp Nước Sinh Viên Beta</span>
+                </h3>
+                <div className="space-y-3">
+                  {CONCESSION_COMBOS.map((combo) => (
+                    <div key={combo.id} className="flex items-center justify-between p-3 rounded-xl bg-white/5">
+                      <div>
+                        <div className="font-bold text-sm text-white">{combo.icon} {combo.name}</div>
+                        <div className="text-xs text-neutral-400 mt-0.5">{combo.description}</div>
+                      </div>
+                      <div className="text-base font-black text-amber-400 whitespace-nowrap ml-3">
+                        {formatVND(combo.price)}
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
-
-              {/* Crawler Info Box */}
-              <div className="p-5 rounded-2xl bg-gradient-to-br from-accent-red/10 via-[#14151B] to-[#14151B] border border-accent-red/20">
-                <div className="flex items-start gap-3">
-                  <div className="p-2 rounded-xl bg-accent-red/20 text-accent-red">
-                    <Sparkles className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-sm text-white">Dữ Liệu Mô Phỏng Rạp Chiếu (Curated Demo)</h4>
-                    <p className="text-xs text-neutral-300 mt-1 leading-relaxed">
-                      Dữ liệu lịch chiếu và sơ đồ phòng chiếu phục vụ thử nghiệm thuật toán chống xung đột (Showtime Collision Engine) và quy trình vận hành rạp Beta Xuân Thủy. Trong môi trường production thực tế, API đồng bộ từ <code>betacinemas.vn</code> yêu cầu xác thực bằng <code>ADMIN_SYNC_SECRET</code>.
-                    </p>
-                  </div>
-                </div>
-              </div>
             </div>
+          )}
 
-            {/* Cột phải: Chuyển hướng Cổng Soát Vé PWA */}
-            <div className="p-5 rounded-2xl bg-[#14151B] border border-white/10 shadow-xl space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-accent-red/20 text-accent-red">
-                  <QrCode className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-sm text-white">Cổng Soát Vé Nhân Viên</h3>
-                  <span className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1 mt-0.5">
-                    <ShieldCheck className="w-3.5 h-3.5" />
-                    Chống vé kép & gian lận nguyên tử
-                  </span>
-                </div>
-              </div>
-
-              <p className="text-xs text-neutral-400 leading-relaxed">
-                Để đảm bảo tính xác thực HMAC, ngăn chặn dùng vé hai lần và kiểm soát nhận bắp nước tại quầy, nhân viên vui lòng sử dụng ứng dụng Web Scanner chuyên dụng.
-              </p>
-
-              <div className="p-3 rounded-xl bg-white/5 border border-white/10 space-y-2 text-xs text-neutral-300">
-                <div className="flex items-center justify-between">
-                  <span className="text-neutral-400">Phương thức:</span>
-                  <span className="font-semibold text-white">Camera Quét QR Real-time</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-neutral-400">Bảo mật:</span>
-                  <span className="text-amber-400 font-mono">STAFF_SCAN_SECRET</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-neutral-400">Trạng thái:</span>
-                  <span className="text-emerald-400 font-semibold">Sẵn sàng hoạt động</span>
-                </div>
-              </div>
-
-              <Link
-                href="/staff/scanner"
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-accent-red to-rose-600 hover:from-accent-red/90 hover:to-rose-600/90 text-white text-xs font-bold transition-all shadow-lg shadow-accent-red/20 flex items-center justify-center gap-2 group"
-              >
-                <span>Mở Máy Quét Vé /staff/scanner</span>
-                <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-              </Link>
+          {/* TAB 6: SƠ ĐỒ GHẾ & NHẬT KÝ AN NINH (ĐĂNG - PROMPT 1) */}
+          {activeTab === "seats" && (
+            <div className="mt-2">
+              <AdminSeatsMoviesAuditTab />
             </div>
-          </div>
-        )}
+          )}
 
-        {/* TAB 2: LỊCH CHIẾU BETA XUÂN THỦY & ENGINE KIỂM TRA XUNG ĐỘT */}
-        {activeTab === "showtimes" && (
-          <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-white/10">
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="font-bold text-base text-white">Bộ Điều Phối & Lên Lịch Chiếu (Showtime Engine)</h3>
-                  <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
-                    Collision Engine Active
-                  </span>
-                </div>
-                <p className="text-xs text-neutral-400 mt-0.5">
-                  Beta Cinemas Xuân Thủy • Tự động tính toán thời lượng phim + 10p quảng cáo + 15p dọn buồng để ngăn chặn xung đột phòng chiếu
-                </p>
-              </div>
-              <button
-                onClick={handleSyncBeta}
-                className="text-xs px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center gap-1.5 shrink-0 text-neutral-300"
-              >
-                <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? "animate-spin" : ""}`} />
-                <span>Cập nhật lịch Live</span>
-              </button>
+          {/* TAB 7: ĐƠN VÉ, HOÀN TIỀN & ĐÁNH GIÁ (MINH - PROMPT 3) */}
+          {activeTab === "orders-reviews" && (
+            <div className="mt-2">
+              <AdminOrdersAndReviewsTab />
             </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              {/* CỘT TRÁI (5 Cột): Form Thêm Suất Chiếu & Kiểm Tra Xung Đột */}
-              <div className="lg:col-span-5 space-y-4">
-                <div className="p-5 rounded-2xl bg-[#14151B] border border-white/10 shadow-xl space-y-4">
-                  <div className="flex items-center justify-between pb-3 border-b border-white/10">
-                    <h4 className="font-bold text-sm text-white flex items-center gap-2">
-                      <Calendar className="w-4 h-4 text-accent-red" />
-                      <span>Thêm Suất Chiếu Mới</span>
-                    </h4>
-                    <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
-                      Buffer 25p (10p trailer + 15p dọn)
-                    </span>
-                  </div>
-
-                  <form onSubmit={handleAddShowtime} className="space-y-3.5">
-                    {/* Chọn Phim */}
-                    <div>
-                      <label className="text-[11px] font-semibold text-neutral-400 block mb-1">Chọn Phim:</label>
-                      <select
-                        value={newMovieId}
-                        onChange={(e) => setNewMovieId(e.target.value)}
-                        className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-accent-red"
-                      >
-                        {MOCK_MOVIES.map((m) => (
-                          <option key={m.id} value={m.id} className="bg-[#14151B] text-white">
-                            {m.title} ({m.durationMinutes} phút - {m.ageRating})
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Chọn Phòng */}
-                    <div>
-                      <label className="text-[11px] font-semibold text-neutral-400 block mb-1">Phòng Chiếu:</label>
-                      <select
-                        value={newRoomName}
-                        onChange={(e) => setNewRoomName(e.target.value)}
-                        className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-accent-red"
-                      >
-                        <option value="Phòng Beta 01 (Dolby 7.1)" className="bg-[#14151B] text-white">
-                          Phòng Beta 01 (Dolby 7.1)
-                        </option>
-                        <option value="Phòng Beta 02 (Laser HD)" className="bg-[#14151B] text-white">
-                          Phòng Beta 02 (Laser HD)
-                        </option>
-                        <option value="Phòng Beta 03 (Standard)" className="bg-[#14151B] text-white">
-                          Phòng Beta 03 (Standard)
-                        </option>
-                      </select>
-                    </div>
-
-                    {/* Ngày, Giờ, Định dạng */}
-                    <div className="grid grid-cols-3 gap-2.5">
-                      <div>
-                        <label className="text-[11px] font-semibold text-neutral-400 block mb-1">Ngày:</label>
-                        <input
-                          type="date"
-                          value={newDate}
-                          onChange={(e) => setNewDate(e.target.value)}
-                          className="w-full px-2.5 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-accent-red"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-[11px] font-semibold text-neutral-400 block mb-1">Giờ Chiếu:</label>
-                        <input
-                          type="time"
-                          value={newTime}
-                          onChange={(e) => setNewTime(e.target.value)}
-                          className="w-full px-2.5 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-accent-red"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-[11px] font-semibold text-neutral-400 block mb-1">Định Dạng:</label>
-                        <select
-                          value={newFormat}
-                          onChange={(e) => setNewFormat(e.target.value as any)}
-                          className="w-full px-2 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-accent-red"
-                        >
-                          <option value="2D Phụ Đề" className="bg-[#14151B] text-white">2D Phụ Đề</option>
-                          <option value="2D Lồng Tiếng" className="bg-[#14151B] text-white">2D Lồng Tiếng</option>
-                          <option value="IMAX Laser" className="bg-[#14151B] text-white">IMAX Laser</option>
-                          <option value="4DX" className="bg-[#14151B] text-white">4DX</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    {/* Live Collision Feedback Banner */}
-                    {!collisionResult.valid && (
-                      <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs">
-                        {collisionResult.errors.join(", ")}
-                      </div>
-                    )}
-
-                    {collisionResult.valid && collisionResult.ok && (
-                      <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs animate-in fade-in">
-                        <div className="font-bold flex items-center gap-2 mb-1">
-                          <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
-                          <span>Khung Giờ Hợp Lệ & Khả Dụng!</span>
-                        </div>
-                        <p className="text-[11px] text-emerald-400/90 leading-relaxed">
-                          Phòng trống trong khoảng <strong>{collisionResult.occupied?.startTime}</strong> – <strong>{collisionResult.occupied?.endTime}</strong>. Tổng chiếm dụng phòng: <strong>{collisionResult.totalOccupiedMinutes} phút</strong> ({selectedMovie?.durationMinutes}p phim + {TRAILER_MINUTES}p trailer + {CLEANING_MINUTES}p dọn buồng).
-                        </p>
-                      </div>
-                    )}
-
-                    {collisionResult.valid && !collisionResult.ok && (
-                      <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-xs space-y-2.5 animate-in fade-in">
-                        <div className="font-bold flex items-center gap-2 text-red-400">
-                          <AlertTriangle className="w-4 h-4 text-red-400 shrink-0" />
-                          <span>PHÁT HIỆN {collisionResult.conflicts.length} XUNG ĐỘT PHÒNG CHIẾU!</span>
-                        </div>
-
-                        <div className="space-y-1.5">
-                          {collisionResult.conflicts.map((c, i) => (
-                            <div key={i} className="p-2 rounded-lg bg-red-950/40 border border-red-800/40 text-[11px]">
-                              <div className="flex items-center gap-1.5 mb-1 font-semibold">
-                                {c.kind === "overlap" ? (
-                                  <span className="px-1.5 py-0.5 rounded bg-red-500/30 text-red-200 text-[10px] font-bold">
-                                    Xung đột trùng giờ phim
-                                  </span>
-                                ) : (
-                                  <span className="px-1.5 py-0.5 rounded bg-amber-500/30 text-amber-200 text-[10px] font-bold">
-                                    Vi phạm đệm dọn phòng
-                                  </span>
-                                )}
-                              </div>
-                              <p className="text-neutral-300 leading-normal">{c.message}</p>
-                            </div>
-                          ))}
-                        </div>
-
-                        {/* Gợi ý slot trống gần nhất */}
-                        {collisionResult.suggestions.length > 0 && (
-                          <div className="pt-2 border-t border-red-500/20">
-                            <div className="text-[11px] font-semibold text-neutral-300 mb-1.5 flex items-center gap-1">
-                              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                              <span>Gợi ý khung giờ trống gần nhất (Click để chọn):</span>
-                            </div>
-                            <div className="flex flex-wrap gap-1.5">
-                              {collisionResult.suggestions.map((s, idx) => (
-                                <button
-                                  key={idx}
-                                  type="button"
-                                  onClick={() => {
-                                    setNewTime(s.time);
-                                    setNewDate(s.date);
-                                  }}
-                                  className="px-2.5 py-1.5 rounded-lg bg-white/10 hover:bg-emerald-500/20 hover:border-emerald-500/40 border border-white/10 text-white text-[11px] transition-all flex items-center gap-1.5 font-medium group"
-                                >
-                                  <Clock className="w-3 h-3 text-cyan-400 group-hover:text-emerald-400" />
-                                  <span>{s.time}</span>
-                                  <span className="text-[10px] text-neutral-400 font-mono">
-                                    ({s.offsetMinutes > 0 ? `+${s.offsetMinutes}p` : `${s.offsetMinutes}p`})
-                                  </span>
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Schedule Success Message */}
-                    {scheduleSuccessMsg && (
-                      <div className="p-3 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-semibold flex items-center gap-2">
-                        <CheckCircle className="w-4 h-4 shrink-0 text-emerald-400" />
-                        <span>{scheduleSuccessMsg}</span>
-                      </div>
-                    )}
-
-                    <button
-                      type="submit"
-                      disabled={!collisionResult.ok}
-                      className={`w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-md ${
-                        collisionResult.ok
-                          ? "bg-accent-red hover:bg-accent-red/90 text-white shadow-accent-red/20 cursor-pointer"
-                          : "bg-neutral-800 text-neutral-500 border border-white/5 cursor-not-allowed"
-                      }`}
-                    >
-                      <PlusCircle className="w-4 h-4" />
-                      <span>{collisionResult.ok ? "Xác Nhận Thêm Suất Chiếu" : "Không Thể Thêm (Đang Trùng Lịch)"}</span>
-                    </button>
-                  </form>
-                </div>
-              </div>
-
-              {/* CỘT PHẢI (7 Cột): Danh Sách Suất Chiếu Hiện Tại Tại Rạp */}
-              <div className="lg:col-span-7 space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-sm text-white">Lịch Chiếu Đang Mở Bán</span>
-                    <span className="text-xs text-neutral-400 bg-white/5 px-2 py-0.5 rounded-full border border-white/10">
-                      {showtimesList.filter((st) => st.cinemaId === "beta-cinemas-xuan-thuy").length} suất
-                    </span>
-                  </div>
-
-                  {/* Filter phòng */}
-                  <div className="flex items-center gap-1.5 text-xs">
-                    {[
-                      { id: "all", label: "Tất cả" },
-                      { id: "Beta 01", label: "Phòng 01" },
-                      { id: "Beta 02", label: "Phòng 02" },
-                      { id: "Beta 03", label: "Phòng 03" },
-                    ].map((rf) => (
-                      <button
-                        key={rf.id}
-                        type="button"
-                        onClick={() => setSelectedRoomFilter(rf.id)}
-                        className={`px-2.5 py-1 rounded-lg font-medium transition-all ${
-                          selectedRoomFilter === rf.id
-                            ? "bg-accent-red text-white"
-                            : "bg-white/5 text-neutral-400 hover:text-white hover:bg-white/10"
-                        }`}
-                      >
-                        {rf.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 max-h-[640px] overflow-y-auto pr-1">
-                  {showtimesList
-                    .filter(
-                      (st) =>
-                        st.cinemaId === "beta-cinemas-xuan-thuy" &&
-                        (selectedRoomFilter === "all" || st.roomName.includes(selectedRoomFilter))
-                    )
-                    .map((st) => {
-                      const movie = MOCK_MOVIES.find((m) => String(m.id) === String(st.movieId));
-                      const duration = movie?.durationMinutes ?? 120;
-                      const timeParts = st.time.split(":").map(Number);
-                      let occupiedEndStr = "";
-                      if (timeParts.length === 2 && !isNaN(timeParts[0]) && !isNaN(timeParts[1])) {
-                        const totalMins = timeParts[0] * 60 + timeParts[1] + duration + TRAILER_MINUTES + CLEANING_MINUTES;
-                        const endH = Math.floor(totalMins / 60) % 24;
-                        const endM = totalMins % 60;
-                        occupiedEndStr = `${String(endH).padStart(2, "0")}:${String(endM).padStart(2, "0")}`;
-                      }
-
-                      return (
-                        <div
-                          key={st.id}
-                          className="p-4 rounded-xl bg-[#14151B] border border-white/10 hover:border-white/20 transition-all flex flex-col justify-between group"
-                        >
-                          <div>
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-accent-red/20 text-accent-red">
-                                {st.format}
-                              </span>
-                              <div className="flex items-center gap-2">
-                                <span className="text-sm font-black text-amber-400">{st.time}</span>
-                                <button
-                                  type="button"
-                                  onClick={() => handleDeleteShowtime(st.id)}
-                                  title="Xóa suất chiếu này"
-                                  className="text-neutral-500 hover:text-red-400 p-1 rounded hover:bg-red-500/10 transition-colors"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </button>
-                              </div>
-                            </div>
-
-                            <h4 className="font-bold text-sm text-white mb-1 line-clamp-1">
-                              {movie?.title || st.movieId}
-                            </h4>
-
-                            <p className="text-xs text-neutral-400 flex items-center gap-1 mb-2">
-                              <Building2 className="w-3 h-3 text-neutral-500" />
-                              <span>{st.roomName}</span>
-                            </p>
-
-                            <div className="p-2 rounded-lg bg-white/5 border border-white/5 text-[11px] text-neutral-400 space-y-0.5">
-                              <div>Thời lượng phim: <strong className="text-white">{duration} phút</strong></div>
-                              <div>
-                                Chiếm phòng (đệm 25p):{" "}
-                                <strong className="text-cyan-400 font-mono">
-                                  {st.time} – {occupiedEndStr}
-                                </strong>
-                              </div>
-                              <div className="text-[10px] text-neutral-500">Ngày chiếu: {st.date}</div>
-                            </div>
-                          </div>
-
-                          <div className="mt-3 pt-2.5 border-t border-white/5 flex items-center justify-between text-xs">
-                            <span className="text-neutral-500 text-[11px]">Beta Cinemas Xuân Thủy</span>
-                            <span className="text-emerald-400 font-semibold text-[11px]">Đang mở bán</span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 3: QUẢN LÝ PHIM */}
-        {activeTab === "movies" && (
-          <div className="space-y-5">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
-                <h3 className="font-black text-base text-white flex items-center gap-2">
-                  <Film className="w-5 h-5 text-[#e71a0f]" />
-                  <span>Kho Phim Chiếu Rạp & Quản Lý Bản Quyền ({MOCK_MOVIES.length} phim)</span>
-                </h3>
-                <p className="text-xs text-neutral-400 mt-0.5">
-                  Quản lý phim đang chiếu, sắp chiếu và điều phối định dạng rạp (IMAX Laser, ScreenX, 4DX, 2D)
-                </p>
-              </div>
-
-              <div className="relative w-full sm:w-72">
-                <Search className="w-4 h-4 text-neutral-500 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Tìm phim theo tên hoặc thể loại..."
-                  className="w-full pl-9 pr-3 py-2 rounded-xl bg-black/40 border border-white/10 text-xs text-white placeholder:text-neutral-500 focus:outline-none focus:border-[#e71a0f]"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {MOCK_MOVIES.filter((m) => {
-                if (!searchQuery.trim()) return true;
-                const q = searchQuery.toLowerCase();
-                return (
-                  m.title.toLowerCase().includes(q) ||
-                  (m.originalTitle && m.originalTitle.toLowerCase().includes(q)) ||
-                  m.genres.some((g) => g.toLowerCase().includes(q))
-                );
-              }).map((movie) => {
-                const ageColor =
-                  movie.ageRating === "P"
-                    ? "bg-emerald-500 text-white"
-                    : movie.ageRating === "T13"
-                    ? "bg-amber-500 text-white"
-                    : movie.ageRating === "T16"
-                    ? "bg-orange-500 text-white"
-                    : movie.ageRating === "T18"
-                    ? "bg-red-600 text-white"
-                    : "bg-blue-500 text-white";
-
-                return (
-                  <div
-                    key={movie.id}
-                    className="p-4 rounded-2xl bg-[#13151f] border border-white/10 hover:border-white/20 transition-all flex flex-col justify-between shadow-lg group"
-                  >
-                    <div className="flex gap-4">
-                      {/* Poster với Age Badge */}
-                      <div className="relative w-20 h-28 shrink-0 rounded-xl overflow-hidden bg-neutral-900 border border-white/10 shadow-md">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={movie.posterPath}
-                          alt={movie.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                        <span
-                          className={`absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[9px] font-black uppercase shadow-md ${ageColor}`}
-                        >
-                          {movie.ageRating}
-                        </span>
-                      </div>
-
-                      {/* Thông tin phim */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <h4 className="font-extrabold text-sm text-white truncate">{movie.title}</h4>
-                          <span className="text-[10px] text-amber-400 font-bold flex items-center gap-0.5">
-                            <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                            {movie.voteAverage}
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-neutral-400 italic line-clamp-1 mt-0.5">
-                          {movie.originalTitle}
-                        </p>
-
-                        <div className="flex flex-wrap gap-1 mt-2">
-                          {movie.genres.map((g, i) => (
-                            <span
-                              key={i}
-                              className="px-2 py-0.5 rounded text-[9px] font-semibold bg-white/5 text-neutral-300 border border-white/5"
-                            >
-                              {g}
-                            </span>
-                          ))}
-                          <span className="px-2 py-0.5 rounded text-[9px] font-semibold bg-white/5 text-neutral-400">
-                            {movie.durationMinutes} phút
-                          </span>
-                        </div>
-
-                        <p className="text-[11px] text-neutral-400 mt-2 line-clamp-2 leading-relaxed">
-                          {movie.overview}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between text-xs">
-                      <span className="text-[11px] font-bold text-emerald-400 flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                        Đang Khai Thác
-                      </span>
-
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setNewMovieId(String(movie.id));
-                          setActiveTab("showtimes");
-                        }}
-                        className="px-3 py-1.5 rounded-lg bg-[#e71a0f]/20 hover:bg-[#e71a0f] text-[#ff6b62] hover:text-white border border-[#e71a0f]/40 text-xs font-bold transition-all flex items-center gap-1"
-                      >
-                        <Calendar className="w-3.5 h-3.5" />
-                        <span>Xếp Lịch Suất Chiếu</span>
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* TAB 4: SOÁT VÉ & CHECK-IN */}
-        {activeTab === "tickets" && (
-          <div className="p-8 rounded-2xl bg-[#14151B] border border-white/10 max-w-2xl mx-auto w-full space-y-6 text-center shadow-2xl">
-            <div className="w-16 h-16 rounded-2xl bg-accent-red/20 text-accent-red flex items-center justify-center mx-auto mb-2 shadow-lg shadow-accent-red/20">
-              <QrCode className="w-8 h-8" />
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-white">Hệ Thống Soát Vé Điện Tử - Beta Xuân Thủy</h3>
-              <p className="text-xs text-neutral-400 mt-1.5 max-w-md mx-auto leading-relaxed">
-                Hệ thống soát vé tập trung chống gian lận đa luồng. Mọi lượt soát vé phải thông qua ứng dụng máy quét PWA để xác thực chữ ký HMAC và đánh dấu nguyên tử (Atomic Check-in) trên Redis/Store.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-left">
-              <div className="p-3.5 rounded-xl bg-white/5 border border-white/5">
-                <div className="font-bold text-xs text-white mb-1 flex items-center gap-1.5">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Chống Vé Kép</span>
-                </div>
-                <p className="text-[11px] text-neutral-400 leading-snug">
-                  Ngăn chặn 100% tình huống dùng lại vé hoặc hai máy quét cùng lúc.
-                </p>
-              </div>
-
-              <div className="p-3.5 rounded-xl bg-white/5 border border-white/5">
-                <div className="font-bold text-xs text-white mb-1 flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Kiểm Soát F&B</span>
-                </div>
-                <p className="text-[11px] text-neutral-400 leading-snug">
-                  Hiển thị chi tiết combo bắp nước để nhân viên giao đúng món cho khách.
-                </p>
-              </div>
-
-              <div className="p-3.5 rounded-xl bg-white/5 border border-white/5">
-                <div className="font-bold text-xs text-white mb-1 flex items-center gap-1.5">
-                  <Clock className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>Âm Báo Trực Quan</span>
-                </div>
-                <p className="text-[11px] text-neutral-400 leading-snug">
-                  Web Audio Synth phản hồi âm thanh hợp lệ hoặc từ chối tức thì.
-                </p>
-              </div>
-            </div>
-
-            <div className="pt-3 flex flex-col sm:flex-row items-center justify-center gap-3">
-              <Link
-                href="/staff"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-bold transition-all border border-white/15 group"
-              >
-                <Users className="w-4 h-4 text-sky-400" />
-                <span>Cổng Vận Hành Nhân Viên (/staff)</span>
-              </Link>
-              <Link
-                href="/staff/scanner"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#e71a0f] hover:bg-[#c81007] text-white text-xs font-black transition-all shadow-xl shadow-[#e71a0f]/25 group"
-              >
-                <QrCode className="w-4 h-4" />
-                <span>Máy Quét Camera QR (/staff/scanner)</span>
-                <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-              </Link>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 5: BẢNG GIÁ VÉ */}
-        {activeTab === "pricing" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="p-5 rounded-2xl bg-[#14151B] border border-white/10 space-y-4">
-              <h3 className="font-bold text-base text-white flex items-center gap-2">
-                <Ticket className="w-4 h-4 text-accent-red" />
-                <span>Bảng Giá Vé Rạp Beta Xuân Thủy</span>
-              </h3>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 rounded-xl bg-white/5">
-                  <div>
-                    <div className="font-bold text-sm text-white">Ghế Thường (Standard)</div>
-                    <div className="text-xs text-neutral-400">Các hàng ghế đầu và rìa (A - D)</div>
-                  </div>
-                  <div className="text-base font-black text-amber-400">55.000 đ</div>
-                </div>
-
-                <div className="flex items-center justify-between p-3 rounded-xl bg-white/5">
-                  <div>
-                    <div className="font-bold text-sm text-white">Ghế VIP (Sweet Spot)</div>
-                    <div className="text-xs text-neutral-400">Tầm nhìn hoàn hảo, góc 36-40° (E - H)</div>
-                  </div>
-                  <div className="text-base font-black text-amber-400">75.000 đ</div>
-                </div>
-
-                <div className="flex items-center justify-between p-3 rounded-xl bg-white/5">
-                  <div>
-                    <div className="font-bold text-sm text-white">Ghế Đôi (Sweetbox Couple)</div>
-                    <div className="text-xs text-neutral-400">Ghế sofa đôi hàng cuối riêng tư (K)</div>
-                  </div>
-                  <div className="text-base font-black text-amber-400">130.000 đ</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-5 rounded-2xl bg-[#14151B] border border-white/10 space-y-4">
-              <h3 className="font-bold text-base text-white flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-amber-400" />
-                <span>Menu Bắp Nước Sinh Viên Beta</span>
-              </h3>
-              <div className="space-y-3">
-                {CONCESSION_COMBOS.map((combo) => (
-                  <div key={combo.id} className="flex items-center justify-between p-3 rounded-xl bg-white/5">
-                    <div>
-                      <div className="font-bold text-sm text-white">{combo.icon} {combo.name}</div>
-                      <div className="text-xs text-neutral-400 mt-0.5">{combo.description}</div>
-                    </div>
-                    <div className="text-base font-black text-amber-400 whitespace-nowrap ml-3">
-                      {formatVND(combo.price)}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 6: SƠ ĐỒ GHẾ & NHẬT KÝ AN NINH (ĐĂNG - PROMPT 1) */}
-        {activeTab === "seats" && (
-          <div className="mt-4">
-            <AdminSeatsMoviesAuditTab />
-          </div>
-        )}
-
-        {/* TAB 7: ĐƠN VÉ, HOÀN TIỀN & ĐÁNH GIÁ (MINH - PROMPT 3) */}
-        {activeTab === "orders-reviews" && (
-          <div className="mt-4">
-            <AdminOrdersAndReviewsTab />
-          </div>
-        )}
+          )}
+        </main>
       </div>
     </div>
   );

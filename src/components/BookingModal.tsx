@@ -190,7 +190,26 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
+  const [isVerifiedCustomer, setIsVerifiedCustomer] = useState(false);
+  const [isEditingCustomer, setIsEditingCustomer] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Tự động nhận diện danh tính khách hàng từ phiên đăng nhập hoặc lần đặt vé trước
+  useEffect(() => {
+    try {
+      const storedPhone = localStorage.getItem("cinemax_customer_phone");
+      const storedName = localStorage.getItem("cinemax_customer_name");
+      const storedEmail = localStorage.getItem("cinemax_customer_email");
+      if (storedPhone && storedPhone.trim()) {
+        setCustomerPhone(storedPhone.trim());
+        if (storedName && storedName.trim()) setCustomerName(storedName.trim());
+        if (storedEmail && storedEmail.trim()) setCustomerEmail(storedEmail.trim());
+        setIsVerifiedCustomer(true);
+      }
+    } catch (e) {
+      console.error("Lỗi đọc thông tin khách hàng:", e);
+    }
+  }, []);
 
   // Phương thức thanh toán (vnpay / vietqr / momo)
   const [paymentMethod, setPaymentMethod] = useState<"vnpay" | "vietqr" | "momo">("vnpay");
@@ -628,8 +647,9 @@ export const BookingModal: React.FC<BookingModalProps> = ({
       setNotice("Vui lòng điền đầy đủ họ tên và số điện thoại nhận vé.");
       return;
     }
-    if (!PHONE_PATTERN.test(customerPhone.replace(/[\s.\-()]/g, ""))) {
-      setNotice("Số điện thoại không hợp lệ.");
+    const cleanPhone = customerPhone.trim().replace(/[\s.\-()]/g, "");
+    if (!PHONE_PATTERN.test(cleanPhone)) {
+      setNotice("Số điện thoại không hợp lệ (cần từ 10 chữ số, VD: 0912345678).");
       return;
     }
     if (!seatsReady) {
@@ -638,6 +658,20 @@ export const BookingModal: React.FC<BookingModalProps> = ({
       return;
     }
     setNotice(null);
+
+    // Lưu danh tính khách hàng để ghi nhớ tự động
+    try {
+      localStorage.setItem("cinemax_customer_phone", cleanPhone);
+      localStorage.setItem("cinemax_customer_name", customerName.trim() || "Khách Hàng CineMax");
+      if (customerEmail.trim()) {
+        localStorage.setItem("cinemax_customer_email", customerEmail.trim());
+      }
+      setIsVerifiedCustomer(true);
+      setIsEditingCustomer(false);
+    } catch (e) {
+      console.error(e);
+    }
+
     h.hold(selectedSeats.map((s) => s.id)); // làm mới 5 phút cho bước thanh toán
     setStep(4);
   };
@@ -1345,44 +1379,113 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
             {/* Thông tin người nhận vé */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">
-                Thông tin nhận vé điện tử
-              </label>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div>
-                  <label className="block text-xs text-slate-500 mb-1">Họ và tên *</label>
-                  <input
-                    type="text"
-                    required
-                    value={customerName}
-                    onChange={(e) => setCustomerName(e.target.value)}
-                    placeholder="Nguyễn Văn A"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-sky-500 focus:bg-white transition-colors"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs text-slate-500 mb-1">Số điện thoại *</label>
-                  <input
-                    type="tel"
-                    required
-                    pattern="[0-9+\s.\-()]{9,16}"
-                    value={customerPhone}
-                    onChange={(e) => setCustomerPhone(e.target.value)}
-                    placeholder="0912 345 678"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-sky-500 focus:bg-white transition-colors"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs text-slate-500 mb-1">Email (tùy chọn)</label>
-                  <input
-                    type="email"
-                    value={customerEmail}
-                    onChange={(e) => setCustomerEmail(e.target.value)}
-                    placeholder="email@example.com"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-sky-500 focus:bg-white transition-colors"
-                  />
-                </div>
+              <div className="flex items-center justify-between mb-2.5">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  Thông tin nhận vé điện tử
+                </label>
+                {isVerifiedCustomer && !isEditingCustomer && (
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingCustomer(true)}
+                    className="text-xs text-sky-600 hover:text-sky-700 font-semibold flex items-center gap-1 transition-colors"
+                  >
+                    <span>Thay đổi người nhận</span>
+                  </button>
+                )}
               </div>
+
+              {isVerifiedCustomer && !isEditingCustomer ? (
+                <div className="p-4 rounded-xl bg-gradient-to-r from-sky-50 via-white to-emerald-50/60 border border-sky-200/80 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-600 to-emerald-600 text-white flex items-center justify-center font-bold shrink-0 shadow-md shadow-sky-600/20">
+                      <ShieldCheck className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-bold text-sm text-slate-900">{customerName || "Khách Hàng CineMax"}</span>
+                        <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-700 border border-emerald-300 flex items-center gap-1">
+                          <Check className="w-3 h-3" /> Đã xác minh danh tính
+                        </span>
+                      </div>
+                      <div className="text-xs text-slate-600 mt-1 flex items-center gap-2 flex-wrap">
+                        <span>SĐT nhận vé: <strong className="font-mono text-slate-900 font-bold">{customerPhone}</strong></span>
+                        {customerEmail && (
+                          <>
+                            <span className="text-slate-300">•</span>
+                            <span>Email: <strong className="text-slate-800">{customerEmail}</strong></span>
+                          </>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-emerald-700 font-medium mt-1">
+                        ✓ Tự động nhận diện - Bạn có thể bấm tiếp tục thanh toán ngay mà không cần nhập lại!
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                    <button
+                      type="button"
+                      onClick={() => setIsEditingCustomer(true)}
+                      className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm transition-all"
+                    >
+                      Sửa thông tin
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2.5">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-xs text-slate-500 mb-1">Họ và tên *</label>
+                      <input
+                        type="text"
+                        required
+                        value={customerName}
+                        onChange={(e) => setCustomerName(e.target.value)}
+                        placeholder="Nguyễn Văn A"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-sky-500 focus:bg-white transition-colors"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-slate-500 mb-1">Số điện thoại *</label>
+                      <input
+                        type="tel"
+                        required
+                        pattern="[0-9+\s.\-()]{9,16}"
+                        value={customerPhone}
+                        onChange={(e) => setCustomerPhone(e.target.value)}
+                        placeholder="0912 345 678"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-sky-500 focus:bg-white transition-colors"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-slate-500 mb-1">Email (tùy chọn)</label>
+                      <input
+                        type="email"
+                        value={customerEmail}
+                        onChange={(e) => setCustomerEmail(e.target.value)}
+                        placeholder="email@example.com"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-sky-500 focus:bg-white transition-colors"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between text-[11px] text-slate-500">
+                    <p className="flex items-center gap-1.5">
+                      <ShieldCheck className="w-3.5 h-3.5 text-sky-600" />
+                      <span>Hệ thống sẽ ghi nhớ danh tính cho các lần đặt vé sau (không cần nhập lại).</span>
+                    </p>
+                    {isEditingCustomer && (
+                      <button
+                        type="button"
+                        onClick={() => setIsEditingCustomer(false)}
+                        className="text-xs text-slate-500 hover:text-slate-800 underline"
+                      >
+                        Hủy chỉnh sửa
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Tóm tắt thanh toán */}

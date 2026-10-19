@@ -175,13 +175,23 @@ export default function HomePage() {
     };
   }, []);
 
-  // Đọc số lượng vé đã đặt
+  // Đọc số lượng vé đã đặt và thông tin tài khoản khách hàng
+  const [customerInfo, setCustomerInfo] = useState<{ name: string; phone: string } | null>(null);
+
   useEffect(() => {
     try {
       const stored = localStorage.getItem("cinemax_tickets");
       if (stored) {
         const parsed = JSON.parse(stored);
         setTicketCount(parsed.length);
+      }
+      const storedPhone = localStorage.getItem("cinemax_customer_phone");
+      const storedName = localStorage.getItem("cinemax_customer_name");
+      if (storedPhone && storedPhone.trim()) {
+        setCustomerInfo({
+          phone: storedPhone.trim(),
+          name: storedName?.trim() || "Thành viên CineMax",
+        });
       }
     } catch (e) {
       console.error(e);
@@ -263,6 +273,12 @@ export default function HomePage() {
 
   const handleBookingSuccess = (newTicket: BookingInfo) => {
     setTicketCount((prev) => prev + 1);
+    if (newTicket.customerName && newTicket.customerPhone) {
+      setCustomerInfo({
+        name: newTicket.customerName,
+        phone: newTicket.customerPhone,
+      });
+    }
   };
 
   // Phim nổi bật nhất cho Hero Banner
@@ -309,6 +325,7 @@ export default function HomePage() {
         onOpenMyTickets={() => setIsMyTicketsOpen(true)}
         onOpenSearch={() => setIsSearchOpen(true)}
         ticketCount={ticketCount}
+        customerInfo={customerInfo}
         selectedCity={selectedCity}
         onCityChange={setSelectedCity}
       />
