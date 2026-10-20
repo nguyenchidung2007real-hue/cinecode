@@ -1809,3 +1809,51 @@ export function AdminSeatsMoviesAuditTab({
 }
 
 export default AdminSeatsMoviesAuditTab;
+
+export function AdminMoviesTab({
+  authHeaders,
+  adminUser = "Admin CineMax",
+}: {
+  authHeaders?: Record<string, string>;
+  adminUser?: string;
+}) {
+  const [toast, setToast] = useState<ToastState | null>(null);
+  const authKey = JSON.stringify(authHeaders ?? {});
+  const headers = useMemo<Record<string, string>>(() => {
+    const base = JSON.parse(authKey) as Record<string, string>;
+    if (adminUser && !base["x-admin-user"]) {
+      base["x-admin-user"] = adminUser;
+    }
+    return base;
+  }, [authKey, adminUser]);
+
+  const notify = useCallback((type: "success" | "error", message: string) => {
+    setToast({ id: Date.now(), type, message });
+  }, []);
+
+  const ctx = useMemo<PanelContext>(() => ({ headers, notify }), [headers, notify]);
+
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(null), 4500);
+    return () => clearTimeout(timer);
+  }, [toast]);
+
+  return (
+    <div className="space-y-4">
+      <MoviesPanel ctx={ctx} />
+      {toast && (
+        <div
+          role="status"
+          className={`fixed bottom-6 right-6 z-[60] max-w-sm rounded-lg border px-4 py-3 text-sm shadow-xl ${
+            toast.type === "success"
+              ? "border-emerald-500/40 bg-emerald-950 text-emerald-200"
+              : "border-rose-500/40 bg-rose-950 text-rose-200"
+          }`}
+        >
+          {toast.message}
+        </div>
+      )}
+    </div>
+  );
+}

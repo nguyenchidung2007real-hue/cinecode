@@ -45,7 +45,7 @@ import {
   X,
   Check,
 } from "lucide-react";
-import AdminSeatsMoviesAuditTab from "@/components/admin/AdminSeatsMoviesAuditTab";
+import AdminSeatsMoviesAuditTab, { AdminMoviesTab } from "@/components/admin/AdminSeatsMoviesAuditTab";
 import AdminOrdersAndReviewsTab from "@/components/admin/AdminOrdersAndReviewsTab";
 import { MOCK_MOVIES, MOCK_SHOWTIMES, CONCESSION_COMBOS } from "@/lib/mockData";
 import { formatVND } from "@/lib/utils";
@@ -68,6 +68,7 @@ export default function AdminDashboardPage() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [movieManagementSubTab, setMovieManagementSubTab] = useState<"crud" | "coordination">("crud");
 
   // Live Broadcast Controller (Phát sóng thông báo trực tiếp lên trang khách)
   const [announcementSettings, setAnnouncementSettings] = useState<{
@@ -2166,6 +2167,49 @@ export default function AdminDashboardPage() {
 
           {/* TAB 3: QUẢN LÝ PHIM & ĐIỀU PHỐI DANH MỤC TRANG KHÁCH */}
           {activeTab === "movies" && (
+            <div className="space-y-6">
+              {/* Thanh Chuyển Chế Độ: Thêm/Xóa Phim CRUD & Điều Phối 1-Click */}
+              <div className="flex flex-wrap items-center gap-2 border-b border-white/10 pb-3">
+                <button
+                  type="button"
+                  onClick={() => setMovieManagementSubTab("crud")}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                    movieManagementSubTab === "crud"
+                      ? isHalloween
+                        ? "bg-orange-500 text-white shadow-lg shadow-orange-500/30"
+                        : "bg-[#E50914] text-white shadow-lg shadow-red-900/40"
+                      : "bg-white/5 text-neutral-400 hover:text-white hover:bg-white/10 border border-white/10"
+                  }`}
+                >
+                  <Film className="w-4 h-4" />
+                  <span>Quản Lý Thêm / Sửa / Xóa Phim & Thùng Rác</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setMovieManagementSubTab("coordination")}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                    movieManagementSubTab === "coordination"
+                      ? isHalloween
+                        ? "bg-orange-500 text-white shadow-lg shadow-orange-500/30"
+                        : "bg-[#E50914] text-white shadow-lg shadow-red-900/40"
+                      : "bg-white/5 text-neutral-400 hover:text-white hover:bg-white/10 border border-white/10"
+                  }`}
+                >
+                  <Sliders className="w-4 h-4" />
+                  <span>Điều Phối Trạng Thái Trang Khách (1-Click)</span>
+                </button>
+              </div>
+
+              {/* SubTab 1: CRUD Đầy Đủ (Thêm Phim, Sửa, Xóa Vào Thùng Rác, Khôi Phục) */}
+              {movieManagementSubTab === "crud" && (
+                <div className="animate-in fade-in duration-200">
+                  <AdminMoviesTab adminUser="Admin CineMax" />
+                </div>
+              )}
+
+              {/* SubTab 2: Điều Phối 1-Click */}
+              {movieManagementSubTab === "coordination" && (
             <div className="space-y-5">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
@@ -2362,6 +2406,8 @@ export default function AdminDashboardPage() {
                   );
                 })}
               </div>
+            </div>
+              )}
             </div>
           )}
 
