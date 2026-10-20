@@ -152,32 +152,29 @@ export default function HomePage() {
   const [bookingInitialShowtimeId, setBookingInitialShowtimeId] = useState<string | undefined>(undefined);
   const [bookingInitialCouponCode, setBookingInitialCouponCode] = useState<string | undefined>(undefined);
   const [bookingInitialComboId, setBookingInitialComboId] = useState<string | undefined>(undefined);
-  const [isBookingOpen, setIsBookingOpen] = useState(false);
-  const [bookingWizardConfig, setBookingWizardConfig] = useState<{
-    title?: string;
-    subtitle?: string;
-    badge?: string;
-  }>({});
-
-  const handleOpenMovieSelect = (options: {
+  // Trạng thái ưu đãi kích hoạt trực tiếp trên trang (Inline Offer Bar) - KHÔNG DÙNG MODAL NỔI
+  const [activeInlineOffer, setActiveInlineOffer] = useState<{
+    type: "combo" | "coupon" | "seat_type" | "quick_book";
     title: string;
-    subtitle: string;
-    badge?: string;
-    initialCouponCode?: string;
-    initialComboId?: string;
+    description: string;
+    badge: string;
+    comboId?: string;
+    couponCode?: string;
+  } | null>(null);
+
+  const handleTriggerInlineOffer = (offer: {
+    type: "combo" | "coupon" | "seat_type" | "quick_book";
+    title: string;
+    description: string;
+    badge: string;
+    comboId?: string;
+    couponCode?: string;
   }) => {
-    handleRequestBooking(
-      null,
-      [],
-      undefined,
-      options.initialCouponCode,
-      options.initialComboId,
-      {
-        title: options.title,
-        subtitle: options.subtitle,
-        badge: options.badge || "ĐANG CHIẾU RẠP",
-      }
-    );
+    setActiveInlineOffer(offer);
+    const el = document.getElementById("commercial-tabs");
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   };
 
   const [isCustomerLoginOpen, setIsCustomerLoginOpen] = useState(false);
@@ -366,24 +363,25 @@ export default function HomePage() {
 
   // Trực tiếp mở quy trình đặt vé cho khách (không ép đăng nhập trước)
   const handleRequestBooking = (
-    movie?: Movie | null,
+    movie: Movie,
     initialSeats: string[] = [],
     initialShowtimeId?: string,
     initialCouponCode?: string,
-    initialComboId?: string,
-    wizardConfig?: { title?: string; subtitle?: string; badge?: string }
+    initialComboId?: string
   ) => {
+    // Tự động kế thừa mã ưu đãi hoặc mã combo nếu khách đang kích hoạt dải Inline Offer
+    const effectiveCoupon = initialCouponCode || activeInlineOffer?.couponCode;
+    const effectiveCombo = initialComboId || activeInlineOffer?.comboId;
+
     if (initialShowtimeId) {
       setBookingInitialShowtimeId(initialShowtimeId);
     } else {
       setBookingInitialShowtimeId(undefined);
     }
     setBookingInitialSeats(initialSeats);
-    setBookingInitialCouponCode(initialCouponCode);
-    setBookingInitialComboId(initialComboId);
-    setActiveBookingMovie(movie || null);
-    setBookingWizardConfig(wizardConfig || {});
-    setIsBookingOpen(true);
+    setBookingInitialCouponCode(effectiveCoupon);
+    setBookingInitialComboId(effectiveCombo);
+    setActiveBookingMovie(movie);
   };
 
   const handleCustomerLoginSuccess = (info: { name: string; phone: string; email?: string }) => {
@@ -630,9 +628,10 @@ export default function HomePage() {
                   handleRequestBooking(movie, [], showtimeId);
                 }}
                 onRequestSelectMovie={() => {
-                  handleOpenMovieSelect({
-                    title: "Chọn Phim Đặt Vé Nhanh",
-                    subtitle: "Vui lòng chọn bộ phim bạn muốn xem để chọn phòng rạp và suất chiếu:",
+                  handleTriggerInlineOffer({
+                    type: "quick_book",
+                    title: "Đặt Vé Nhanh CineMax",
+                    description: "Vui lòng chọn bất kỳ bộ phim đang chiếu nào bên dưới để tiếp tục chọn rạp và suất chiếu:",
                     badge: "ĐẶT VÉ NHANH",
                   });
                 }}
@@ -651,6 +650,53 @@ export default function HomePage() {
             {/* 3. KHU VỰC "MOVIE SELECTION": TIÊU ĐỀ KẺ ĐÔI & TRƯỢT 4 PHIM */}
             {/* 3. KHU VỰC "MOVIE SELECTION": DANH SÁCH PHIM ĐANG CHIẾU & SẮP CHIẾU */}
             <div id="commercial-tabs" className="max-w-[1040px] 2xl:max-w-[1080px] mx-auto px-2 sm:px-4 mt-16 scroll-mt-24">
+              {/* DẢI BANNER ƯU ĐÃI INLINE (INLINE OFFER BAR) - KHÔNG DÙNG MODAL NỔI */}
+              {activeInlineOffer && (
+                <div className="mb-6 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-red-950/80 via-[#1E1116] to-[#12141C] border-2 border-red-500/60 shadow-2xl shadow-red-950/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-in slide-in-from-top-4 duration-300">
+                  <div className="flex items-start sm:items-center gap-3.5">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-red-600/20 border border-red-500/40 flex items-center justify-center text-red-500 shrink-0">
+                      {activeInlineOffer.type === "combo" ? (
+                        <Popcorn className="w-5 h-5 sm:w-6 sm:h-6 text-amber-400" />
+                      ) : activeInlineOffer.type === "coupon" ? (
+                        <Tag className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-400" />
+                      ) : (
+                        <Armchair className="w-5 h-5 sm:w-6 sm:h-6 text-red-400" />
+                      )}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-red-600 text-white shadow-sm">
+                          {activeInlineOffer.badge}
+                        </span>
+                        <span className="text-xs font-bold text-red-400 flex items-center gap-1">
+                          <Sparkles className="w-3.5 h-3.5" />
+                          <span>Ưu đãi áp dụng trực tiếp</span>
+                        </span>
+                      </div>
+                      <h3 className="font-heading font-black text-base sm:text-lg text-white">
+                        {activeInlineOffer.title}
+                      </h3>
+                      <p className="text-xs text-neutral-300 mt-0.5">
+                        {activeInlineOffer.description}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="hidden md:inline-block text-xs font-bold text-amber-400 bg-amber-500/10 border border-amber-500/30 px-3 py-1.5 rounded-lg">
+                      👉 Bấm "Đặt vé" trên poster phim bất kỳ bên dưới
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setActiveInlineOffer(null)}
+                      className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-neutral-300 hover:text-white text-xs font-bold transition-colors cursor-pointer flex items-center gap-1"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                      <span>Hủy ưu đãi</span>
+                    </button>
+                  </div>
+                </div>
+              )}
               
               {/* Tiêu đề Section chuẩn Điện Ảnh: Căn trái, thanh dọc đỏ */}
               <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-6 gap-3">
@@ -824,11 +870,12 @@ export default function HomePage() {
                       <button
                         type="button"
                         onClick={() => {
-                          handleOpenMovieSelect({
-                            title: "Chọn Phim Để Đặt Vé & Thưởng Thức Combo",
-                            subtitle: "Chọn bộ phim bạn muốn xem để áp dụng combo bắp nước độc quyền tiết kiệm 35%:",
-                            badge: "COMBO BOM TẤN",
-                            initialComboId: "combo-beta-solo",
+                          handleTriggerInlineOffer({
+                            type: "combo",
+                            title: "Ưu Đãi Combo Bom Tấn Solo Tiết Kiệm 35%",
+                            description: "Vui lòng chọn bất kỳ bộ phim nào bên dưới để vào màn hình giữ ghế & nhận combo bắp nước 35%!",
+                            badge: "TIẾT KIỆM 35%",
+                            comboId: "combo-beta-solo",
                           });
                         }}
                         className="px-7 py-3.5 rounded-lg bg-[#E50914] hover:bg-[#b80710] text-white font-heading font-bold text-sm uppercase tracking-wider shadow-xl shadow-red-600/40 flex items-center gap-2.5 transform hover:scale-105 active:scale-95 transition-all cursor-pointer border border-red-500/40"
@@ -899,11 +946,12 @@ export default function HomePage() {
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleOpenMovieSelect({
-                            title: "Chọn Phim Áp Dụng: Thứ Tư Vui Vẻ - Đồng Giá 45k",
-                            subtitle: "Vui lòng chọn bộ phim bạn muốn xem để tự động áp dụng mã ưu đãi vé và combo:",
-                            badge: "ĐỒNG GIÁ 45K",
-                            initialCouponCode: "CINEMAXHAPPY45",
+                          handleTriggerInlineOffer({
+                            type: "coupon",
+                            title: "Thứ Tư Vui Vẻ - Đồng Giá 45k",
+                            description: "Mã CINEMAXHAPPY45 đã được kích hoạt. Hãy chọn phim chiếu rạp bên dưới để nhận giá vé 45.000đ!",
+                            badge: "MÃ: CINEMAXHAPPY45",
+                            couponCode: "CINEMAXHAPPY45",
                           });
                         }}
                         className="px-2.5 py-1 rounded bg-[#E50914] hover:bg-[#b80710] text-white font-bold text-[11px] transition-colors cursor-pointer"
@@ -959,11 +1007,12 @@ export default function HomePage() {
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleOpenMovieSelect({
-                            title: "Chọn Phim Áp Dụng: Giảm 50% Học Sinh - Sinh Viên",
-                            subtitle: "Vui lòng chọn bộ phim bạn muốn xem để áp dụng ưu đãi vé 50% trước 17h:",
-                            badge: "HAPPY U22 GIẢM 50%",
-                            initialCouponCode: "U22MEMBER50",
+                          handleTriggerInlineOffer({
+                            type: "coupon",
+                            title: "Đặc Quyền Học Sinh - Sinh Viên (Giảm 50%)",
+                            description: "Mã U22MEMBER50 đã được kích hoạt. Hãy chọn phim bên dưới để hưởng ưu đãi trước 17h!",
+                            badge: "MÃ: U22MEMBER50",
+                            couponCode: "U22MEMBER50",
                           });
                         }}
                         className="px-2.5 py-1 rounded bg-[#E50914] hover:bg-[#b80710] text-white font-bold text-[11px] transition-colors cursor-pointer"
@@ -1019,11 +1068,12 @@ export default function HomePage() {
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleOpenMovieSelect({
-                            title: "Chọn Phim Áp Dụng: Mua 1 Tặng 1 Đối Tác Ngân Hàng",
-                            subtitle: "Vui lòng chọn bộ phim bạn muốn xem để áp dụng ưu đãi vé Mua 1 Tặng 1:",
-                            badge: "MUA 1 TẶNG 1",
-                            initialCouponCode: "BANKPARTNER11",
+                          handleTriggerInlineOffer({
+                            type: "coupon",
+                            title: "Đối Tác Ngân Hàng - Mua 1 Tặng 1",
+                            description: "Mã BANKPARTNER11 đã được kích hoạt. Hãy chọn phim bên dưới để đặt 2 vé tính tiền 1!",
+                            badge: "MÃ: BANKPARTNER11",
+                            couponCode: "BANKPARTNER11",
                           });
                         }}
                         className="px-2.5 py-1 rounded bg-[#E50914] hover:bg-[#b80710] text-white font-bold text-[11px] transition-colors cursor-pointer"
@@ -1367,9 +1417,10 @@ export default function HomePage() {
 
                   <button
                     onClick={() => {
-                      handleOpenMovieSelect({
-                        title: "Chọn Phim Chiếu Rạp (Ghế Tiêu Chuẩn)",
-                        subtitle: "Chọn bộ phim bạn muốn xem với trải nghiệm ghế nỉ êm ái và âm thanh Dolby 7.1 sống động:",
+                      handleTriggerInlineOffer({
+                        type: "seat_type",
+                        title: "Đặt Vé Ghế Tiêu Chuẩn 55k",
+                        description: "Chọn bộ phim bạn muốn xem với trải nghiệm ghế nỉ êm ái và âm thanh Dolby 7.1 sống động:",
                         badge: "GHẾ TIÊU CHUẨN 55K",
                       });
                     }}
@@ -1423,10 +1474,11 @@ export default function HomePage() {
 
                   <button
                     onClick={() => {
-                      handleOpenMovieSelect({
-                        title: "Chọn Phim Để Đặt Vé Ghế VIP Sweet Spot",
-                        subtitle: "Chọn bộ phim bạn muốn xem để tận hưởng tầm nhìn trục tâm 100% diện tích màn chiếu hoàn hảo nhất rạp:",
-                        badge: "GHẾ VIP SWEET SPOT 75K",
+                      handleTriggerInlineOffer({
+                        type: "seat_type",
+                        title: "Đặt Vé Ghế VIP Sweet Spot 75k",
+                        description: "Chọn bộ phim bạn muốn xem để tận hưởng tầm nhìn trục tâm 100% diện tích màn chiếu hoàn hảo nhất:",
+                        badge: "GHẾ VIP SWEET SPOT",
                       });
                     }}
                     className="w-full mt-5 py-2.5 rounded-lg bg-[#E50914] hover:bg-[#b80710] text-white font-bold text-xs transition-colors flex items-center justify-center gap-1.5 shadow-lg shadow-red-600/40 cursor-pointer"
@@ -1476,9 +1528,10 @@ export default function HomePage() {
 
                   <button
                     onClick={() => {
-                      handleOpenMovieSelect({
-                        title: "Chọn Phim Để Đặt Ghế Đôi Sweetbox (Trọn Gói 2 Người)",
-                        subtitle: "Chọn phim để tận hưởng không gian ghế sofa nỉ nhung đôi riêng tư lãng mạn (Bao gồm 2 vé - Không bán lẻ):",
+                      handleTriggerInlineOffer({
+                        type: "seat_type",
+                        title: "Đặt Ghế Đôi Sweetbox (Trọn Gói 2 Người - 130k)",
+                        description: "Chọn phim để tận hưởng không gian sofa đôi liền khối riêng tư lãng mạn (Bao gồm 2 vé - Không bán lẻ):",
                         badge: "SWEETBOX ĐÔI 130K",
                       });
                     }}
@@ -1616,25 +1669,18 @@ export default function HomePage() {
 
       {/* Modal Đặt Vé Duy Nhất: Wizard Bước 0 (Chọn Phim) -> Suất Chiếu -> Ghế -> Bắp Nước -> Thanh Toán */}
       <BookingModal
-        isOpen={isBookingOpen}
         movie={activeBookingMovie}
-        allMovies={movies}
         initialSeats={bookingInitialSeats}
         initialShowtimeId={bookingInitialShowtimeId}
         initialCouponCode={bookingInitialCouponCode}
         initialComboId={bookingInitialComboId}
-        wizardTitle={bookingWizardConfig.title}
-        wizardSubtitle={bookingWizardConfig.subtitle}
-        wizardBadge={bookingWizardConfig.badge}
         isHalloween={isCustomerHalloween}
         onClose={() => {
-          setIsBookingOpen(false);
           setActiveBookingMovie(null);
           setBookingInitialSeats([]);
           setBookingInitialShowtimeId(undefined);
           setBookingInitialCouponCode(undefined);
           setBookingInitialComboId(undefined);
-          setBookingWizardConfig({});
           useBookingStore.getState().resetBooking();
         }}
         onBookingSuccess={handleBookingSuccess}
@@ -1781,12 +1827,20 @@ export default function HomePage() {
                 onClick={() => {
                   const currentPromo = selectedPromo;
                   setSelectedPromo(null);
-                  handleOpenMovieSelect({
-                    title: `Chọn Phim Áp Dụng: ${currentPromo?.title || "Khuyến Mãi"}`,
-                    subtitle: "Vui lòng chọn bộ phim bạn muốn xem để tự động áp dụng mã ưu đãi vé và combo:",
-                    badge: currentPromo?.badge || "ƯU ĐÃI CINEMAX",
-                    initialCouponCode: currentPromo?.promoCode,
-                  });
+                  if (currentPromo?.promoCode) {
+                    handleTriggerInlineOffer({
+                      type: "coupon",
+                      title: `Ưu Đãi: ${currentPromo.title}`,
+                      description: `Mã ${currentPromo.promoCode} đã được kích hoạt. Hãy chọn phim bên dưới để áp dụng ưu đãi!`,
+                      badge: `MÃ: ${currentPromo.promoCode}`,
+                      couponCode: currentPromo.promoCode,
+                    });
+                  } else {
+                    const el = document.getElementById("commercial-tabs");
+                    if (el) {
+                      el.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }
+                  }
                 }}
                 className="px-5 py-2 rounded-lg bg-[#E50914] hover:bg-[#b80710] text-white font-heading font-bold text-xs uppercase tracking-wider transition-colors flex items-center gap-1.5 shadow-lg shadow-red-600/40 cursor-pointer border border-red-500/40"
               >
