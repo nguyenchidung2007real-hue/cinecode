@@ -19,6 +19,7 @@ import { Footer } from "@/components/Footer";
 import { CustomerAtmosphere } from "@/components/CustomerAtmosphere";
 import { HalloweenMovieShowcase } from "@/components/HalloweenMovieShowcase";
 import { CustomerLoginModal } from "@/components/CustomerLoginModal";
+import { MovieSelectModal } from "@/components/MovieSelectModal";
 import { useBookingStore } from "@/store/useBookingStore";
 
 import { Sparkles, Flame, Film, Clapperboard, Award, SearchX, Smile, Compass, Brain, Heart, Tag, Gift, Percent, Ticket, CheckCircle2, X, Clock, Calendar, Check, Copy, ArrowRight, Info, Armchair, Popcorn, Headphones, Crown, Star } from "lucide-react";
@@ -150,6 +151,31 @@ export default function HomePage() {
   const [activeBookingMovie, setActiveBookingMovie] = useState<Movie | null>(null);
   const [bookingInitialSeats, setBookingInitialSeats] = useState<string[]>([]);
   const [bookingInitialShowtimeId, setBookingInitialShowtimeId] = useState<string | undefined>(undefined);
+  const [movieSelectConfig, setMovieSelectConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    subtitle: string;
+    badge?: string;
+  }>({
+    isOpen: false,
+    title: "Chọn Phim Bạn Muốn Xem",
+    subtitle: "Vui lòng chọn bộ phim bạn yêu thích để tiếp tục chọn suất chiếu và đặt vé:",
+    badge: "ĐANG CHIẾU RẠP",
+  });
+
+  const handleOpenMovieSelect = (options: {
+    title: string;
+    subtitle: string;
+    badge?: string;
+  }) => {
+    setMovieSelectConfig({
+      isOpen: true,
+      title: options.title,
+      subtitle: options.subtitle,
+      badge: options.badge || "ĐANG CHIẾU RẠP",
+    });
+  };
+
   const [isCustomerLoginOpen, setIsCustomerLoginOpen] = useState(false);
   const [pendingBookingMovie, setPendingBookingMovie] = useState<{
     movie: Movie;
@@ -792,8 +818,11 @@ export default function HomePage() {
                       <button
                         type="button"
                         onClick={() => {
-                          const target = movies.find((m) => m.status === "now_playing") || movies[0];
-                          if (target) handleRequestBooking(target);
+                          handleOpenMovieSelect({
+                            title: "Chọn Phim Để Đặt Vé & Thưởng Thức Combo",
+                            subtitle: "Chọn bộ phim bạn muốn xem để áp dụng combo bắp nước độc quyền tiết kiệm 35%:",
+                            badge: "COMBO BOM TẤN",
+                          });
                         }}
                         className="px-7 py-3.5 rounded-lg bg-[#E50914] hover:bg-[#b80710] text-white font-heading font-bold text-sm uppercase tracking-wider shadow-xl shadow-red-600/40 flex items-center gap-2.5 transform hover:scale-105 active:scale-95 transition-all cursor-pointer border border-red-500/40"
                       >
@@ -1280,8 +1309,11 @@ export default function HomePage() {
 
                   <button
                     onClick={() => {
-                      const target = movies.find((m) => m.status === "now_playing") || movies[0];
-                      if (target) handleRequestBooking(target);
+                      handleOpenMovieSelect({
+                        title: "Chọn Phim Chiếu Rạp (Ghế Tiêu Chuẩn)",
+                        subtitle: "Chọn bộ phim bạn muốn xem với trải nghiệm ghế nỉ êm ái và âm thanh Dolby 7.1 sống động:",
+                        badge: "GHẾ TIÊU CHUẨN 55K",
+                      });
                     }}
                     className="w-full mt-5 py-2.5 rounded-lg bg-white/10 hover:bg-[#E50914] text-white font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer border border-white/10 hover:border-[#E50914]"
                   >
@@ -1333,8 +1365,11 @@ export default function HomePage() {
 
                   <button
                     onClick={() => {
-                      const target = movies.find((m) => m.status === "now_playing") || movies[0];
-                      if (target) handleRequestBooking(target);
+                      handleOpenMovieSelect({
+                        title: "Chọn Phim Để Đặt Vé Ghế VIP Sweet Spot",
+                        subtitle: "Chọn bộ phim bạn muốn xem để tận hưởng tầm nhìn trục tâm 100% diện tích màn chiếu hoàn hảo nhất rạp:",
+                        badge: "GHẾ VIP SWEET SPOT 75K",
+                      });
                     }}
                     className="w-full mt-5 py-2.5 rounded-lg bg-[#E50914] hover:bg-[#b80710] text-white font-bold text-xs transition-colors flex items-center justify-center gap-1.5 shadow-lg shadow-red-600/40 cursor-pointer"
                   >
@@ -1383,8 +1418,11 @@ export default function HomePage() {
 
                   <button
                     onClick={() => {
-                      const target = movies.find((m) => m.status === "now_playing") || movies[0];
-                      if (target) handleRequestBooking(target);
+                      handleOpenMovieSelect({
+                        title: "Chọn Phim Để Đặt Ghế Đôi Sweetbox (Trọn Gói 2 Người)",
+                        subtitle: "Chọn phim để tận hưởng không gian ghế sofa nỉ nhung đôi riêng tư lãng mạn (Bao gồm 2 vé - Không bán lẻ):",
+                        badge: "SWEETBOX ĐÔI 130K",
+                      });
                     }}
                     className="w-full mt-5 py-2.5 rounded-lg bg-white/10 hover:bg-[#E50914] text-white font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer border border-white/10 hover:border-[#E50914]"
                   >
@@ -1532,6 +1570,21 @@ export default function HomePage() {
         onBookingSuccess={handleBookingSuccess}
       />
 
+      {/* Modal Chọn Phim Khi Khách Bấm Đặt Vé Từ Bảng Giá Hoặc Combo */}
+      <MovieSelectModal
+        isOpen={movieSelectConfig.isOpen}
+        onClose={() => setMovieSelectConfig((prev) => ({ ...prev, isOpen: false }))}
+        movies={movies}
+        title={movieSelectConfig.title}
+        subtitle={movieSelectConfig.subtitle}
+        badge={movieSelectConfig.badge}
+        isHalloween={isCustomerHalloween}
+        onSelectMovie={(movie) => {
+          setMovieSelectConfig((prev) => ({ ...prev, isOpen: false }));
+          handleRequestBooking(movie);
+        }}
+      />
+
       {/* Modal Đăng Nhập Thành Viên CineMax Khi Khách Vào Đặt Vé */}
       <CustomerLoginModal
         isOpen={isCustomerLoginOpen}
@@ -1671,11 +1724,13 @@ export default function HomePage() {
               </button>
               <button
                 onClick={() => {
+                  const currentPromo = selectedPromo;
                   setSelectedPromo(null);
-                  const target = movies.find((m) => m.status === "now_playing") || movies[0];
-                  if (target) {
-                    handleRequestBooking(target);
-                  }
+                  handleOpenMovieSelect({
+                    title: `Chọn Phim Áp Dụng: ${currentPromo?.title || "Khuyến Mãi"}`,
+                    subtitle: "Vui lòng chọn bộ phim bạn muốn xem để tự động áp dụng mã ưu đãi vé và combo:",
+                    badge: currentPromo?.badge || "ƯU ĐÃI CINEMAX",
+                  });
                 }}
                 className="px-5 py-2 rounded-lg bg-[#E50914] hover:bg-[#b80710] text-white font-heading font-bold text-xs uppercase tracking-wider transition-colors flex items-center gap-1.5 shadow-lg shadow-red-600/40 cursor-pointer border border-red-500/40"
               >

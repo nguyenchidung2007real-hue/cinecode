@@ -251,6 +251,18 @@ export default function AdminDashboardPage() {
     statusColor: string;
   } | null>(null);
 
+  // Định dạng số tiền ngắn gọn cho trục Y và đỉnh cột biểu đồ (VD: 1.5M, 750k)
+  const formatShortVND = (num: number) => {
+    if (num >= 1000000) {
+      const val = (num / 1000000).toFixed(1);
+      return `${val.endsWith(".0") ? val.slice(0, -2) : val}M`;
+    }
+    if (num >= 1000) {
+      return `${Math.round(num / 1000)}k`;
+    }
+    return `${Math.round(num)} ₫`;
+  };
+
   // Dữ liệu biểu đồ doanh thu
   const chartData = useMemo(() => {
     if (revenuePeriod === "today") {
@@ -283,6 +295,12 @@ export default function AdminDashboardPage() {
       ];
     }
   }, [revenuePeriod]);
+
+  // Giá trị đỉnh trục Y biểu đồ (tối thiểu 1 triệu để scale chuẩn)
+  const chartMaxVal = useMemo(() => {
+    const max = Math.max(...chartData.map((x) => x.ticket + x.fnb), 1000000);
+    return max * 1.15;
+  }, [chartData]);
 
   // Top 5 Phim doanh thu cao nhất hôm nay
   const TOP_5_MOVIES_TODAY = [
@@ -610,7 +628,7 @@ export default function AdminDashboardPage() {
               { id: "overview", label: "Tổng Quan Rạp", icon: LayoutDashboard },
               { id: "movies", label: "Quản Lý Phim", icon: Film },
               { id: "showtimes", label: "Lịch Chiếu & Scheduler", icon: Calendar },
-              { id: "seats", label: "Sơ Đồ Ghế & Audit", icon: Armchair },
+              { id: "seats", label: "Sơ Đồ Ghế & Phòng Chiếu", icon: Armchair },
               { id: "orders-reviews", label: "Đơn Vé & Đánh Giá", icon: Receipt },
               { id: "tickets", label: "Soát Vé & Check-in", icon: ScanLine },
               { id: "pricing", label: "Bảng Giá Vé & F&B", icon: Sliders },
@@ -1083,68 +1101,108 @@ export default function AdminDashboardPage() {
 
                     {/* Interactive Stacked Bar Chart Graphic */}
                     <div className="pt-4 pb-2">
-                      <div className="h-56 flex items-end justify-between gap-2 sm:gap-3 px-2 border-b border-white/10 relative">
-                        {chartData.map((d, idx) => {
-                          const maxVal = Math.max(...chartData.map((x) => x.ticket + x.fnb)) * 1.15;
-                          const ticketHeight = Math.max(6, (d.ticket / maxVal) * 100);
-                          const fnbHeight = Math.max(4, (d.fnb / maxVal) * 100);
-                          const isHovered = hoveredChartBar === idx;
+                      <div className="flex gap-2">
+                        {/* Cột trục Y hiển thị mốc doanh thu */}
+                        <div className="w-11 sm:w-14 h-60 flex flex-col justify-between text-[10px] text-neutral-500 font-mono font-semibold pb-7 select-none text-right pr-1">
+                          <span>{formatShortVND(chartMaxVal)}</span>
+                          <span>{formatShortVND(chartMaxVal * 0.75)}</span>
+                          <span>{formatShortVND(chartMaxVal * 0.5)}</span>
+                          <span>{formatShortVND(chartMaxVal * 0.25)}</span>
+                          <span>0 ₫</span>
+                        </div>
 
-                          return (
-                            <div
-                              key={d.label}
-                              onMouseEnter={() => setHoveredChartBar(idx)}
-                              onMouseLeave={() => setHoveredChartBar(null)}
-                              className="flex-1 flex flex-col items-center justify-end h-full relative group cursor-pointer"
-                            >
-                              {/* Hover Tooltip */}
-                              {isHovered && (
-                                <div className="absolute -top-24 z-30 min-w-[170px] p-2.5 rounded-xl bg-black/90 border border-white/20 shadow-2xl text-[11px] text-left pointer-events-none animate-in fade-in zoom-in-95">
-                                  <div className="font-bold text-white border-b border-white/10 pb-1 mb-1">
-                                    {revenuePeriod === "today" ? `Khung giờ: ${d.label}` : d.label}
+                        {/* Vùng biểu đồ các cột */}
+                        <div className="flex-1 h-60 flex items-end justify-between gap-1.5 sm:gap-3 px-1 pb-7 border-b border-white/10 relative">
+                          {/* Đường lưới mờ đối chiếu (Gridlines) */}
+                          <div className="absolute inset-x-0 top-0 border-t border-white/5 pointer-events-none" />
+                          <div className="absolute inset-x-0 top-[23%] border-t border-white/5 pointer-events-none" />
+                          <div className="absolute inset-x-0 top-[47%] border-t border-white/5 pointer-events-none" />
+                          <div className="absolute inset-x-0 top-[70%] border-t border-white/5 pointer-events-none" />
+                          <div className="absolute inset-x-0 bottom-7 border-t border-white/15 pointer-events-none" />
+
+                          {chartData.map((d, idx) => {
+                            const totalVal = d.ticket + d.fnb;
+                            // Chiều cao cột tính chuẩn % theo maxVal (tối thiểu 12% để luôn nhìn rõ)
+                            const barHeightPercent = Math.max(12, Math.min(100, Math.round((totalVal / chartMaxVal) * 100)));
+                            const fnbPortionPercent = totalVal > 0 ? Math.round((d.fnb / totalVal) * 100) : 0;
+                            const ticketPortionPercent = 100 - fnbPortionPercent;
+                            const isHovered = hoveredChartBar === idx;
+
+                            return (
+                              <div
+                                key={d.label}
+                                onMouseEnter={() => setHoveredChartBar(idx)}
+                                onMouseLeave={() => setHoveredChartBar(null)}
+                                className="flex-1 flex flex-col items-center justify-end h-full relative group cursor-pointer z-10"
+                              >
+                                {/* Tooltip chi tiết khi hover */}
+                                {isHovered && (
+                                  <div className="absolute -top-24 z-30 min-w-[185px] p-2.5 rounded-xl bg-[#090D16]/95 border border-white/20 shadow-2xl text-[11px] text-left pointer-events-none backdrop-blur-md animate-in fade-in zoom-in-95">
+                                    <div className="font-bold text-white border-b border-white/10 pb-1 mb-1.5 flex items-center justify-between">
+                                      <span>{revenuePeriod === "today" ? `Khung giờ: ${d.label}` : d.label}</span>
+                                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/10 text-neutral-300 font-mono">
+                                        {barHeightPercent}% đỉnh
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center justify-between text-neutral-300 mb-0.5">
+                                      <span className="flex items-center gap-1.5">
+                                        <span className={`w-2 h-2 rounded-full ${isHalloween ? "bg-[#FF7518]" : "bg-[#E50914]"}`} />
+                                        <span>🎟️ Doanh thu vé:</span>
+                                      </span>
+                                      <strong className="text-white font-mono">{formatVND(d.ticket)}</strong>
+                                    </div>
+                                    <div className="flex items-center justify-between text-amber-300 mb-1">
+                                      <span className="flex items-center gap-1.5">
+                                        <span className="w-2 h-2 rounded-full bg-[#F59E0B]" />
+                                        <span>🍿 Bắp nước (F&B):</span>
+                                      </span>
+                                      <strong className="font-mono">{formatVND(d.fnb)}</strong>
+                                    </div>
+                                    <div className="flex items-center justify-between text-emerald-400 pt-1 border-t border-white/10 font-bold">
+                                      <span>Tổng cộng:</span>
+                                      <span className="font-mono">{formatVND(totalVal)}</span>
+                                    </div>
                                   </div>
-                                  <div className="flex items-center justify-between text-neutral-300">
-                                    <span>🎟️ Tiền vé:</span>
-                                    <strong className="text-white">{formatVND(d.ticket)}</strong>
-                                  </div>
-                                  <div className="flex items-center justify-between text-amber-300">
-                                    <span>🍿 Bắp nước:</span>
-                                    <strong>{formatVND(d.fnb)}</strong>
-                                  </div>
-                                  <div className="flex items-center justify-between text-emerald-400 pt-1 border-t border-white/10 font-bold">
-                                    <span>Tổng:</span>
-                                    <span>{formatVND(d.ticket + d.fnb)}</span>
-                                  </div>
+                                )}
+
+                                {/* Con số ngắn gọn hiển thị ngay trên đỉnh cột */}
+                                <div className={`mb-1.5 text-[9px] sm:text-[10px] font-mono font-bold transition-all ${
+                                  isHovered ? "text-white scale-110" : "text-neutral-400 opacity-90"
+                                }`}>
+                                  {formatShortVND(totalVal)}
                                 </div>
-                              )}
 
-                              {/* Stacked Bars */}
-                              <div className="w-full max-w-[40px] flex flex-col items-center justify-end rounded-t-lg overflow-hidden transition-all duration-300 group-hover:scale-105">
-                                {/* F&B Portion (Top) */}
+                                {/* Khối cột chồng (Stacked Bars) */}
                                 <div
-                                  className="w-full bg-[#F59E0B] transition-all duration-500"
-                                  style={{ height: `${fnbHeight}%` }}
-                                />
-                                {/* Ticket Portion (Bottom) */}
-                                <div
-                                  className={`w-full transition-all duration-500 ${
-                                    isHalloween
-                                      ? "bg-gradient-to-t from-orange-600 to-[#FF7518]"
-                                      : "bg-gradient-to-t from-red-700 to-[#E50914]"
-                                  }`}
-                                  style={{ height: `${ticketHeight}%` }}
-                                />
+                                  className="w-full max-w-[32px] sm:max-w-[42px] rounded-t-xl overflow-hidden shadow-lg transition-all duration-300 group-hover:scale-105 group-hover:brightness-110 flex flex-col justify-end"
+                                  style={{ height: `${barHeightPercent}%`, minHeight: "18px" }}
+                                >
+                                  {/* Phân đoạn F&B (Màu vàng hổ phách) */}
+                                  <div
+                                    className="w-full bg-gradient-to-t from-amber-600 to-[#F59E0B] transition-all duration-500"
+                                    style={{ height: `${fnbPortionPercent}%`, minHeight: fnbPortionPercent > 0 ? "5px" : "0px" }}
+                                  />
+                                  {/* Phân đoạn Vé (Màu đỏ điện ảnh hoặc cam Halloween) */}
+                                  <div
+                                    className={`w-full transition-all duration-500 ${
+                                      isHalloween
+                                        ? "bg-gradient-to-t from-orange-700 via-orange-600 to-[#FF7518]"
+                                        : "bg-gradient-to-t from-red-800 via-[#E50914] to-red-500"
+                                    }`}
+                                    style={{ height: `${ticketPortionPercent}%`, minHeight: "12px" }}
+                                  />
+                                </div>
+
+                                {/* Nhãn thời gian trục X dưới đáy cột */}
+                                <span className={`text-[10px] sm:text-[11px] absolute -bottom-5.5 font-bold truncate transition-colors ${
+                                  isHovered ? "text-white" : "text-neutral-400"
+                                }`}>
+                                  {d.label}
+                                </span>
                               </div>
-
-                              {/* Label */}
-                              <span className={`text-[10px] mt-2 block font-semibold truncate transition-colors ${
-                                isHovered ? "text-white font-bold" : "text-neutral-400"
-                              }`}>
-                                {d.label}
-                              </span>
-                            </div>
-                          );
-                        })}
+                            );
+                          })}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -2468,7 +2526,7 @@ export default function AdminDashboardPage() {
           {/* TAB 6: SƠ ĐỒ GHẾ & NHẬT KÝ AN NINH (ĐĂNG - PROMPT 1) */}
           {activeTab === "seats" && (
             <div className="mt-2">
-              <AdminSeatsMoviesAuditTab />
+              <AdminSeatsMoviesAuditTab hideMoviesTab={true} />
             </div>
           )}
 

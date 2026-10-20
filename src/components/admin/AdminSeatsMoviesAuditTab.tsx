@@ -1707,6 +1707,8 @@ export interface AdminSeatsMoviesAuditTabProps {
   authHeaders?: Record<string, string>;
   /** Tên Admin, gửi qua header x-admin-user để ghi vào nhật ký. */
   adminUser?: string;
+  /** Ẩn tab Quản lý phim khi nhúng vào mục Sơ đồ ghế (đảm bảo mục ghế chỉ quản lý ghế). */
+  hideMoviesTab?: boolean;
 }
 
 const SUB_TABS: ReadonlyArray<{ id: SubTab; label: string; icon: ReactNode }> = [
@@ -1715,7 +1717,11 @@ const SUB_TABS: ReadonlyArray<{ id: SubTab; label: string; icon: ReactNode }> = 
   { id: "audit", label: "Nhật Ký An Ninh (Audit Logs)", icon: <ScrollText className="h-4 w-4" /> },
 ];
 
-export function AdminSeatsMoviesAuditTab({ authHeaders, adminUser }: AdminSeatsMoviesAuditTabProps) {
+export function AdminSeatsMoviesAuditTab({
+  authHeaders,
+  adminUser,
+  hideMoviesTab = true,
+}: AdminSeatsMoviesAuditTabProps) {
   const [tab, setTab] = useState<SubTab>("seats");
   const [toast, setToast] = useState<ToastState | null>(null);
 
@@ -1737,25 +1743,41 @@ export function AdminSeatsMoviesAuditTab({ authHeaders, adminUser }: AdminSeatsM
 
   const ctx = useMemo<PanelContext>(() => ({ headers, notify }), [headers, notify]);
 
+  // Khi ở chế độ quản lý ghế, loại bỏ hoàn toàn tab Quản lý phim & thùng rác
+  const subTabs = useMemo(() => {
+    if (hideMoviesTab) {
+      return [
+        { id: "seats" as SubTab, label: "Quản Lý Sơ Đồ Ghế & Bảo Trì Phòng Chiếu", icon: <Armchair className="h-4 w-4" /> },
+        { id: "audit" as SubTab, label: "Nhật Ký Thao Tác Ghế (Audit Logs)", icon: <ScrollText className="h-4 w-4" /> },
+      ];
+    }
+    return SUB_TABS;
+  }, [hideMoviesTab]);
+
   return (
     <div className="min-h-screen bg-[#0B0C10] p-4 text-white md:p-6">
       <div className="mx-auto max-w-7xl space-y-5">
         <div>
-          <h2 className="text-xl font-semibold">Quản trị Ghế, Phim & An ninh</h2>
-          <p className="text-sm text-white/50">
-            Quản lý sơ đồ ghế phòng chiếu, danh mục phim và theo dõi nhật ký thao tác của Admin.
+          <h2 className="text-xl font-bold flex items-center gap-2">
+            <Armchair className="w-5 h-5 text-rose-500" />
+            <span>{hideMoviesTab ? "Quản Trị Sơ Đồ Ghế & Bảo Trì Phòng Chiếu" : "Quản trị Ghế, Phim & An ninh"}</span>
+          </h2>
+          <p className="text-xs text-white/50 mt-1">
+            {hideMoviesTab
+              ? "Quản lý trạng thái ghế thời gian thực, khóa bảo trì phòng chiếu và theo dõi nhật ký can thiệp kỹ thuật."
+              : "Quản lý sơ đồ ghế phòng chiếu, danh mục phim và theo dõi nhật ký thao tác của Admin."}
           </p>
         </div>
 
         <div className="flex flex-wrap gap-2 border-b border-white/10 pb-3">
-          {SUB_TABS.map((item) => (
+          {subTabs.map((item) => (
             <button
               key={item.id}
               type="button"
               onClick={() => setTab(item.id)}
               className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition ${
                 tab === item.id
-                  ? "bg-rose-600 text-white"
+                  ? "bg-rose-600 text-white shadow-md shadow-rose-900/40"
                   : "border border-white/10 bg-[#14151B] text-white/60 hover:text-white"
               }`}
             >
@@ -1766,7 +1788,7 @@ export function AdminSeatsMoviesAuditTab({ authHeaders, adminUser }: AdminSeatsM
         </div>
 
         {tab === "seats" && <SeatsPanel ctx={ctx} />}
-        {tab === "movies" && <MoviesPanel ctx={ctx} />}
+        {!hideMoviesTab && tab === "movies" && <MoviesPanel ctx={ctx} />}
         {tab === "audit" && <AuditPanel ctx={ctx} />}
       </div>
 

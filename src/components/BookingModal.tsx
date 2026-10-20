@@ -39,6 +39,7 @@ import {
   Coffee,
   ExternalLink,
   User,
+  Heart,
 } from "lucide-react";
 import { useSeatHold, useSeatAvailability } from "@/hooks/useSeatHold";
 import { ApiError, describeError, submitBooking } from "@/lib/bookingClient";
@@ -1119,7 +1120,13 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                           <div key={seat.id} className="relative group">
                             <button
                               disabled={isBooked}
-                              title={heldByOther ? "Đang được người khác giữ" : undefined}
+                              title={
+                                heldByOther
+                                  ? "Đang được người khác giữ"
+                                  : seat.type === "couple"
+                                  ? `Ghế đôi Sweetbox ${seat.id}: Trọn gói 2 người (2 vé) • 130.000đ • Không bán lẻ 1 vé`
+                                  : undefined
+                              }
                               onClick={() => handleToggleSeat(seat)}
                               className={`w-7 h-7 sm:w-8 sm:h-8 rounded-md text-[10px] sm:text-xs font-bold flex items-center justify-center transition-all ${
                                 isBooked
@@ -1135,7 +1142,14 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                                   : "bg-slate-100 border border-slate-200 text-slate-700 hover:bg-slate-200 hover:scale-105"
                               }`}
                             >
-                              {seat.id}
+                              {seat.type === "couple" ? (
+                                <span className="flex items-center justify-center gap-1">
+                                  <Heart className={`w-2.5 h-2.5 shrink-0 ${isSelected ? "fill-white text-white" : "fill-pink-500 text-pink-500"}`} />
+                                  <span>{seat.id} (Đôi)</span>
+                                </span>
+                              ) : (
+                                seat.id
+                              )}
                             </button>
 
                             {/* Nút xem góc nhìn nhanh khi hover */}
@@ -1172,8 +1186,10 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 <span>VIP (75k)</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <div className="w-4 h-4 rounded bg-pink-50 border border-pink-300" />
-                <span>Sweetbox Đôi (130k)</span>
+                <div className="w-5 h-4 rounded bg-pink-50 border border-pink-300 flex items-center justify-center text-[9px] text-pink-600 font-bold">
+                  ♥
+                </div>
+                <span>Sweetbox Đôi (130k / 2 vé • Không bán lẻ)</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <div className="w-4 h-4 rounded bg-sky-600" />
@@ -1192,6 +1208,19 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               </div>
             </div>
 
+            {/* Quy định bắt buộc: Ghế đôi không bán lẻ */}
+            <div className="p-2.5 rounded-xl bg-pink-50/80 border border-pink-200 text-pink-800 text-xs flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <Heart className="w-4 h-4 text-pink-600 fill-pink-500 shrink-0" />
+                <span>
+                  <strong>Quy định ghế đôi Sweetbox (Hàng K):</strong> Mua theo cặp trọn gói cho <strong>2 người</strong> (130.000đ = 2 vé xem phim). Hệ thống <strong>không cho phép mua vé lẻ 1 người</strong> cho ghế đôi.
+                </span>
+              </div>
+              <span className="hidden sm:inline-block px-2 py-0.5 rounded bg-pink-200/70 text-pink-900 font-bold text-[10px] uppercase shrink-0">
+                Trọn gói 2 vé
+              </span>
+            </div>
+
             <div className="flex items-center justify-between pt-4 border-t border-slate-200">
               <button
                 onClick={() => setStep(1)}
@@ -1203,10 +1232,19 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
               <div className="flex items-center gap-4">
                 <div className="text-right">
-                  <span className="text-xs text-slate-500">Đã chọn {selectedSeats.length} ghế: </span>
-                  <span className="text-sm font-bold text-sky-600">
-                    {formatVND(seatsTotal)}
-                  </span>
+                  {selectedSeats.length > 0 ? (
+                    <>
+                      <div className="text-xs text-slate-600 font-medium">
+                        Đã chọn {selectedSeats.length} vị trí ({selectedSeats.reduce((acc, s) => acc + (s.type === "couple" ? 2 : 1), 0)} vé
+                        {selectedSeats.some((s) => s.type === "couple") ? " • Có ghế đôi" : ""}):
+                      </div>
+                      <div className="text-sm font-black text-sky-600">
+                        {formatVND(seatsTotal)}
+                      </div>
+                    </>
+                  ) : (
+                    <span className="text-xs text-slate-400">Chưa chọn ghế</span>
+                  )}
                 </div>
 
                 <button
@@ -1987,7 +2025,12 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 </div>
                 <div>
                   <span className="text-slate-500 block">Ghế ngồi:</span>
-                  <span className="font-extrabold text-sky-600 text-sm">{completedBooking.seats.join(", ")}</span>
+                  <span className="font-extrabold text-sky-600 text-sm">
+                    {completedBooking.seats.map((s) => (s.startsWith("K") ? `${s} (Ghế đôi - 2 vé)` : s)).join(", ")}
+                  </span>
+                  <span className="block text-[10px] text-slate-500 mt-0.5">
+                    Tổng số vé: <strong>{completedBooking.seats.reduce((acc, s) => acc + (s.startsWith("K") ? 2 : 1), 0)} vé vào rạp</strong>
+                  </span>
                 </div>
               </div>
 
