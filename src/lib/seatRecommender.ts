@@ -149,17 +149,19 @@ export function recommendSeats(
   const profile = HALL_PROFILES[kind];
   const unavailable: ReadonlySet<string> = new Set(unavailableSeats);
 
-  // Đi 2 người → ưu tiên ghế đôi Sweetbox ở hàng cuối.
+  // Đi 2 người → ưu tiên cặp ghế đôi Sweetbox ở hàng cuối (luôn đi theo cặp 2 ghế).
   if (size === 2) {
     for (const row of COUPLE_ROWS) {
       for (const number of COUPLE_SEAT_NUMBERS) {
-        const id = `${row}${number}`;
-        if (!unavailable.has(id)) {
+        const partnerNumber = number % 2 === 1 ? number + 1 : number - 1;
+        const seatA = `${row}${Math.min(number, partnerNumber)}`;
+        const seatB = `${row}${Math.max(number, partnerNumber)}`;
+        if (!unavailable.has(seatA) && !unavailable.has(seatB)) {
           return {
             seatType: "couple",
             recommendedRows: [row],
-            recommendedSeats: [id],
-            reason: `Ghế đôi Sweetbox hàng ${row} ở cuối phòng: riêng tư, thoải mái cho hai người và vẫn nhìn bao quát toàn bộ màn hình.`,
+            recommendedSeats: [seatA, seatB],
+            reason: `Cặp ghế đôi Sweetbox ${seatA}-${seatB} ở hàng cuối phòng: riêng tư, trọn gói cho hai người (130.000đ = 2 vé) và tầm nhìn bao quát toàn bộ màn hình.`,
           };
         }
       }

@@ -512,7 +512,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
           row,
           number: i,
           type: isCouple ? "couple" : isVip ? "vip" : "standard",
-          price: isCouple ? 130000 : isVip ? 75000 : 55000, // chỉ để hiển thị; server tính lại
+          price: isCouple ? 65000 : isVip ? 75000 : 55000, // 65k/vé (130k/cặp đôi 2 người)
           // "sold" và "held" (do người khác giữ) đều không chọn được; "mine"/"free" thì chọn được.
           // Gán "booked" để checkOrphanSeats coi các ghế này là đã có người.
           status: remote === "sold" || remote === "held" ? "booked" : "available",
@@ -626,10 +626,47 @@ export const BookingModal: React.FC<BookingModalProps> = ({
       return;
     }
 
-    const isCurrentlySelected = selectedSeats.some((s) => s.id === seat.id);
-
     // Tìm hàng ghế tương ứng trong sơ đồ
     const rowSeats = seatsMatrix.find((r) => r.length > 0 && r[0].row === seat.row) || [];
+    const isCouple = seat.row === "K" || seat.type === "couple";
+
+    // Xử lý riêng cho ghế đôi Sweetbox (Hàng K): Bắt buộc đi theo cặp 2 người (2 vé), tuyệt đối không mua lẻ
+    if (isCouple) {
+      const partnerNum = seat.number % 2 === 1 ? seat.number + 1 : seat.number - 1;
+      const partnerId = `K${partnerNum}`;
+      const partnerSeat = rowSeats.find((s) => s.id === partnerId);
+      const isCurrentlySelected = selectedSeats.some((s) => s.id === seat.id || s.id === partnerId);
+
+      if (isCurrentlySelected) {
+        // Bỏ chọn cả cặp ghế đôi
+        applySelection(selectedSeats.filter((s) => s.id !== seat.id && s.id !== partnerId));
+        setOrphanWarning(null);
+        return;
+      }
+
+      // Chọn cặp: Cả 2 ghế trong cặp phải còn trống
+      if (
+        !partnerSeat ||
+        partnerSeat.status === "booked" ||
+        avail.seats[partnerId] === "held" ||
+        avail.seats[partnerId] === "sold"
+      ) {
+        setNotice(`Cặp ghế đôi Sweetbox ${seat.id}-${partnerId} không khả dụng do có vị trí đã có người giữ/đặt.`);
+        return;
+      }
+
+      if (selectedSeats.length + 2 > MAX_SEATS) {
+        setNotice(`Bạn chỉ có thể chọn tối đa ${MAX_SEATS} ghế trong một lần đặt.`);
+        return;
+      }
+
+      setNotice(null);
+      setOrphanWarning(null);
+      applySelection([...selectedSeats, seat, partnerSeat]);
+      return;
+    }
+
+    const isCurrentlySelected = selectedSeats.some((s) => s.id === seat.id);
     const currentSelectedIds = new Set(selectedSeats.map((s) => s.id));
 
     // Kiểm tra quy tắc chống ghế mồ côi (Orphan Seat Prevention)
@@ -925,53 +962,50 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-md overflow-y-auto animate-in fade-in duration-200">
-      <div className="relative w-full max-w-4xl bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-2xl my-auto text-slate-800">
-        {/* Header Modal */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-sky-50 text-sky-600 border border-sky-200 flex items-center justify-center">
-              <Ticket className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="font-extrabold text-base sm:text-lg text-slate-900 line-clamp-1">
-                Đặt vé: {movie.title}
-              </h3>
-              <p className="text-xs text-slate-500">
-                {step === 1 && "Bước 1: Chọn rạp & Suất chiếu"}
-                {step === 2 && "Bước 2: Chọn ghế ngồi phòng chiếu"}
-                {step === 3 && "Bước 3: Combo bắp nước & Thông tin"}
-                {step === 4 && "Bước 4: Quét mã QR thanh toán"}
-                {step === 5 && "Bước 5: Vé điện tử của bạn"}
-              </p>
-            </div>
-          </div>
+    <div className="w-full bg-white border border-slate-200 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden text-slate-800 animate-in fade-in duration-300">
+      {/* Header Inline Booking (Thanh điều hướng chuyển bước trực tiếp trên mặt trang - KHÔNG DÙNG MODAL NỀN MỜ) */}
+      <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-slate-200 bg-slate-50/95 sticky top-16 z-10 backdrop-blur-sm">
+        <div className="flex items-center gap-3">
+          {/* Nút Quay lại chọn phim ở góc trên cùng bên trái thay cho nút X đóng popup */}
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl bg-white hover:bg-slate-200 text-slate-800 text-xs sm:text-sm font-bold border border-slate-300 shadow-sm transition-all hover:-translate-x-0.5 cursor-pointer"
+            title="Quay lại danh sách phim"
+          >
+            <ArrowLeft className="w-4 h-4 text-sky-600" />
+            <span>Quay lại chọn phim</span>
+          </button>
 
-          <div className="flex items-center gap-2">
-            {step === 1 && (
-              <button
-                type="button"
-                onClick={() => {
-                  onClose();
-                  document.getElementById("commercial-tabs")?.scrollIntoView({ behavior: "smooth", block: "start" });
-                }}
-                className="px-2.5 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold border border-slate-200 transition-colors flex items-center gap-1 shadow-sm cursor-pointer"
-                title="Quay lại danh sách phim trên trang"
-              >
-                <ArrowLeft className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Đổi Phim Khác</span>
-              </button>
-            )}
+          <div className="h-6 w-px bg-slate-200 hidden sm:block" />
 
-            <button
-              onClick={onClose}
-              className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
-              title="Đóng cửa sổ"
-            >
-              <X className="w-4 h-4" />
-            </button>
+          <div>
+            <h3 className="font-extrabold text-base sm:text-lg text-slate-900 line-clamp-1">
+              Đặt vé: {movie.title}
+            </h3>
+            <p className="text-xs text-slate-500">
+              {step === 1 && "Bước 1: Chọn rạp & Suất chiếu"}
+              {step === 2 && "Bước 2: Chọn ghế ngồi phòng chiếu"}
+              {step === 3 && "Bước 3: Combo bắp nước & Thông tin"}
+              {step === 4 && "Bước 4: Quét mã QR thanh toán"}
+              {step === 5 && "Bước 5: Vé điện tử của bạn"}
+            </p>
           </div>
         </div>
+
+        <div className="flex items-center gap-2">
+          {step > 1 && step < 5 && (
+            <button
+              type="button"
+              onClick={() => setStep((s) => (s - 1) as any)}
+              className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-200 text-slate-700 text-xs font-bold border border-slate-200 transition-colors flex items-center gap-1 cursor-pointer"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Bước trước</span>
+            </button>
+          )}
+        </div>
+      </div>
 
         {/* BƯỚC 1: CHỌN RẠP & SUẤT CHIẾU */}
         {step === 1 && (
@@ -1185,6 +1219,67 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                       {ROWS[rIdx]}
                       {isSweetSpotRow && <span className="text-[9px]">★</span>}
                     </span>
+                    {row[0]?.row === "K" ? (
+                      <div className="flex items-center gap-3">
+                        {[
+                          [row[0], row[1]],
+                          [row[2], row[3]],
+                          [row[4], row[5]],
+                        ].map(([seatA, seatB]) => {
+                          if (!seatA || !seatB) return null;
+                          const isSelected = selectedSeats.some((s) => s.id === seatA.id || s.id === seatB.id);
+                          const isBooked = seatA.status === "booked" || seatB.status === "booked";
+                          const heldByOther = avail.seats[seatA.id] === "held" || avail.seats[seatB.id] === "held";
+
+                          return (
+                            <div key={`${seatA.id}-${seatB.id}`} className="relative group">
+                              <button
+                                disabled={isBooked}
+                                title={
+                                  heldByOther
+                                    ? "Cặp ghế đang được người khác giữ"
+                                    : isBooked
+                                    ? "Cặp ghế đã có người đặt"
+                                    : `Ghế đôi Sweetbox ${seatA.id}-${seatB.id}: Trọn gói 2 người (130.000đ = 2 vé) • Không bán lẻ 1 vé`
+                                }
+                                onClick={() => handleToggleSeat(seatA)}
+                                className={`h-8 sm:h-9 px-3 sm:px-3.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all select-none cursor-pointer ${
+                                  isBooked
+                                    ? heldByOther
+                                      ? "bg-amber-50 border border-dashed border-amber-300 text-amber-500/80 cursor-not-allowed"
+                                      : "bg-slate-100 border border-slate-200 text-slate-300 cursor-not-allowed"
+                                    : isSelected
+                                    ? "bg-gradient-to-r from-pink-600 to-rose-600 text-white shadow-md shadow-pink-600/30 scale-105 ring-2 ring-pink-300 font-black"
+                                    : "bg-pink-50 border-2 border-pink-300 text-pink-700 hover:bg-pink-100 hover:border-pink-400 hover:scale-105"
+                                }`}
+                              >
+                                <Heart className={`w-3.5 h-3.5 shrink-0 ${isSelected ? "fill-white text-white" : "fill-pink-500 text-pink-500"}`} />
+                                <span className="tracking-wide font-extrabold">{seatA.id} - {seatB.id}</span>
+                                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider ${
+                                  isSelected ? "bg-white/20 text-white" : "bg-pink-200/60 text-pink-700"
+                                }`}>
+                                  Đôi (2 vé)
+                                </span>
+                              </button>
+
+                              {!isBooked && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setPreviewSeat(seatA);
+                                  }}
+                                  title={`Xem góc nhìn từ cặp ghế ${seatA.id}-${seatB.id}`}
+                                  className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-sky-500 text-white hidden group-hover:flex items-center justify-center shadow-md scale-90 hover:scale-110 z-10"
+                                >
+                                  <Eye className="w-2.5 h-2.5" />
+                                </button>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
                     <div className="flex gap-1.5">
                       {row.map((seat) => {
                         const isSelected = selectedSeats.some((s) => s.id === seat.id);
@@ -1245,6 +1340,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                         );
                       })}
                     </div>
+                    )}
                   </div>
                 );
               })}
@@ -1310,8 +1406,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   {selectedSeats.length > 0 ? (
                     <>
                       <div className="text-xs text-slate-600 font-medium">
-                        Đã chọn {selectedSeats.length} vị trí ({selectedSeats.reduce((acc, s) => acc + (s.type === "couple" ? 2 : 1), 0)} vé
-                        {selectedSeats.some((s) => s.type === "couple") ? " • Có ghế đôi" : ""}):
+                        Đã chọn {selectedSeats.length} vé{selectedSeats.some((s) => s.type === 'couple') ? ` (${selectedSeats.filter((s) => s.type === 'couple').length / 2} cặp ghế đôi)` : ''}:
                       </div>
                       <div className="text-sm font-black text-sky-600">
                         {formatVND(seatsTotal)}
@@ -2175,40 +2270,18 @@ export const BookingModal: React.FC<BookingModalProps> = ({
           </div>
         )}
 
-        {/* Modal mô phỏng 3D góc nhìn ảo từ ghế (View-From-Seat chuẩn Fandango & AMC) */}
-        {previewSeat && (
-          <ViewFromSeatModal
-            seat={previewSeat}
-            movie={movie}
-            cinemaName={selectedCinema}
-            roomName={roomName}
-            isSelected={selectedSeats.some((s) => s.id === previewSeat.id)}
-            onConfirmSelect={(st) => {
-              const isCurrentlySelected = selectedSeats.some((s) => s.id === st.id);
-              const rowSeats = seatsMatrix.find((r) => r.length > 0 && r[0].row === st.row) || [];
-              const currentSelectedIds = new Set(selectedSeats.map((s) => s.id));
-
-              const orphanCheck = checkOrphanSeats(rowSeats, currentSelectedIds, st);
-              if (!orphanCheck.isValid) {
-                setOrphanWarning(orphanCheck.message);
-                setTimeout(() => setOrphanWarning(null), 4500);
-                return;
-              }
-
-              if (isCurrentlySelected) {
-                applySelection(selectedSeats.filter((s) => s.id !== st.id));
-              } else {
-                if (selectedSeats.length >= MAX_SEATS) {
-                  setNotice(`Bạn chỉ có thể chọn tối đa ${MAX_SEATS} ghế trong một lần đặt.`);
-                  return;
-                }
-                applySelection([...selectedSeats, st]);
-              }
-            }}
-            onClose={() => setPreviewSeat(null)}
-          />
-        )}
-      </div>
+      {/* Modal mô phỏng 3D góc nhìn ảo từ ghế (View-From-Seat chuẩn Fandango & AMC) */}
+      {previewSeat && (
+        <ViewFromSeatModal
+          seat={previewSeat}
+          movie={movie}
+          cinemaName={selectedCinema}
+          roomName={roomName}
+          isSelected={selectedSeats.some((s) => s.id === previewSeat.id)}
+          onConfirmSelect={(st) => handleToggleSeat(st)}
+          onClose={() => setPreviewSeat(null)}
+        />
+      )}
     </div>
   );
 };

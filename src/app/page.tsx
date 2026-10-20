@@ -382,6 +382,9 @@ export default function HomePage() {
     setBookingInitialCouponCode(effectiveCoupon);
     setBookingInitialComboId(effectiveCombo);
     setActiveBookingMovie(movie);
+    setTimeout(() => {
+      document.getElementById("inline-booking-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 60);
   };
 
   const handleCustomerLoginSuccess = (info: { name: string; phone: string; email?: string }) => {
@@ -647,6 +650,32 @@ export default function HomePage() {
               />
             )}
 
+            {activeBookingMovie ? (
+              /* GIAO DIỆN CHỌN SUẤT CHIẾU & GHẾ NGỒI INLINE TRỰC TIẾP TRÊN TRANG (KHÔNG DÙNG MODAL NỀN MỜ ĐÈ NHAU) */
+              <section id="inline-booking-section" className="max-w-[1040px] 2xl:max-w-[1080px] mx-auto px-2 sm:px-4 mt-8 mb-16 scroll-mt-24 animate-in fade-in duration-300">
+                <BookingModal
+                  movie={activeBookingMovie}
+                  initialSeats={bookingInitialSeats}
+                  initialShowtimeId={bookingInitialShowtimeId}
+                  initialCouponCode={bookingInitialCouponCode}
+                  initialComboId={bookingInitialComboId}
+                  isHalloween={isCustomerHalloween}
+                  onClose={() => {
+                    setActiveBookingMovie(null);
+                    setBookingInitialSeats([]);
+                    setBookingInitialShowtimeId(undefined);
+                    setBookingInitialCouponCode(undefined);
+                    setBookingInitialComboId(undefined);
+                    useBookingStore.getState().resetBooking();
+                    setTimeout(() => {
+                      document.getElementById("commercial-tabs")?.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }, 50);
+                  }}
+                  onBookingSuccess={handleBookingSuccess}
+                />
+              </section>
+            ) : (
+              <>
             {/* 3. KHU VỰC "MOVIE SELECTION": TIÊU ĐỀ KẺ ĐÔI & TRƯỢT 4 PHIM */}
             {/* 3. KHU VỰC "MOVIE SELECTION": DANH SÁCH PHIM ĐANG CHIẾU & SẮP CHIẾU */}
             <div id="commercial-tabs" className="max-w-[1040px] 2xl:max-w-[1080px] mx-auto px-2 sm:px-4 mt-16 scroll-mt-24">
@@ -814,6 +843,8 @@ export default function HomePage() {
                 }}
               />
             </div>
+              </>
+            )}
 
             {/* 5. VỊ TRÍ VÀNG: SỰ KIỆN & ƯU ĐÃI (EVENTS & COMBOS) - NẰM NGAY SAU LỊCH CHIẾU */}
             <section id="promo-section" className="max-w-[1040px] 2xl:max-w-[1080px] mx-auto px-2 sm:px-4 py-12 scroll-mt-24">
@@ -1667,24 +1698,7 @@ export default function HomePage() {
         }}
       />
 
-      {/* Modal Đặt Vé Duy Nhất: Wizard Bước 0 (Chọn Phim) -> Suất Chiếu -> Ghế -> Bắp Nước -> Thanh Toán */}
-      <BookingModal
-        movie={activeBookingMovie}
-        initialSeats={bookingInitialSeats}
-        initialShowtimeId={bookingInitialShowtimeId}
-        initialCouponCode={bookingInitialCouponCode}
-        initialComboId={bookingInitialComboId}
-        isHalloween={isCustomerHalloween}
-        onClose={() => {
-          setActiveBookingMovie(null);
-          setBookingInitialSeats([]);
-          setBookingInitialShowtimeId(undefined);
-          setBookingInitialCouponCode(undefined);
-          setBookingInitialComboId(undefined);
-          useBookingStore.getState().resetBooking();
-        }}
-        onBookingSuccess={handleBookingSuccess}
-      />
+
 
       {/* Modal Đăng Nhập Thành Viên CineMax Khi Khách Vào Đặt Vé */}
       <CustomerLoginModal

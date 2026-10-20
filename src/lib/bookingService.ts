@@ -12,7 +12,7 @@ import {
   newHoldId,
   type HoldRecord,
 } from "@/lib/seatStore";
-import { normalizeSeatId } from "@/lib/seatLayout";
+import { normalizeSeatId, getCouplePartnerId } from "@/lib/seatLayout";
 import { calculatePrice, type PriceBreakdown } from "@/lib/pricing";
 import { safeEqual } from "@/lib/adminAuth";
 import { MOCK_CINEMAS } from "@/lib/mockData";
@@ -71,6 +71,19 @@ export function parseSeats(raw: unknown): string[] {
     if (!seat) throw new BookingError(400, "INVALID_SEATS", "Có ghế không tồn tại trong sơ đồ phòng chiếu.");
     seats.add(seat);
   }
+
+  // Quy định ghế đôi Sweetbox (Hàng K): Bắt buộc phải đặt theo cặp 2 người (2 vé), tuyệt đối không bán lẻ 1 ghế
+  for (const seat of seats) {
+    const partner = getCouplePartnerId(seat);
+    if (partner && !seats.has(partner)) {
+      throw new BookingError(
+        400,
+        "COUPLE_SEAT_REQUIRED_PAIR",
+        `Ghế đôi Sweetbox (${seat}) bắt buộc phải đặt trọn gói theo cặp cùng với ghế ${partner} (130.000đ = 2 vé xem phim). Hệ thống không cho phép mua vé lẻ 1 người cho ghế đôi.`
+      );
+    }
+  }
+
   return Array.from(seats).sort();
 }
 

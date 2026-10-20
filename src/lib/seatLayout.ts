@@ -33,6 +33,20 @@ export function seatTier(seatId: string): SeatTier {
   return "standard";
 }
 
+/**
+ * Trả về ID của ghế đối tác trong cùng một cặp Sweetbox hàng K (ghế đôi).
+ * Cặp 1: K1 - K2
+ * Cặp 2: K3 - K4
+ * Cặp 3: K5 - K6
+ */
+export function getCouplePartnerId(seatId: string): string | null {
+  if (!seatId || typeof seatId !== "string" || !seatId.startsWith("K")) return null;
+  const num = parseInt(seatId.slice(1), 10);
+  if (isNaN(num) || num < 1 || num > COUPLE_SEATS_COUNT) return null;
+  const partnerNum = num % 2 === 1 ? num + 1 : num - 1;
+  return `K${partnerNum}`;
+}
+
 export function allSeatIds(): string[] {
   const seats: string[] = [];
   for (const row of SEAT_ROWS) {

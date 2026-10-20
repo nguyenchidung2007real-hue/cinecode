@@ -113,7 +113,7 @@ const BOOKING_TOOLS: Groq.Chat.Completions.ChatCompletionTool[] = [
           suggestedSeatIds: {
             type: "array",
             items: { type: "string" },
-            description: "Mã ghế gợi ý theo hạng ghế (VD: ['F6', 'F7'] cho vip, ['D5', 'D6'] cho standard, ['K3'] cho couple)",
+            description: "Mã ghế gợi ý theo hạng ghế (VD: ['F6', 'F7'] cho vip, ['D5', 'D6'] cho standard, ['K1', 'K2'] cho couple Sweetbox)",
           },
           comboName: { type: "string", description: "Tên combo bắp nước nếu khách nhắc tới" },
           comboQuantity: { type: "number", description: "Số lượng combo bắp nước" },

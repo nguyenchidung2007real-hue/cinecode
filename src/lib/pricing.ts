@@ -7,7 +7,7 @@ import type { PopcornFlavor, DrinkType, DrinkSize, SelectedComboItem } from "@/t
  * Khớp 100% với bảng giá trong BookingModal.tsx và mockData.ts:
  * - Ghế thường (Standard): 55.000đ
  * - Ghế VIP: 75.000đ (+20.000đ)
- * - Ghế đôi (Couple Sweetbox): 130.000đ (+75.000đ)
+ * - Ghế đôi (Couple Sweetbox): 130.000đ/cặp 2 người (mỗi vé 65.000đ = +10.000đ phụ thu)
  *
  * Nguyên tắc: client chỉ gửi ĐỊNH DANH (id combo, số lượng, vị bắp, loại và cỡ nước). Mọi đơn giá đều tra ở đây.
  * Tiền là số nguyên VND, không dùng số thực để tránh sai số.
@@ -17,7 +17,7 @@ export const CURRENCY = "VND";
 
 const BASE_TICKET_PRICE = 55_000;
 const VIP_SURCHARGE = 20_000;
-const COUPLE_SURCHARGE = 75_000;
+const COUPLE_SURCHARGE = 10_000;
 
 interface CatalogItem {
   readonly name: string;
