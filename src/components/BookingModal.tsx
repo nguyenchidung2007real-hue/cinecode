@@ -3,6 +3,7 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import { Movie, Seat, BookingInfo, PopcornFlavor, DrinkType, DrinkSize, SelectedComboItem, ShowTime } from "@/types";
 import {
+  MOCK_MOVIES,
   MOCK_CINEMAS,
   MOCK_SHOWTIMES,
   CONCESSION_COMBOS,
@@ -40,6 +41,8 @@ import {
   ExternalLink,
   User,
   Heart,
+  Film,
+  Search,
 } from "lucide-react";
 import { useSeatHold, useSeatAvailability } from "@/hooks/useSeatHold";
 import { ApiError, describeError, submitBooking } from "@/lib/bookingClient";
@@ -47,13 +50,19 @@ import VietQRPaymentModal from "./booking/VietQRPaymentModal";
 import { useBookingStore } from "@/store/useBookingStore";
 
 interface BookingModalProps {
+  isOpen?: boolean;
   movie: Movie | null;
+  allMovies?: Movie[];
   onClose: () => void;
   onBookingSuccess?: (booking: BookingInfo) => void;
   initialSeats?: string[];
   initialShowtimeId?: string;
   initialCouponCode?: string;
   initialComboId?: string;
+  wizardTitle?: string;
+  wizardSubtitle?: string;
+  wizardBadge?: string;
+  isHalloween?: boolean;
 }
 
 const ROWS = ["A", "B", "C", "D", "E", "F", "G", "H", "K"];
@@ -83,16 +92,85 @@ function showtimeStartMs(st: ShowTime): number {
 }
 
 export const BookingModal: React.FC<BookingModalProps> = ({
+  isOpen,
   movie,
+  allMovies,
   onClose,
   onBookingSuccess,
   initialSeats,
   initialShowtimeId,
   initialCouponCode,
   initialComboId,
+  wizardTitle,
+  wizardSubtitle,
+  wizardBadge,
+  isHalloween = false,
 }) => {
-  // Trạng thái các bước (1: Suất chiếu, 2: Chọn ghế, 3: Bắp nước & Thông tin, 4: Quét mã QR thanh toán, 5: Vé điện tử QR)
-  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
+  // Bộ phim đang được chọn trong modal đặt vé
+  const [currentMovie, setCurrentMovie] = useState<Movie | null>(movie);
+  const activeMovie = currentMovie || movie;
+
+  // Trạng thái các bước (0: Chọn phim Wizard, 1: Suất chiếu, 2: Chọn ghế, 3: Bắp nước, 4: Thanh toán QR, 5: Vé điện tử)
+  const [step, setStep] = useState<0 | 1 | 2 | 3 | 4 | 5>(() => (movie ? 1 : 0));
+
+  // State tìm kiếm & phân loại phim ở Bước 0
+  const [movieSearchTerm, setMovieSearchTerm] = useState("");
+  const [movieCategory, setMovieCategory] = useState<"all" | "now_playing" | "trending" | "upcoming">("all");
+
+  // Đồng bộ prop movie khi có thay đổi từ bên ngoài
+  useEffect(() => {
+    if (movie) {
+      setCurrentMovie(movie);
+      setStep((prev) => (prev === 0 ? 1 : prev));
+    } else {
+      setCurrentMovie(null);
+      setStep(0);
+    }
+  }, [movie]);
+
+  // Tự động nhận diện và nạp mã combo bắp nước nếu được truyền từ nút
+  useEffect(() => {
+    if (initialComboId) {
+      setCombos((prev) => ({ ...prev, [initialComboId]: Math.max(prev[initialComboId] || 0, 1) }));
+    }
+  }, [initialComboId]);
+
+  // Tự động nhận diện và nạp mã giảm giá nếu được truyền từ voucher
+  useEffect(() => {
+    if (initialCouponCode) {
+      const code = initialCouponCode.trim().toUpperCase();
+      setCouponCode(code);
+      if (code === "CINEMAXHAPPY45") {
+        setAppliedCoupon({ code, description: "🔥 Happy Day: Đồng giá vé & Giảm 30.000đ", discountAmount: 30000 });
+      } else if (code === "U22MEMBER50" || code === "CINEMAXU22") {
+        setAppliedCoupon({ code, description: "🎓 Đặc quyền U22/HSSV: Giảm 25.000đ", discountAmount: 25000 });
+      } else if (code === "BANKPARTNER" || code === "BANKPARTNER11") {
+        setAppliedCoupon({ code, description: "💳 Đối tác ngân hàng: Giảm 45.000đ", discountAmount: 45000 });
+      } else if (code === "HALLOWEEN30K" || code === "SPOOKY30K") {
+        setAppliedCoupon({ code, description: "🎃 Ưu đãi Lễ Hội Halloween: Giảm ngay 30.000đ", discountAmount: 30000 });
+      }
+    }
+  }, [initialCouponCode]);
+
+  // Danh sách phim cho Bước 0 Wizard
+  const moviesList = useMemo(() => {
+    return allMovies && allMovies.length > 0 ? allMovies : MOCK_MOVIES;
+  }, [allMovies]);
+
+  const filteredWizardMovies = useMemo(() => {
+    return moviesList.filter((m) => {
+      const matchSearch =
+        !movieSearchTerm.trim() ||
+        m.title.toLowerCase().includes(movieSearchTerm.toLowerCase()) ||
+        (m.originalTitle && m.originalTitle.toLowerCase().includes(movieSearchTerm.toLowerCase())) ||
+        m.genres.some((g) => g.toLowerCase().includes(movieSearchTerm.toLowerCase()));
+
+      const matchCategory =
+        movieCategory === "all" ? true : m.status === movieCategory;
+
+      return matchSearch && matchCategory;
+    });
+  }, [moviesList, movieSearchTerm, movieCategory]);
 
   // Ghế được chọn để xem mô phỏng góc nhìn 3D (View from seat)
   const [previewSeat, setPreviewSeat] = useState<Seat | null>(null);
@@ -336,24 +414,25 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   const [loadingShowtimes, setLoadingShowtimes] = useState(false);
 
   useEffect(() => {
-    if (!movie) {
+    if (!activeMovie) {
       setServerShowtimes([]);
       return;
     }
+    const currentMovieId = activeMovie.id;
     let cancelled = false;
     setLoadingShowtimes(true);
-    fetch(`/api/showtimes?movieId=${encodeURIComponent(String(movie.id))}`)
+    fetch(`/api/showtimes?movieId=${encodeURIComponent(String(currentMovieId))}`)
       .then((res) => (res.ok ? res.json() : Promise.reject()))
       .then((data) => {
         if (!cancelled && data?.showtimes && Array.isArray(data.showtimes) && data.showtimes.length > 0) {
           setServerShowtimes(data.showtimes);
         } else if (!cancelled) {
-          setServerShowtimes(getShowtimesForMovie(movie.id));
+          setServerShowtimes(getShowtimesForMovie(currentMovieId));
         }
       })
       .catch(() => {
         if (!cancelled) {
-          setServerShowtimes(getShowtimesForMovie(movie.id));
+          setServerShowtimes(getShowtimesForMovie(currentMovieId));
         }
       })
       .finally(() => {
@@ -362,7 +441,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     return () => {
       cancelled = true;
     };
-  }, [movie]);
+  }, [activeMovie]);
 
   useEffect(() => {
     if (initialShowtimeId) {
@@ -435,7 +514,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   const roomName = selectedShowtime?.roomName ?? "";
 
   // Giữ ghế phía server (300s). Truyền null khi modal đóng => hook tự nhả ghế.
-  const h = useSeatHold(movie ? selectedShowtimeId : null, {
+  const h = useSeatHold(activeMovie ? selectedShowtimeId : null, {
     onExpire: () => {
       setSelectedSeats([]);
       setStep((s) => (s >= 2 && s <= 4 ? 2 : s));
@@ -496,10 +575,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
   // (a) Mở/đóng modal: reset, và chọn sẵn suất chiếu (ưu tiên initialShowtimeId, tránh ghi đè)
   useEffect(() => {
-    if (!movie) {
-      setStep(1);
+    if (!activeMovie) {
       setSelectedSeats([]);
-      setCombos({});
       setCompletedBooking(null);
       setSelectedShowtimeId(null);
       setNotice(null);
@@ -533,11 +610,11 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     } else {
       setSelectedShowtimeId(null);
     }
-  }, [movie, movieShowtimes, initialShowtimeId]);
+  }, [activeMovie, movieShowtimes, initialShowtimeId]);
 
   // (b) CineBot đề xuất ghế: chọn sẵn ĐÚNG MỘT LẦN rồi giữ ghế trên server
   useEffect(() => {
-    if (!movie || !initialSeats || initialSeats.length === 0 || !selectedShowtimeId || preselectedRef.current) return;
+    if (!activeMovie || !initialSeats || initialSeats.length === 0 || !selectedShowtimeId || preselectedRef.current) return;
     const wanted = seatsMatrix
       .flat()
       .filter((s) => initialSeats.includes(s.id) && s.status === "available")
@@ -561,9 +638,9 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
   // Khôi phục combo từ useBookingStore nếu có draft của phim này
   useEffect(() => {
-    if (!movie) return;
+    if (!activeMovie) return;
     const storeState = useBookingStore.getState();
-    if (storeState.movieId === movie.id && storeState.selectedCombos.length > 0) {
+    if (storeState.movieId === activeMovie.id && storeState.selectedCombos.length > 0) {
       const restoredCombos: Record<string, number> = {};
       for (const item of storeState.selectedCombos) {
         restoredCombos[item.id] = item.quantity;
@@ -671,7 +748,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   }, [combos, comboConfigs]);
 
   // Early return sau mọi hook
-  if (!movie) return null;
+  if (isOpen === false) return null;
+  if (isOpen === undefined && !activeMovie) return null;
 
   // Tính tổng tiền
   const basis = JSON.stringify([selectedSeats.map((s) => s.id), selectedConcessions]);
@@ -854,7 +932,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
           drinks: c.drinks,
         })),
         expectedTotal: grandTotal, // chỉ để server phát hiện lệch giá
-        posterPath: movie.posterPath,
+        posterPath: activeMovie?.posterPath || '',
       });
 
       const newTicket: BookingInfo = res.data;
@@ -902,30 +980,212 @@ export const BookingModal: React.FC<BookingModalProps> = ({
         {/* Header Modal */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-sky-50 text-sky-600 border border-sky-200 flex items-center justify-center">
-              <Ticket className="w-5 h-5" />
+            <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${
+              step === 0
+                ? "bg-red-50 text-red-600 border border-red-200"
+                : "bg-sky-50 text-sky-600 border border-sky-200"
+            }`}>
+              {step === 0 ? <Film className="w-5 h-5" /> : <Ticket className="w-5 h-5" />}
             </div>
             <div>
-              <h3 className="font-extrabold text-base sm:text-lg text-slate-900 line-clamp-1">
-                Đặt vé: {movie.title}
-              </h3>
+              <div className="flex items-center gap-2">
+                <h3 className="font-extrabold text-base sm:text-lg text-slate-900 line-clamp-1">
+                  {step === 0 ? (wizardTitle || "Chọn Phim Để Đặt Vé") : `Đặt vé: ${activeMovie?.title || ""}`}
+                </h3>
+                {step === 0 && wizardBadge && (
+                  <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-red-100 text-red-700 border border-red-200">
+                    {wizardBadge}
+                  </span>
+                )}
+              </div>
               <p className="text-xs text-slate-500">
-                {step === 1 && "Bước 1: Chọn rạp & Suất chiếu"}
-                {step === 2 && "Bước 2: Chọn ghế ngồi phòng chiếu"}
-                {step === 3 && "Bước 3: Combo bắp nước & Thông tin"}
-                {step === 4 && "Bước 4: Quét mã QR thanh toán"}
-                {step === 5 && "Bước 5: Vé điện tử của bạn"}
+                {step === 0 && (wizardSubtitle || "Bước 1/5: Chọn bộ phim bạn yêu thích để tiếp tục")}
+                {step === 1 && "Bước 2/5: Chọn rạp & Suất chiếu"}
+                {step === 2 && "Bước 3/5: Chọn ghế ngồi phòng chiếu"}
+                {step === 3 && "Bước 4/5: Combo bắp nước & Thông tin"}
+                {step === 4 && "Bước 5/5: Quét mã QR thanh toán"}
+                {step === 5 && "Bước 5/5: Vé điện tử của bạn"}
               </p>
             </div>
           </div>
 
-          <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-800 transition-colors"
-          >
-            <X className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-2">
+            {step === 1 && (
+              <button
+                type="button"
+                onClick={() => setStep(0)}
+                className="px-2.5 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold border border-slate-200 transition-colors flex items-center gap-1 shadow-sm cursor-pointer"
+                title="Quay lại chọn phim khác"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Đổi Phim Khác</span>
+              </button>
+            )}
+
+            <button
+              onClick={onClose}
+              className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
+              title="Đóng cửa sổ"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
         </div>
+
+        {/* BƯỚC 0: CHỌN PHIM TRONG WIZARD DUY NHẤT */}
+        {step === 0 && (
+          <div className="p-4 sm:p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+            {/* Toolbar tìm kiếm & lọc phim */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-100">
+              <div className="relative flex-1 max-w-md">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={movieSearchTerm}
+                  onChange={(e) => setMovieSearchTerm(e.target.value)}
+                  placeholder="Tìm phim theo tên hoặc thể loại..."
+                  className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-red-500 focus:bg-white transition-colors"
+                />
+              </div>
+
+              <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none">
+                {[
+                  { id: "all", label: "Tất cả phim" },
+                  { id: "now_playing", label: "Đang chiếu" },
+                  { id: "trending", label: "Suất đặc biệt" },
+                ].map((cat) => (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => setMovieCategory(cat.id as any)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer ${
+                      movieCategory === cat.id
+                        ? "bg-[#E50914] text-white shadow-md shadow-red-900/30"
+                        : "bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200"
+                    }`}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Danh sách phim Grid */}
+            {filteredWizardMovies.length === 0 ? (
+              <div className="py-16 text-center text-slate-500 space-y-2">
+                <Film className="w-10 h-10 mx-auto text-slate-300 mb-2" />
+                <p className="font-bold text-sm text-slate-800">Không tìm thấy phim phù hợp</p>
+                <p className="text-xs text-slate-400">Vui lòng thử tìm với từ khóa khác hoặc chọn Tất cả phim.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5 sm:gap-4">
+                {filteredWizardMovies.map((m) => {
+                  const ageRatingColor =
+                    m.ageRating === "P"
+                      ? "bg-emerald-500 text-white"
+                      : m.ageRating === "T13"
+                      ? "bg-amber-500 text-white"
+                      : m.ageRating === "T16"
+                      ? "bg-orange-500 text-white"
+                      : m.ageRating === "T18"
+                      ? "bg-red-600 text-white"
+                      : "bg-blue-500 text-white";
+
+                  return (
+                    <div
+                      key={m.id}
+                      onClick={() => {
+                        setCurrentMovie(m);
+                        setStep(1);
+                      }}
+                      className="group relative rounded-xl overflow-hidden border border-slate-200 hover:border-red-500 bg-white hover:shadow-xl transition-all duration-300 hover:scale-[1.02] cursor-pointer flex flex-col justify-between"
+                    >
+                      <div className="relative aspect-[2/3] w-full overflow-hidden bg-slate-100">
+                        <img
+                          src={m.posterPath}
+                          alt={m.title}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          loading="lazy"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src =
+                              "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=500&auto=format&fit=crop&q=80";
+                          }}
+                        />
+
+                        {/* Nhãn độ tuổi & đánh giá sao */}
+                        <div className="absolute top-2 left-2 flex items-center gap-1.5">
+                          <span className={`text-[10px] font-black px-1.5 py-0.5 rounded shadow ${ageRatingColor}`}>
+                            {m.ageRating || "P"}
+                          </span>
+                          {m.voteAverage > 0 && (
+                            <span className="text-[10px] font-black px-1.5 py-0.5 rounded bg-black/75 text-amber-400 backdrop-blur-sm flex items-center gap-0.5 shadow">
+                              <Star className="w-2.5 h-2.5 fill-amber-400" />
+                              <span>{m.voteAverage.toFixed(1)}</span>
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Nhãn 2D & Dolby */}
+                        <div className="absolute bottom-2 left-2 flex items-center gap-1">
+                          <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-black/75 text-cyan-300 backdrop-blur-sm">
+                            2D
+                          </span>
+                          <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-black/75 text-amber-300 backdrop-blur-sm">
+                            Dolby 7.1
+                          </span>
+                        </div>
+
+                        {/* Hover Overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-3">
+                          <span className="px-3 py-1.5 rounded-lg bg-[#E50914] text-white text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-lg transform translate-y-2 group-hover:translate-y-0 transition-transform">
+                            <span>Chọn Phim Này</span>
+                            <ArrowRight className="w-3.5 h-3.5" />
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Thông tin phim */}
+                      <div className="p-3 flex flex-col justify-between flex-1">
+                        <div>
+                          <h4 className="font-bold text-xs sm:text-sm text-slate-900 line-clamp-1 group-hover:text-[#E50914] transition-colors">
+                            {m.title}
+                          </h4>
+                          {m.originalTitle && m.originalTitle !== m.title && (
+                            <p className="text-[10px] text-slate-400 line-clamp-1 italic">
+                              {m.originalTitle}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-500">
+                          <span className="truncate max-w-[100px]">{m.genres[0] || "Điện ảnh"}</span>
+                          <span className="flex items-center gap-1 font-mono text-slate-600 shrink-0">
+                            <Clock className="w-2.5 h-2.5 text-slate-400" />
+                            <span>{m.durationMinutes}p</span>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Footer Step 0 */}
+            <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+              <span className="hidden sm:inline">
+                💡 Mẹo: Bấm vào poster phim bất kỳ để chuyển thẳng đến bước chọn suất chiếu và giữ ghế.
+              </span>
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs ml-auto transition-colors"
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* BƯỚC 1: CHỌN RẠP & SUẤT CHIẾU */}
         {step === 1 && (
@@ -1856,7 +2116,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                     popcornFlavors: c.popcornFlavors,
                     drinks: c.drinks,
                   }))}
-                  posterPath={movie.posterPath}
+                  posterPath={activeMovie?.posterPath || ''}
                   onPaymentVerified={(confirmedTicket) => {
                     const newTicket = confirmedTicket as BookingInfo;
                     h.markConfirmed();
@@ -1945,7 +2205,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   </h4>
                   <div className="flex justify-between">
                     <span className="text-slate-500">Phim:</span>
-                    <span className="font-bold text-slate-900">{movie.title}</span>
+                    <span className="font-bold text-slate-900">{activeMovie?.title || ''}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-500">Cụm rạp:</span>

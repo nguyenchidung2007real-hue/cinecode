@@ -19,7 +19,6 @@ import { Footer } from "@/components/Footer";
 import { CustomerAtmosphere } from "@/components/CustomerAtmosphere";
 import { HalloweenMovieShowcase } from "@/components/HalloweenMovieShowcase";
 import { CustomerLoginModal } from "@/components/CustomerLoginModal";
-import { MovieSelectModal } from "@/components/MovieSelectModal";
 import { useBookingStore } from "@/store/useBookingStore";
 
 import { Sparkles, Flame, Film, Clapperboard, Award, SearchX, Smile, Compass, Brain, Heart, Tag, Gift, Percent, Ticket, CheckCircle2, X, Clock, Calendar, Check, Copy, ArrowRight, Info, Armchair, Popcorn, Headphones, Crown, Star } from "lucide-react";
@@ -153,19 +152,12 @@ export default function HomePage() {
   const [bookingInitialShowtimeId, setBookingInitialShowtimeId] = useState<string | undefined>(undefined);
   const [bookingInitialCouponCode, setBookingInitialCouponCode] = useState<string | undefined>(undefined);
   const [bookingInitialComboId, setBookingInitialComboId] = useState<string | undefined>(undefined);
-  const [movieSelectConfig, setMovieSelectConfig] = useState<{
-    isOpen: boolean;
-    title: string;
-    subtitle: string;
+  const [isBookingOpen, setIsBookingOpen] = useState(false);
+  const [bookingWizardConfig, setBookingWizardConfig] = useState<{
+    title?: string;
+    subtitle?: string;
     badge?: string;
-    initialCouponCode?: string;
-    initialComboId?: string;
-  }>({
-    isOpen: false,
-    title: "Chọn Phim Bạn Muốn Xem",
-    subtitle: "Vui lòng chọn bộ phim bạn yêu thích để tiếp tục chọn suất chiếu và đặt vé:",
-    badge: "ĐANG CHIẾU RẠP",
-  });
+  }>({});
 
   const handleOpenMovieSelect = (options: {
     title: string;
@@ -174,14 +166,18 @@ export default function HomePage() {
     initialCouponCode?: string;
     initialComboId?: string;
   }) => {
-    setMovieSelectConfig({
-      isOpen: true,
-      title: options.title,
-      subtitle: options.subtitle,
-      badge: options.badge || "ĐANG CHIẾU RẠP",
-      initialCouponCode: options.initialCouponCode,
-      initialComboId: options.initialComboId,
-    });
+    handleRequestBooking(
+      null,
+      [],
+      undefined,
+      options.initialCouponCode,
+      options.initialComboId,
+      {
+        title: options.title,
+        subtitle: options.subtitle,
+        badge: options.badge || "ĐANG CHIẾU RẠP",
+      }
+    );
   };
 
   const [isCustomerLoginOpen, setIsCustomerLoginOpen] = useState(false);
@@ -370,11 +366,12 @@ export default function HomePage() {
 
   // Trực tiếp mở quy trình đặt vé cho khách (không ép đăng nhập trước)
   const handleRequestBooking = (
-    movie: Movie,
+    movie?: Movie | null,
     initialSeats: string[] = [],
     initialShowtimeId?: string,
     initialCouponCode?: string,
-    initialComboId?: string
+    initialComboId?: string,
+    wizardConfig?: { title?: string; subtitle?: string; badge?: string }
   ) => {
     if (initialShowtimeId) {
       setBookingInitialShowtimeId(initialShowtimeId);
@@ -384,7 +381,9 @@ export default function HomePage() {
     setBookingInitialSeats(initialSeats);
     setBookingInitialCouponCode(initialCouponCode);
     setBookingInitialComboId(initialComboId);
-    setActiveBookingMovie(movie);
+    setActiveBookingMovie(movie || null);
+    setBookingWizardConfig(wizardConfig || {});
+    setIsBookingOpen(true);
   };
 
   const handleCustomerLoginSuccess = (info: { name: string; phone: string; email?: string }) => {
@@ -1615,43 +1614,30 @@ export default function HomePage() {
         }}
       />
 
-      {/* Modal Đặt Vé, Chọn Ghế, Thanh Toán VietQR & Xuất Vé QR Code */}
+      {/* Modal Đặt Vé Duy Nhất: Wizard Bước 0 (Chọn Phim) -> Suất Chiếu -> Ghế -> Bắp Nước -> Thanh Toán */}
       <BookingModal
+        isOpen={isBookingOpen}
         movie={activeBookingMovie}
+        allMovies={movies}
         initialSeats={bookingInitialSeats}
         initialShowtimeId={bookingInitialShowtimeId}
         initialCouponCode={bookingInitialCouponCode}
         initialComboId={bookingInitialComboId}
+        wizardTitle={bookingWizardConfig.title}
+        wizardSubtitle={bookingWizardConfig.subtitle}
+        wizardBadge={bookingWizardConfig.badge}
+        isHalloween={isCustomerHalloween}
         onClose={() => {
+          setIsBookingOpen(false);
           setActiveBookingMovie(null);
           setBookingInitialSeats([]);
           setBookingInitialShowtimeId(undefined);
           setBookingInitialCouponCode(undefined);
           setBookingInitialComboId(undefined);
+          setBookingWizardConfig({});
           useBookingStore.getState().resetBooking();
         }}
         onBookingSuccess={handleBookingSuccess}
-      />
-
-      {/* Modal Chọn Phim Khi Khách Bấm Đặt Vé Từ Bảng Giá Hoặc Combo */}
-      <MovieSelectModal
-        isOpen={movieSelectConfig.isOpen}
-        onClose={() => setMovieSelectConfig((prev) => ({ ...prev, isOpen: false }))}
-        movies={movies}
-        title={movieSelectConfig.title}
-        subtitle={movieSelectConfig.subtitle}
-        badge={movieSelectConfig.badge}
-        isHalloween={isCustomerHalloween}
-        onSelectMovie={(movie) => {
-          setMovieSelectConfig((prev) => ({ ...prev, isOpen: false }));
-          handleRequestBooking(
-            movie,
-            [],
-            undefined,
-            movieSelectConfig.initialCouponCode,
-            movieSelectConfig.initialComboId
-          );
-        }}
       />
 
       {/* Modal Đăng Nhập Thành Viên CineMax Khi Khách Vào Đặt Vé */}
