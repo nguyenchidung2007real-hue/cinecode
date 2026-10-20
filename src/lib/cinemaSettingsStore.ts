@@ -64,6 +64,10 @@ function getSettingsStore(): CinemaSettings {
   if (!globalThis.__cinemaSettings) {
     globalThis.__cinemaSettings = { ...DEFAULT_SETTINGS };
   }
+  // Đảm bảo cờ halloweenThemeEnabled luôn là boolean rõ ràng, mặc định TẮT nếu chưa bật
+  if (typeof globalThis.__cinemaSettings.halloweenThemeEnabled !== "boolean") {
+    globalThis.__cinemaSettings.halloweenThemeEnabled = false;
+  }
   return globalThis.__cinemaSettings;
 }
 

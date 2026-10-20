@@ -106,6 +106,7 @@ export default function AdminDashboardPage() {
         }
         if (typeof data?.data?.halloweenThemeEnabled === "boolean") {
           setCustomerHalloweenEnabled(data.data.halloweenThemeEnabled);
+          setIsHalloween(data.data.halloweenThemeEnabled);
         }
       })
       .catch(() => {});
@@ -115,10 +116,16 @@ export default function AdminDashboardPage() {
     setIsTogglingCustomerHalloween(true);
     const next = !customerHalloweenEnabled;
     setCustomerHalloweenEnabled(next);
+    setIsHalloween(next);
+
+    try {
+      localStorage.setItem("cinemax_admin_theme", next ? "halloween" : "normal");
+    } catch {}
     try {
       const res = await fetch("/api/settings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
         body: JSON.stringify({ halloweenThemeEnabled: next }),
       });
       if (res.ok) {
@@ -154,6 +161,7 @@ export default function AdminDashboardPage() {
       const res = await fetch("/api/settings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
         body: JSON.stringify({ announcement: announcementSettings }),
       });
       if (res.ok) {
@@ -176,6 +184,7 @@ export default function AdminDashboardPage() {
       const res = await fetch("/api/admin/seats-and-movies", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
         body: JSON.stringify({
           action: "update_movie",
           id: movieId,
@@ -218,15 +227,7 @@ export default function AdminDashboardPage() {
     }
   }, []);
 
-  const toggleHalloweenTheme = () => {
-    const next = !isHalloween;
-    setIsHalloween(next);
-    try {
-      localStorage.setItem("cinemax_admin_theme", next ? "halloween" : "normal");
-    } catch (e) {
-      console.error(e);
-    }
-  };
+  const toggleHalloweenTheme = () => { handleToggleCustomerHalloween(); };
 
   // Thống kê giả lập
   const [stats, setStats] = useState({
@@ -500,10 +501,10 @@ export default function AdminDashboardPage() {
         setShowtimesList((prev) => [data.showtime, ...prev]);
         setScheduleSuccessMsg(`Đã tạo suất chiếu ${newTime} (${newFormat}) tại ${newRoomName} thành công và lưu vào kho server!`);
         setTimeout(() => setScheduleSuccessMsg(null), 5000);
-        return;
+    
       } else if (res.status === 409) {
         alert(data.error || "Phát hiện xung đột phòng chiếu từ server!");
-        return;
+    
       }
     } catch {
       // Tiếp tục lưu vào bộ nhớ cục bộ nếu không kết nối được
@@ -740,44 +741,21 @@ export default function AdminDashboardPage() {
 
           {/* Action Buttons: Halloween Toggle, Sync Data, Admin Profile */}
           <div className="flex items-center gap-2.5 sm:gap-3">
-            {/* Halloween Admin Theme Toggle Button */}
-            <button
-              onClick={toggleHalloweenTheme}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-xs transition-all border shadow-lg ${
-                isHalloween
-                  ? "bg-gradient-to-r from-orange-600/30 to-purple-600/30 hover:from-orange-600/40 hover:to-purple-600/40 text-orange-300 border-orange-500/40 shadow-orange-500/20"
-                  : "bg-white/5 hover:bg-white/10 text-neutral-300 border-white/10"
-              }`}
-              title="Chuyển đổi giao diện trang Admin: Halloween 🎃 ⇄ Bình thường 🎬"
-            >
-              {isHalloween ? (
-                <>
-                  <span className="text-base">🎃</span>
-                  <span className="text-xs font-black tracking-wide text-orange-400">Admin Spooky</span>
-                </>
-              ) : (
-                <>
-                  <span className="text-base">🎬</span>
-                  <span className="text-xs font-semibold text-neutral-300">Admin Normal</span>
-                </>
-              )}
-            </button>
-
-            {/* Customer Website Halloween Mode Master Switch */}
+            {/* Master Halloween Switch for Entire System & Customer */}
             <button
               onClick={handleToggleCustomerHalloween}
               disabled={isTogglingCustomerHalloween}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-xs transition-all border shadow-lg ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-xs transition-all border shadow-lg cursor-pointer ${
                 customerHalloweenEnabled
-                  ? "bg-gradient-to-r from-orange-600 to-purple-700 text-white border-orange-400 shadow-orange-500/30 animate-pulse"
+                  ? "bg-gradient-to-r from-orange-600 to-purple-700 text-white border-orange-400 shadow-orange-500/30"
                   : "bg-white/5 hover:bg-white/10 text-neutral-300 border-white/10"
               }`}
-              title="Kích hoạt hoặc tắt chủ đề Lễ Hội Halloween trên trang chủ khách hàng (/)"
+              title="Bật/Tắt chủ đề Lễ Hội Halloween toàn hệ thống (Admin & Khách Hàng)"
             >
-              <span className="text-base">{customerHalloweenEnabled ? "🎃" : "👻"}</span>
-              <span className="hidden sm:inline">Halloween Trang Khách:</span>
+              <span className="text-base">{customerHalloweenEnabled ? "🎃" : "🎬"}</span>
+              <span className="hidden sm:inline">Chủ Đề Halloween:</span>
               <span className={`font-black ${customerHalloweenEnabled ? "text-orange-200" : "text-neutral-400"}`}>
-                {customerHalloweenEnabled ? "BẬT" : "TẮT"}
+                {customerHalloweenEnabled ? "ĐANG BẬT" : "ĐANG TẮT"}
               </span>
             </button>
 

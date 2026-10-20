@@ -15,6 +15,7 @@ interface QuickBookingBarProps {
     format: string,
     showtimeId?: string
   ) => void;
+  onRequestSelectMovie?: () => void;
 }
 
 function getVnDateString(offsetDays = 0): string {
@@ -33,7 +34,7 @@ function formatVnDisplayDate(dateStr: string, index: number): string {
   return `${dowNames[dayOfWeek]} (${String(d).padStart(2, "0")}/${String(m).padStart(2, "0")})`;
 }
 
-export const QuickBookingBar: React.FC<QuickBookingBarProps> = ({ movies, onQuickBook }) => {
+export const QuickBookingBar: React.FC<QuickBookingBarProps> = ({ movies, onQuickBook, onRequestSelectMovie }) => {
   const [selectedMovieId, setSelectedMovieId] = useState<string>("");
   const [selectedCinemaId, setSelectedCinemaId] = useState<string>("");
   const [selectedDate, setSelectedDate] = useState<string>("");
@@ -111,13 +112,18 @@ export const QuickBookingBar: React.FC<QuickBookingBarProps> = ({ movies, onQuic
   );
 
   const handleBookNow = () => {
-    const movie = currentMovie || movies[0];
+    if (!currentMovie) {
+      if (onRequestSelectMovie) {
+        onRequestSelectMovie();
+      }
+      return;
+    }
     const cinema = currentCinema || MOCK_CINEMAS[0];
     const date = selectedDate || dateOptions[0]?.value;
     const st = currentShowtime || availableShowtimes[0];
-    if (movie && cinema && date) {
+    if (currentMovie && cinema && date) {
       onQuickBook(
-        movie,
+        currentMovie,
         cinema.name,
         date,
         st?.time || "19:00",
@@ -304,7 +310,7 @@ export const QuickBookingBar: React.FC<QuickBookingBarProps> = ({ movies, onQuic
                   : "bg-gradient-to-r from-red-950/80 via-red-900/40 to-neutral-900/90 hover:from-red-900/80 hover:to-neutral-800 text-red-200 border border-red-600/40 shadow-lg shadow-red-950/40 hover:border-red-500"
               }`}
             >
-              <span>MUA VÉ NGAY</span>
+              <span>{currentMovie ? "MUA VÉ NGAY" : "CHỌN PHIM ĐẶT VÉ"}</span>
               <ArrowRight className="w-4 h-4 text-white" />
             </button>
           </div>

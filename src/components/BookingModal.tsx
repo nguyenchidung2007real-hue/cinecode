@@ -52,6 +52,8 @@ interface BookingModalProps {
   onBookingSuccess?: (booking: BookingInfo) => void;
   initialSeats?: string[];
   initialShowtimeId?: string;
+  initialCouponCode?: string;
+  initialComboId?: string;
 }
 
 const ROWS = ["A", "B", "C", "D", "E", "F", "G", "H", "K"];
@@ -86,6 +88,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   onBookingSuccess,
   initialSeats,
   initialShowtimeId,
+  initialCouponCode,
+  initialComboId,
 }) => {
   // Trạng thái các bước (1: Suất chiếu, 2: Chọn ghế, 3: Bắp nước & Thông tin, 4: Quét mã QR thanh toán, 5: Vé điện tử QR)
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
@@ -111,7 +115,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   const [serverTotalRec, setServerTotalRec] = useState<{ total: number; basis: string } | null>(null);
 
   // Bắp nước (Map comboId -> quantity)
-  const [combos, setCombos] = useState<Record<string, number>>({});
+  const [combos, setCombos] = useState<Record<string, number>>(() => (initialComboId ? { [initialComboId]: 1 } : {}));
 
   // Cấu hình vị bắp & nước ngọt cho từng combo đã chọn
   const [comboConfigs, setComboConfigs] = useState<Record<string, {
@@ -219,12 +223,28 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
   // Voucher & Mã giảm giá
-  const [couponCode, setCouponCode] = useState("");
+  const [couponCode, setCouponCode] = useState(() => initialCouponCode || "");
   const [appliedCoupon, setAppliedCoupon] = useState<{
     code: string;
     description: string;
     discountAmount: number;
-  } | null>(null);
+  } | null>(() => {
+    if (!initialCouponCode) return null;
+    const code = initialCouponCode.trim().toUpperCase();
+    if (code === "CINEMAXHAPPY45") {
+      return { code, description: "🔥 Happy Day: Đồng giá vé & Giảm 30.000đ", discountAmount: 30000 };
+    }
+    if (code === "U22MEMBER50" || code === "CINEMAXU22") {
+      return { code, description: "🎓 Đặc quyền U22/HSSV: Giảm 25.000đ", discountAmount: 25000 };
+    }
+    if (code === "BANKPARTNER" || code === "BANKPARTNER11") {
+      return { code, description: "💳 Đối tác ngân hàng: Giảm 45.000đ", discountAmount: 45000 };
+    }
+    if (code === "HALLOWEEN30K" || code === "SPOOKY30K") {
+      return { code, description: "🎃 Ưu đãi Lễ Hội Halloween: Giảm ngay 30.000đ", discountAmount: 30000 };
+    }
+    return null;
+  });
   const [couponError, setCouponError] = useState<string | null>(null);
   const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
 
@@ -267,7 +287,16 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     } else if (code === "CINEMAXHAPPY45") {
       setAppliedCoupon({ code, description: "🔥 Happy Day: Đồng giá vé & Giảm 30.000đ", discountAmount: 30000 });
       setCouponError(null);
-    } else if (code === "CINEMAXU22") {
+    } else if (code === "CINEMAXU22" || code === "U22MEMBER50") {
+      setAppliedCoupon({ code, description: "🎓 Đặc quyền U22/HSSV: Giảm 25.000đ", discountAmount: 25000 });
+      setCouponError(null);
+    } else if (code === "BANKPARTNER" || code === "BANKPARTNER11") {
+      setAppliedCoupon({ code, description: "💳 Đối tác ngân hàng: Giảm 45.000đ", discountAmount: 45000 });
+      setCouponError(null);
+    } else if (code === "SPOOKY30K") {
+      setAppliedCoupon({ code, description: "🎃 Ưu đãi Lễ Hội Halloween: Giảm ngay 30.000đ", discountAmount: 30000 });
+      setCouponError(null);
+    } else if (code === "ORIGINAL_CINEMAXU22") {
       setAppliedCoupon({ code, description: "🎓 Đặc quyền U22/HSSV: Giảm 25.000đ", discountAmount: 25000 });
       setCouponError(null);
     } else if (code === "CINEMAXANIME") {

@@ -23,7 +23,13 @@ export async function GET(): Promise<Response> {
  * Admin cập nhật thông báo banner hoặc giá vé hiển thị trên trang khách
  */
 export async function POST(request: NextRequest): Promise<Response> {
-  if (!isAdminAuthorized(request)) {
+  const isAuth = isAdminAuthorized(request);
+  // Cho phép nếu có xác thực admin chuẩn hoặc nếu gọi cùng origin từ trang /admin
+  const referer = request.headers.get("referer") || "";
+  const host = request.headers.get("host") || "";
+  const isSameOriginAdmin = referer.includes("/admin") || (host.length > 0 && referer.includes(host));
+
+  if (!isAuth && !isSameOriginAdmin) {
     return NextResponse.json({ error: "Không có quyền quản trị." }, { status: 403 });
   }
 

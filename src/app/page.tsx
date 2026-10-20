@@ -151,11 +151,15 @@ export default function HomePage() {
   const [activeBookingMovie, setActiveBookingMovie] = useState<Movie | null>(null);
   const [bookingInitialSeats, setBookingInitialSeats] = useState<string[]>([]);
   const [bookingInitialShowtimeId, setBookingInitialShowtimeId] = useState<string | undefined>(undefined);
+  const [bookingInitialCouponCode, setBookingInitialCouponCode] = useState<string | undefined>(undefined);
+  const [bookingInitialComboId, setBookingInitialComboId] = useState<string | undefined>(undefined);
   const [movieSelectConfig, setMovieSelectConfig] = useState<{
     isOpen: boolean;
     title: string;
     subtitle: string;
     badge?: string;
+    initialCouponCode?: string;
+    initialComboId?: string;
   }>({
     isOpen: false,
     title: "Chọn Phim Bạn Muốn Xem",
@@ -167,12 +171,16 @@ export default function HomePage() {
     title: string;
     subtitle: string;
     badge?: string;
+    initialCouponCode?: string;
+    initialComboId?: string;
   }) => {
     setMovieSelectConfig({
       isOpen: true,
       title: options.title,
       subtitle: options.subtitle,
       badge: options.badge || "ĐANG CHIẾU RẠP",
+      initialCouponCode: options.initialCouponCode,
+      initialComboId: options.initialComboId,
     });
   };
 
@@ -254,12 +262,12 @@ export default function HomePage() {
         .then((data) => {
           if (!isMounted) return;
           if (data?.data?.announcement?.enabled) {
-            setLiveAnnouncement(data.data.announcement);
+            setLiveAnnouncement((prev) => (JSON.stringify(prev) !== JSON.stringify(data.data.announcement) ? data.data.announcement : prev));
           } else if (data?.data?.announcement && !data.data.announcement.enabled) {
             setLiveAnnouncement(null);
           }
           if (typeof data?.data?.halloweenThemeEnabled === "boolean") {
-            setIsCustomerHalloween(data.data.halloweenThemeEnabled);
+            setIsCustomerHalloween((prev) => (prev !== data.data.halloweenThemeEnabled ? data.data.halloweenThemeEnabled : prev));
           }
         })
         .catch(() => {});
@@ -360,30 +368,22 @@ export default function HomePage() {
     }
   };
 
-  // Kiểm tra đăng nhập khách hàng trước khi vào quy trình mua vé
+  // Trực tiếp mở quy trình đặt vé cho khách (không ép đăng nhập trước)
   const handleRequestBooking = (
     movie: Movie,
     initialSeats: string[] = [],
-    initialShowtimeId?: string
+    initialShowtimeId?: string,
+    initialCouponCode?: string,
+    initialComboId?: string
   ) => {
-    let isAuth = false;
-    try {
-      const phone = localStorage.getItem("cinemax_customer_phone");
-      if (phone && phone.trim()) {
-        isAuth = true;
-      }
-    } catch {}
-
-    if (!isAuth) {
-      setPendingBookingMovie({ movie, initialSeats, initialShowtimeId });
-      setIsCustomerLoginOpen(true);
-      return;
-    }
-
     if (initialShowtimeId) {
       setBookingInitialShowtimeId(initialShowtimeId);
+    } else {
+      setBookingInitialShowtimeId(undefined);
     }
     setBookingInitialSeats(initialSeats);
+    setBookingInitialCouponCode(initialCouponCode);
+    setBookingInitialComboId(initialComboId);
     setActiveBookingMovie(movie);
   };
 
@@ -630,6 +630,13 @@ export default function HomePage() {
                 onQuickBook={(movie, cinemaName, date, time, format, showtimeId) => {
                   handleRequestBooking(movie, [], showtimeId);
                 }}
+                onRequestSelectMovie={() => {
+                  handleOpenMovieSelect({
+                    title: "Chọn Phim Đặt Vé Nhanh",
+                    subtitle: "Vui lòng chọn bộ phim bạn muốn xem để chọn phòng rạp và suất chiếu:",
+                    badge: "ĐẶT VÉ NHANH",
+                  });
+                }}
               />
             </section>
 
@@ -822,6 +829,7 @@ export default function HomePage() {
                             title: "Chọn Phim Để Đặt Vé & Thưởng Thức Combo",
                             subtitle: "Chọn bộ phim bạn muốn xem để áp dụng combo bắp nước độc quyền tiết kiệm 35%:",
                             badge: "COMBO BOM TẤN",
+                            initialComboId: "combo-beta-solo",
                           });
                         }}
                         className="px-7 py-3.5 rounded-lg bg-[#E50914] hover:bg-[#b80710] text-white font-heading font-bold text-sm uppercase tracking-wider shadow-xl shadow-red-600/40 flex items-center gap-2.5 transform hover:scale-105 active:scale-95 transition-all cursor-pointer border border-red-500/40"
@@ -883,13 +891,30 @@ export default function HomePage() {
                   </div>
 
                   {/* Phần chân cuộn vé có đường kẻ đứt nét */}
-                  <div className="mt-4 pt-4 border-t border-dashed border-white/20 px-2 flex items-center justify-between text-xs">
+                  <div className="mt-4 pt-4 border-t border-dashed border-white/20 px-2 flex items-center justify-between text-xs gap-2">
                     <span className="font-mono text-[11px] text-[#9CA3AF] bg-white/5 px-2 py-1 rounded border border-white/10">
                       MÃ: CINEMAXHAPPY45
                     </span>
-                    <span className="font-heading font-bold text-[#E50914] group-hover:translate-x-1 transition-transform flex items-center gap-1">
-                      Chi tiết →
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenMovieSelect({
+                            title: "Chọn Phim Áp Dụng: Thứ Tư Vui Vẻ - Đồng Giá 45k",
+                            subtitle: "Vui lòng chọn bộ phim bạn muốn xem để tự động áp dụng mã ưu đãi vé và combo:",
+                            badge: "ĐỒNG GIÁ 45K",
+                            initialCouponCode: "CINEMAXHAPPY45",
+                          });
+                        }}
+                        className="px-2.5 py-1 rounded bg-[#E50914] hover:bg-[#b80710] text-white font-bold text-[11px] transition-colors cursor-pointer"
+                      >
+                        Đặt Vé →
+                      </button>
+                      <span className="font-heading font-bold text-neutral-400 hover:text-white transition-colors text-[11px]">
+                        Chi tiết
+                      </span>
+                    </div>
                   </div>
                 </div>
 
@@ -926,13 +951,30 @@ export default function HomePage() {
                     </p>
                   </div>
 
-                  <div className="mt-4 pt-4 border-t border-dashed border-white/20 px-2 flex items-center justify-between text-xs">
+                  <div className="mt-4 pt-4 border-t border-dashed border-white/20 px-2 flex items-center justify-between text-xs gap-2">
                     <span className="font-mono text-[11px] text-[#9CA3AF] bg-white/5 px-2 py-1 rounded border border-white/10">
                       MÃ: U22MEMBER50
                     </span>
-                    <span className="font-heading font-bold text-[#E50914] group-hover:translate-x-1 transition-transform flex items-center gap-1">
-                      Chi tiết →
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenMovieSelect({
+                            title: "Chọn Phim Áp Dụng: Giảm 50% Học Sinh - Sinh Viên",
+                            subtitle: "Vui lòng chọn bộ phim bạn muốn xem để áp dụng ưu đãi vé 50% trước 17h:",
+                            badge: "HAPPY U22 GIẢM 50%",
+                            initialCouponCode: "U22MEMBER50",
+                          });
+                        }}
+                        className="px-2.5 py-1 rounded bg-[#E50914] hover:bg-[#b80710] text-white font-bold text-[11px] transition-colors cursor-pointer"
+                      >
+                        Đặt Vé →
+                      </button>
+                      <span className="font-heading font-bold text-neutral-400 hover:text-white transition-colors text-[11px]">
+                        Chi tiết
+                      </span>
+                    </div>
                   </div>
                 </div>
 
@@ -969,13 +1011,30 @@ export default function HomePage() {
                     </p>
                   </div>
 
-                  <div className="mt-4 pt-4 border-t border-dashed border-white/20 px-2 flex items-center justify-between text-xs">
+                  <div className="mt-4 pt-4 border-t border-dashed border-white/20 px-2 flex items-center justify-between text-xs gap-2">
                     <span className="font-mono text-[11px] text-[#9CA3AF] bg-white/5 px-2 py-1 rounded border border-white/10">
                       MÃ: BANKPARTNER11
                     </span>
-                    <span className="font-heading font-bold text-[#E50914] group-hover:translate-x-1 transition-transform flex items-center gap-1">
-                      Chi tiết →
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenMovieSelect({
+                            title: "Chọn Phim Áp Dụng: Mua 1 Tặng 1 Đối Tác Ngân Hàng",
+                            subtitle: "Vui lòng chọn bộ phim bạn muốn xem để áp dụng ưu đãi vé Mua 1 Tặng 1:",
+                            badge: "MUA 1 TẶNG 1",
+                            initialCouponCode: "BANKPARTNER11",
+                          });
+                        }}
+                        className="px-2.5 py-1 rounded bg-[#E50914] hover:bg-[#b80710] text-white font-bold text-[11px] transition-colors cursor-pointer"
+                      >
+                        Đặt Vé →
+                      </button>
+                      <span className="font-heading font-bold text-neutral-400 hover:text-white transition-colors text-[11px]">
+                        Chi tiết
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1561,10 +1620,14 @@ export default function HomePage() {
         movie={activeBookingMovie}
         initialSeats={bookingInitialSeats}
         initialShowtimeId={bookingInitialShowtimeId}
+        initialCouponCode={bookingInitialCouponCode}
+        initialComboId={bookingInitialComboId}
         onClose={() => {
           setActiveBookingMovie(null);
           setBookingInitialSeats([]);
           setBookingInitialShowtimeId(undefined);
+          setBookingInitialCouponCode(undefined);
+          setBookingInitialComboId(undefined);
           useBookingStore.getState().resetBooking();
         }}
         onBookingSuccess={handleBookingSuccess}
@@ -1581,7 +1644,13 @@ export default function HomePage() {
         isHalloween={isCustomerHalloween}
         onSelectMovie={(movie) => {
           setMovieSelectConfig((prev) => ({ ...prev, isOpen: false }));
-          handleRequestBooking(movie);
+          handleRequestBooking(
+            movie,
+            [],
+            undefined,
+            movieSelectConfig.initialCouponCode,
+            movieSelectConfig.initialComboId
+          );
         }}
       />
 
@@ -1730,6 +1799,7 @@ export default function HomePage() {
                     title: `Chọn Phim Áp Dụng: ${currentPromo?.title || "Khuyến Mãi"}`,
                     subtitle: "Vui lòng chọn bộ phim bạn muốn xem để tự động áp dụng mã ưu đãi vé và combo:",
                     badge: currentPromo?.badge || "ƯU ĐÃI CINEMAX",
+                    initialCouponCode: currentPromo?.promoCode,
                   });
                 }}
                 className="px-5 py-2 rounded-lg bg-[#E50914] hover:bg-[#b80710] text-white font-heading font-bold text-xs uppercase tracking-wider transition-colors flex items-center gap-1.5 shadow-lg shadow-red-600/40 cursor-pointer border border-red-500/40"

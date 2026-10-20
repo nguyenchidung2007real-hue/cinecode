@@ -16,17 +16,28 @@ const LIVE_ACTIVITIES = [
 ];
 
 export const CustomerAtmosphere: React.FC<CustomerAtmosphereProps> = ({ isHalloween = false }) => {
-  // 1. Mouse Spotlight Tracker (Ambient Cursor Follower)
-  const [mousePos, setMousePos] = useState({ x: -1000, y: -1000 });
+  // 1. Mouse Spotlight Tracker (Tối ưu hóa GPU: không kích hoạt React re-render)
+  const spotlightRef = useRef<HTMLDivElement>(null);
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
+    let rafId: number | null = null;
     const handleMouseMove = (e: MouseEvent) => {
-      setMousePos({ x: e.clientX, y: e.clientY });
+      if (rafId !== null) return;
+      rafId = window.requestAnimationFrame(() => {
+        if (spotlightRef.current) {
+          spotlightRef.current.style.setProperty("--mouse-x", `${e.clientX}px`);
+          spotlightRef.current.style.setProperty("--mouse-y", `${e.clientY}px`);
+        }
+        rafId = null;
+      });
     };
     window.addEventListener("mousemove", handleMouseMove, { passive: true });
-    return () => window.removeEventListener("mousemove", handleMouseMove);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      if (rafId !== null) window.cancelAnimationFrame(rafId);
+    };
   }, []);
 
   // 2. Live Activity Ticker (Thời gian thực)
@@ -92,11 +103,12 @@ export const CustomerAtmosphere: React.FC<CustomerAtmosphereProps> = ({ isHallow
           1. AMBIENT CURSOR LIGHT SPOTLIGHT LAYER (GPU Accelerated Light Beam)
           ========================================================================= */}
       <div
+        ref={spotlightRef}
         className="pointer-events-none fixed inset-0 z-0 transition-opacity duration-700 hidden md:block"
         style={{
           background: isHalloween
-            ? `radial-gradient(550px circle at ${mousePos.x}px ${mousePos.y}px, rgba(255, 117, 24, 0.11), rgba(138, 43, 226, 0.07), transparent 75%)`
-            : `radial-gradient(550px circle at ${mousePos.x}px ${mousePos.y}px, rgba(229, 9, 20, 0.08), rgba(245, 197, 24, 0.04), transparent 75%)`,
+            ? `radial-gradient(550px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255, 117, 24, 0.08), rgba(138, 43, 226, 0.05), transparent 75%)`
+            : `radial-gradient(550px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(229, 9, 20, 0.07), rgba(245, 197, 24, 0.03), transparent 75%)`,
         }}
       />
 
@@ -105,21 +117,21 @@ export const CustomerAtmosphere: React.FC<CustomerAtmosphereProps> = ({ isHallow
           ========================================================================= */}
       {isHalloween && (
         <div className="pointer-events-none fixed inset-0 z-10 overflow-hidden">
-          {/* A. Bầy Dơi Bay Lượn Xuyên Màn Đêm (Flying Bats) */}
-          <div className="absolute animate-bat-fly-1 top-0 left-0 text-[#FF7518]/70 drop-shadow-[0_0_8px_rgba(255,117,24,0.6)]">
-            <svg width="48" height="28" viewBox="0 0 64 36" fill="currentColor" className="animate-bat-wing">
+          {/* A. Bầy Dơi Bay Lượn Xuyên Màn Đêm (GPU Hardware Accelerated) */}
+          <div className="absolute animate-bat-fly-1 top-0 left-0 text-[#FF7518]/70 will-change-transform">
+            <svg width="46" height="26" viewBox="0 0 64 36" fill="currentColor">
               <path d="M32 14c-4-8-12-12-22-10 4 6 5 14 2 20 6-3 12-2 16 2 2-6 3-8 4-12 1 4 2 6 4 12 4-4 10-5 16-2-3-6-2-14 2-20-10-2-18 2-22 10z" />
             </svg>
           </div>
 
-          <div className="absolute animate-bat-fly-2 top-0 left-0 text-purple-400/60 drop-shadow-[0_0_8px_rgba(168,85,247,0.5)]">
-            <svg width="38" height="22" viewBox="0 0 64 36" fill="currentColor" className="animate-bat-wing">
+          <div className="absolute animate-bat-fly-2 top-0 left-0 text-purple-400/60 will-change-transform">
+            <svg width="36" height="20" viewBox="0 0 64 36" fill="currentColor">
               <path d="M32 14c-4-8-12-12-22-10 4 6 5 14 2 20 6-3 12-2 16 2 2-6 3-8 4-12 1 4 2 6 4 12 4-4 10-5 16-2-3-6-2-14 2-20-10-2-18 2-22 10z" />
             </svg>
           </div>
 
           {/* B. Mạng Nhện Góc Trên Bên Trái (Spiderweb Top-Left) */}
-          <div className="absolute top-0 left-0 w-36 h-36 opacity-35 text-[#FF7518]">
+          <div className="absolute top-0 left-0 w-32 h-32 opacity-30 text-[#FF7518]">
             <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.2">
               <path d="M0 0 L100 0" />
               <path d="M0 0 L0 100" />
@@ -133,8 +145,8 @@ export const CustomerAtmosphere: React.FC<CustomerAtmosphereProps> = ({ isHallow
             </svg>
           </div>
 
-          {/* C. Mạng Nhện Góc Trên Phải & Chú Nhện Đu Đưa (Spiderweb & Swinging Spider Top-Right) */}
-          <div className="absolute top-0 right-0 w-36 h-36 opacity-35 text-[#FF7518]">
+          {/* C. Mạng Nhện Góc Trên Phải & Chú Nhện (Spiderweb Top-Right) */}
+          <div className="absolute top-0 right-0 w-32 h-32 opacity-30 text-[#FF7518]">
             <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.2" className="transform scale-x-[-1]">
               <path d="M0 0 L100 0" />
               <path d="M0 0 L0 100" />
@@ -149,25 +161,21 @@ export const CustomerAtmosphere: React.FC<CustomerAtmosphereProps> = ({ isHallow
           </div>
 
           {/* Chú nhện đu đưa từ trần góc phải */}
-          <div className="absolute top-0 right-14 flex flex-col items-center animate-spider-swing">
-            <div className="w-[1px] h-16 bg-gradient-to-b from-white/30 to-orange-400/80" />
-            <div className="text-sm select-none filter drop-shadow-[0_2px_4px_rgba(255,117,24,0.6)]">
+          <div className="absolute top-0 right-14 flex flex-col items-center animate-spider-swing will-change-transform">
+            <div className="w-[1px] h-14 bg-gradient-to-b from-white/30 to-orange-400/80" />
+            <div className="text-sm select-none">
               🕷️
             </div>
           </div>
 
           {/* D. Đốm Sáng Ma Quái Bay Lơ Lửng (Glowing Floating Embers) */}
-          <div className="absolute bottom-10 left-[15%] w-2 h-2 rounded-full bg-orange-400 shadow-[0_0_12px_#FF7518] animate-float-ember" />
-          <div className="absolute bottom-24 right-[25%] w-2.5 h-2.5 rounded-full bg-purple-400 shadow-[0_0_12px_#A855F7] animate-float-ember" style={{ animationDelay: "1.8s" }} />
-          <div className="absolute bottom-32 left-[40%] w-1.5 h-1.5 rounded-full bg-amber-300 shadow-[0_0_10px_#F59E0B] animate-float-ember" style={{ animationDelay: "2.6s" }} />
+          <div className="absolute bottom-10 left-[15%] w-2 h-2 rounded-full bg-orange-400 shadow-[0_0_8px_#FF7518] animate-float-ember will-change-transform" />
+          <div className="absolute bottom-24 right-[25%] w-2 h-2 rounded-full bg-purple-400 shadow-[0_0_8px_#A855F7] animate-float-ember will-change-transform" style={{ animationDelay: "1.8s" }} />
+          <div className="absolute bottom-32 left-[40%] w-1.5 h-1.5 rounded-full bg-amber-300 shadow-[0_0_8px_#F59E0B] animate-float-ember will-change-transform" style={{ animationDelay: "2.6s" }} />
 
-          {/* E. Lớp Sương Mù Điện Ảnh Trôi Bồng Bềnh (Drifting Cinematic Eerie Fog) */}
-          <div className="absolute -bottom-16 left-0 right-0 h-64 w-[140%] -ml-[20%] pointer-events-none opacity-25 animate-fog-drift-1 bg-gradient-to-t from-orange-950/40 via-purple-900/30 to-transparent blur-3xl" />
-          <div className="absolute top-1/3 left-0 right-0 h-80 w-[140%] -ml-[20%] pointer-events-none opacity-15 animate-fog-drift-2 bg-gradient-to-b from-purple-950/30 via-orange-950/20 to-transparent blur-3xl" />
-
-          {/* F. Vầng Sáng Lồng Đèn Bí Ngô 2 Góc Dưới Màn Hình (Jack-o'-lantern Corner Aura) */}
-          <div className="absolute -bottom-20 -left-20 w-80 h-80 rounded-full bg-gradient-to-tr from-[#FF7518]/20 via-[#B24000]/10 to-transparent blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-20 -right-20 w-80 h-80 rounded-full bg-gradient-to-tl from-purple-800/25 via-[#FF7518]/15 to-transparent blur-3xl pointer-events-none" />
+          {/* E. Vầng Sáng Lồng Đèn Bí Ngô 2 Góc (Tĩnh, không tính toán lại) */}
+          <div className="absolute -bottom-20 -left-20 w-72 h-72 rounded-full bg-gradient-to-tr from-[#FF7518]/15 via-[#B24000]/08 to-transparent blur-2xl pointer-events-none" />
+          <div className="absolute -bottom-20 -right-20 w-72 h-72 rounded-full bg-gradient-to-tl from-purple-800/20 via-[#FF7518]/10 to-transparent blur-2xl pointer-events-none" />
         </div>
       )}
 
