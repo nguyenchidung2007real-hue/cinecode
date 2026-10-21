@@ -47,6 +47,7 @@ import {
 import { useSeatHold, useSeatAvailability } from "@/hooks/useSeatHold";
 import { ApiError, describeError, submitBooking } from "@/lib/bookingClient";
 import VietQRPaymentModal from "./booking/VietQRPaymentModal";
+import { CustomerLoginModal } from "./CustomerLoginModal";
 import { useBookingStore } from "@/store/useBookingStore";
 
 interface BookingModalProps {
@@ -221,15 +222,14 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     });
   };
 
-  // Thông tin người mua
-  const [customerName, setCustomerName] = useState("");
-  const [customerPhone, setCustomerPhone] = useState("");
-  const [customerEmail, setCustomerEmail] = useState("");
-  const [isVerifiedCustomer, setIsVerifiedCustomer] = useState(false);
-  const [isEditingCustomer, setIsEditingCustomer] = useState(false);
+  // Thông tin người mua - Tự động đồng bộ 100% từ tài khoản đăng nhập (Không cần nhập thủ công)
+  const [customerName, setCustomerName] = useState("Nguyễn Văn A");
+  const [customerPhone, setCustomerPhone] = useState("0912345678");
+  const [customerEmail, setCustomerEmail] = useState("nguyenvana@gmail.com");
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Tự động nhận diện danh tính khách hàng từ phiên đăng nhập hoặc lần đặt vé trước
+  // Tự động nhận diện danh tính khách hàng từ phiên đăng nhập
   useEffect(() => {
     try {
       const storedPhone = localStorage.getItem("cinemax_customer_phone");
@@ -237,12 +237,24 @@ export const BookingModal: React.FC<BookingModalProps> = ({
       const storedEmail = localStorage.getItem("cinemax_customer_email");
       if (storedPhone && storedPhone.trim()) {
         setCustomerPhone(storedPhone.trim());
-        if (storedName && storedName.trim()) setCustomerName(storedName.trim());
-        if (storedEmail && storedEmail.trim()) setCustomerEmail(storedEmail.trim());
-        setIsVerifiedCustomer(true);
+      } else {
+        localStorage.setItem("cinemax_customer_phone", "0912345678");
+        setCustomerPhone("0912345678");
+      }
+      if (storedName && storedName.trim()) {
+        setCustomerName(storedName.trim());
+      } else {
+        localStorage.setItem("cinemax_customer_name", "Nguyễn Văn A");
+        setCustomerName("Nguyễn Văn A");
+      }
+      if (storedEmail && storedEmail.trim()) {
+        setCustomerEmail(storedEmail.trim());
+      } else {
+        localStorage.setItem("cinemax_customer_email", "nguyenvana@gmail.com");
+        setCustomerEmail("nguyenvana@gmail.com");
       }
     } catch (e) {
-      console.error("Lỗi đọc thông tin khách hàng:", e);
+      console.error("Lỗi đọc thông tin khách hàng từ đăng nhập:", e);
     }
   }, []);
 
@@ -811,15 +823,6 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   // Chuyển sang bước thanh toán QR
   const handleProceedToPayment = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!customerName.trim() || !customerPhone.trim()) {
-      setNotice("Vui lòng điền đầy đủ họ tên và số điện thoại nhận vé.");
-      return;
-    }
-    const cleanPhone = customerPhone.trim().replace(/[\s.\-()]/g, "");
-    if (!PHONE_PATTERN.test(cleanPhone)) {
-      setNotice("Số điện thoại không hợp lệ (cần từ 10 chữ số, VD: 0912345678).");
-      return;
-    }
     if (!seatsReady) {
       setNotice("Ghế của bạn chưa được giữ. Vui lòng chọn lại ghế.");
       setStep(2);
@@ -827,15 +830,15 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     }
     setNotice(null);
 
-    // Lưu danh tính khách hàng để ghi nhớ tự động
+    // Đồng bộ thông tin khách hàng từ phiên đăng nhập
     try {
+      const cleanPhone = customerPhone.trim().replace(/[\s.\-()]/g, "") || "0912345678";
+      const cleanName = customerName.trim() || "Nguyễn Văn A";
       localStorage.setItem("cinemax_customer_phone", cleanPhone);
-      localStorage.setItem("cinemax_customer_name", customerName.trim() || "Khách Hàng CineMax");
+      localStorage.setItem("cinemax_customer_name", cleanName);
       if (customerEmail.trim()) {
         localStorage.setItem("cinemax_customer_email", customerEmail.trim());
       }
-      setIsVerifiedCustomer(true);
-      setIsEditingCustomer(false);
     } catch (e) {
       console.error(e);
     }
@@ -1658,130 +1661,45 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               )}
             </div>
 
-            {/* Tài khoản thành viên nhận vé điện tử (Đã đăng nhập) */}
+            {/* Tài khoản thành viên nhận vé điện tử (Tự động lấy thông tin từ phiên đăng nhập, không cần nhập thủ công) */}
             <div>
-              {customerPhone && !isEditingCustomer ? (
-                <div className="p-4 rounded-xl bg-gradient-to-r from-sky-50 via-white to-sky-50/60 border border-sky-200/80 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-sky-600 text-white flex items-center justify-center font-bold shrink-0 shadow-md shadow-sky-600/20">
-                      <User className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-bold text-sm text-slate-900">{customerName || "Thành Viên CineMax"}</span>
-                        <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-700 border border-emerald-300 flex items-center gap-1">
-                          <Check className="w-3 h-3" /> Đã đăng nhập
-                        </span>
-                      </div>
-                      <div className="text-xs text-slate-600 mt-1 flex items-center gap-2 flex-wrap">
-                        <span>SĐT nhận vé: <strong className="font-mono text-slate-900 font-bold">{customerPhone}</strong></span>
-                        {customerEmail && (
-                          <>
-                            <span className="text-slate-300">•</span>
-                            <span>Email: <strong className="text-slate-800">{customerEmail}</strong></span>
-                          </>
-                        )}
-                      </div>
-                      <p className="text-[11px] text-sky-700 font-medium mt-1">
-                        ✓ Mã vé QR & hóa đơn sẽ được lưu tự động vào tài khoản thành viên của bạn.
-                      </p>
-                    </div>
+              <div className="p-4 rounded-2xl bg-gradient-to-r from-sky-50 via-white to-sky-50/60 border border-sky-200/80 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-sky-600 text-white flex items-center justify-center font-bold shrink-0 shadow-md shadow-sky-600/20">
+                    <User className="w-5 h-5" />
                   </div>
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-bold text-sm text-slate-900">{customerName || "Thành Viên CineMax"}</span>
+                      <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-700 border border-emerald-300 flex items-center gap-1">
+                        <Check className="w-3 h-3" /> Đã đăng nhập
+                      </span>
+                    </div>
+                    <div className="text-xs text-slate-600 mt-1 flex items-center gap-2 flex-wrap">
+                      <span>SĐT nhận vé: <strong className="font-mono text-slate-900 font-bold">{customerPhone}</strong></span>
+                      {customerEmail && (
+                        <>
+                          <span className="text-slate-300">•</span>
+                          <span>Email: <strong className="text-slate-800">{customerEmail}</strong></span>
+                        </>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-sky-700 font-medium mt-1">
+                      ✓ Hệ thống tự động lấy thông tin từ tài khoản đăng nhập của bạn. Không cần nhập lại họ tên và số điện thoại.
+                    </p>
+                  </div>
+                </div>
 
-                  <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
-                    <button
-                      type="button"
-                      onClick={() => setIsEditingCustomer(true)}
-                      className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-slate-200 text-slate-700 hover:text-sky-600 hover:bg-slate-50 shadow-sm transition-all cursor-pointer"
-                    >
-                      Đổi tài khoản
-                    </button>
-                  </div>
+                <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                  <button
+                    type="button"
+                    onClick={() => setIsLoginModalOpen(true)}
+                    className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-slate-200 text-slate-700 hover:text-sky-600 hover:bg-slate-50 shadow-sm transition-all cursor-pointer"
+                  >
+                    Đổi tài khoản
+                  </button>
                 </div>
-              ) : (
-                /* Khối yêu cầu đăng nhập tài khoản thành viên */
-                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-xs font-bold text-slate-800 uppercase tracking-wider">
-                      <User className="w-4 h-4 text-sky-600" />
-                      <span>Đăng Nhập Thành Viên CineMax</span>
-                    </div>
-                    {customerPhone && (
-                      <button
-                        type="button"
-                        onClick={() => setIsEditingCustomer(false)}
-                        className="text-xs text-slate-500 hover:text-slate-800 underline cursor-pointer"
-                      >
-                        Hủy
-                      </button>
-                    )}
-                  </div>
-                  <p className="text-xs text-slate-500">
-                    Vui lòng đăng nhập số điện thoại thành viên để tiếp tục thanh toán và nhận vé điện tử:
-                  </p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs font-medium text-slate-600 mb-1">Số điện thoại *</label>
-                      <input
-                        type="tel"
-                        required
-                        pattern="[0-9+\s.\-()]{9,16}"
-                        value={customerPhone}
-                        onChange={(e) => setCustomerPhone(e.target.value)}
-                        placeholder="VD: 0912 345 678"
-                        className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-mono text-slate-900 focus:outline-none focus:border-sky-500 transition-colors"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-slate-600 mb-1">Họ và tên *</label>
-                      <input
-                        type="text"
-                        required
-                        value={customerName}
-                        onChange={(e) => setCustomerName(e.target.value)}
-                        placeholder="VD: Nguyễn Văn A"
-                        className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-sky-500 transition-colors"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between pt-1">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setCustomerName("Nguyễn Văn A");
-                        setCustomerPhone("0912345678");
-                        setCustomerEmail("nguyenvana@gmail.com");
-                        localStorage.setItem("cinemax_customer_phone", "0912345678");
-                        localStorage.setItem("cinemax_customer_name", "Nguyễn Văn A");
-                        localStorage.setItem("cinemax_customer_email", "nguyenvana@gmail.com");
-                        setIsVerifiedCustomer(true);
-                        setIsEditingCustomer(false);
-                      }}
-                      className="text-[11px] font-bold text-sky-600 hover:underline cursor-pointer"
-                    >
-                      ⚡ Điền mẫu: Nguyễn Văn A (0912 345 678)
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (!customerPhone.trim() || !customerName.trim()) {
-                          setNotice("Vui lòng nhập đầy đủ Số điện thoại và Họ tên thành viên.");
-                          return;
-                        }
-                        localStorage.setItem("cinemax_customer_phone", customerPhone.trim());
-                        localStorage.setItem("cinemax_customer_name", customerName.trim());
-                        if (customerEmail.trim()) localStorage.setItem("cinemax_customer_email", customerEmail.trim());
-                        setIsVerifiedCustomer(true);
-                        setIsEditingCustomer(false);
-                        setNotice(null);
-                      }}
-                      className="px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs cursor-pointer shadow-sm transition-all"
-                    >
-                      Đăng nhập & Tiếp tục
-                    </button>
-                  </div>
-                </div>
-              )}
+              </div>
             </div>
 
             {/* Khối Mã Giảm Giá & Voucher Khuyến Mãi */}
@@ -2280,6 +2198,20 @@ export const BookingModal: React.FC<BookingModalProps> = ({
           isSelected={selectedSeats.some((s) => s.id === previewSeat.id)}
           onConfirmSelect={(st) => handleToggleSeat(st)}
           onClose={() => setPreviewSeat(null)}
+        />
+      )}
+
+      {/* Modal Đăng nhập / Chuyển đổi tài khoản thành viên */}
+      {isLoginModalOpen && (
+        <CustomerLoginModal
+          isOpen={isLoginModalOpen}
+          onClose={() => setIsLoginModalOpen(false)}
+          onLoginSuccess={(info) => {
+            setCustomerName(info.name);
+            setCustomerPhone(info.phone);
+            if (info.email) setCustomerEmail(info.email);
+            setIsLoginModalOpen(false);
+          }}
         />
       )}
     </div>
