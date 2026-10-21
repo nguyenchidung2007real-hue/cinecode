@@ -61,6 +61,14 @@ export async function GET(request: NextRequest, { params }: RouteContext): Promi
       );
     }
 
+    const QRCode = (await import("qrcode")).default;
+    const qrToken = `${bookingId}.${sig}`;
+    const qrCodeUrl = await QRCode.toDataURL(qrToken, {
+      width: 280,
+      margin: 2,
+      color: { dark: "#0b0c10", light: "#ffffff" },
+    }).catch(() => "");
+
     return NextResponse.json({
       success: true,
       ticket: {
@@ -76,6 +84,8 @@ export async function GET(request: NextRequest, { params }: RouteContext): Promi
         usedAt: ticket.usedAt,
         concessions: ticket.concessions,
         totalAmount: ticket.totalAmount,
+        qrToken,
+        qrCodeUrl,
       },
     });
   } catch (error) {

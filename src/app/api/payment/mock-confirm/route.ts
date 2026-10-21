@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getTicketStore } from "@/lib/ticketStore";
 import { getSeatStore } from "@/lib/seatStore";
 import { getShowtimeStore } from "@/lib/showtimeStore";
-import { computeSoldTtlSeconds } from "@/lib/bookingService";
+import { computeSoldTtlSeconds, buildTicketPayload } from "@/lib/bookingService";
 import { calculatePrice } from "@/lib/pricing";
 
 export const runtime = "nodejs";
@@ -89,10 +89,11 @@ export async function POST(request: NextRequest) {
     }
 
     if (ticket.status === "valid") {
+      const { ticket: payloadTicket } = await buildTicketPayload(ticket as any);
       return NextResponse.json({
         success: true,
         message: "Đơn vé đã được xác nhận trước đó.",
-        ticket,
+        ticket: payloadTicket,
       });
     }
 
@@ -127,10 +128,11 @@ export async function POST(request: NextRequest) {
         await new Promise((r) => setTimeout(r, 60));
         const recheck = await ticketStore.get(bookingId);
         if (recheck && (recheck.status === "valid" || recheck.status === "used")) {
+          const { ticket: payloadTicket } = await buildTicketPayload(recheck as any);
           return NextResponse.json({
             success: true,
             message: "Đơn vé đã được xác nhận trước đó.",
-            ticket: recheck,
+            ticket: payloadTicket,
           });
         }
       }
@@ -138,10 +140,11 @@ export async function POST(request: NextRequest) {
       // Re-check: Nếu request song song trước đó đã duyệt thành công đơn vé này, trả về vé hợp lệ ngay
       const recheck = await ticketStore.get(bookingId);
       if (recheck && (recheck.status === "valid" || recheck.status === "used")) {
+        const { ticket: payloadTicket } = await buildTicketPayload(recheck as any);
         return NextResponse.json({
           success: true,
           message: "Đơn vé đã được xác nhận trước đó.",
-          ticket: recheck,
+          ticket: payloadTicket,
         });
       }
 
@@ -160,10 +163,11 @@ export async function POST(request: NextRequest) {
       // Re-check xem vé đã hợp lệ chưa trước khi rollback
       const recheck = await ticketStore.get(bookingId);
       if (recheck && (recheck.status === "valid" || recheck.status === "used")) {
+        const { ticket: payloadTicket } = await buildTicketPayload(recheck as any);
         return NextResponse.json({
           success: true,
           message: "Đơn vé đã được xác nhận trước đó.",
-          ticket: recheck,
+          ticket: payloadTicket,
         });
       }
 
@@ -174,10 +178,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const { ticket: payloadTicket } = await buildTicketPayload(confirmedTicket as any);
     return NextResponse.json({
       success: true,
       message: "Xác thực thanh toán demo thành công, ghế đã được chốt trên máy chủ.",
-      ticket: confirmedTicket,
+      ticket: payloadTicket,
     });
   } catch (error) {
     console.error("[mock-confirm] Lỗi xử lý xác nhận thanh toán:", error);

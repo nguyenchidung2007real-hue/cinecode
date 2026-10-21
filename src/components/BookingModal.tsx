@@ -2155,19 +2155,27 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 </div>
               )}
 
-              {/* Mã QR Code */}
-              {completedBooking.qrCodeUrl && (
-                <div className="flex flex-col items-center justify-center p-3 bg-slate-50 rounded-xl border border-slate-200">
-                  <img
-                    src={completedBooking.qrCodeUrl}
-                    alt="Mã QR Vé"
-                    className="w-44 h-44 object-contain"
-                  />
-                  <p className="text-[10px] text-slate-500 font-mono mt-1 font-semibold">
-                    Quét mã để Check-in tại cổng rạp
-                  </p>
-                </div>
-              )}
+              {/* Mã QR Code - Đảm bảo luôn hiển thị 100% với fallback tự động */}
+              {(() => {
+                const qrImage =
+                  completedBooking.qrCodeUrl ||
+                  `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(
+                    completedBooking.qrToken || completedBooking.bookingId
+                  )}`;
+                return (
+                  <div className="flex flex-col items-center justify-center p-4 bg-slate-50 rounded-2xl border border-slate-200">
+                    <img
+                      src={qrImage}
+                      alt="Mã QR Vé Điện Tử"
+                      className="w-48 h-48 object-contain shadow-sm rounded-xl bg-white p-2 border border-slate-100"
+                    />
+                    <p className="text-[11px] text-slate-600 font-mono mt-2.5 font-bold flex items-center gap-1.5">
+                      <QrCode className="w-4 h-4 text-sky-600" />
+                      <span>Mã vé: {completedBooking.bookingId} • Quét mã để Check-in tại cổng rạp</span>
+                    </p>
+                  </div>
+                );
+              })()}
 
               <div className="flex items-center justify-between border-t border-slate-100 pt-3 text-xs">
                 <div>

@@ -315,17 +315,20 @@ export const MyTicketsModal: React.FC<MyTicketsModalProps> = ({ isOpen, onClose 
                         </div>
                       )}
 
-                      {ticket.qrCodeUrl ? (
-                        <img
-                          src={ticket.qrCodeUrl}
-                          alt="Mã QR Vé"
-                          className="w-28 h-28 object-contain"
-                        />
-                      ) : (
-                        <div className="w-28 h-28 bg-slate-100 flex items-center justify-center text-slate-400">
-                          <QrCode className="w-12 h-12" />
-                        </div>
-                      )}
+                      {(() => {
+                        const qrSrc =
+                          ticket.qrCodeUrl ||
+                          `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
+                            ticket.qrToken || ticket.bookingId
+                          )}`;
+                        return (
+                          <img
+                            src={qrSrc}
+                            alt="Mã QR Vé"
+                            className="w-28 h-28 object-contain bg-white rounded-lg p-1.5 border border-slate-200 shadow-sm"
+                          />
+                        );
+                      })()}
 
                       <span className="text-[9px] text-sky-700 font-mono font-bold mt-1 tracking-tight">
                         HMAC VERIFIED

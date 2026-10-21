@@ -263,7 +263,7 @@ export interface ConfirmResult {
   storeMode: string;
 }
 
-async function buildTicketPayload(ticket: BookingInfo): Promise<{ ticket: BookingInfo; qrToken: string }> {
+export async function buildTicketPayload(ticket: BookingInfo): Promise<{ ticket: BookingInfo; qrToken: string }> {
   const qrToken = buildTicketToken(ticket.bookingId);
   const qrCodeUrl = await QRCode.toDataURL(qrToken, {
     width: 280,
