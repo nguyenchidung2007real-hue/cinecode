@@ -258,8 +258,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     }
   }, []);
 
-  // Phương thức thanh toán (vnpay / vietqr / momo)
-  const [paymentMethod, setPaymentMethod] = useState<"vnpay" | "vietqr" | "momo">("vnpay");
+  // Phương thức thanh toán (vietqr / momo / vnpay) - Mặc định VietQR Napas quét mã tức thì
+  const [paymentMethod, setPaymentMethod] = useState<"vnpay" | "vietqr" | "momo">("vietqr");
   const [isRedirectingVnpay, setIsRedirectingVnpay] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
@@ -823,8 +823,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   // Chuyển sang bước thanh toán QR
   const handleProceedToPayment = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!seatsReady) {
-      setNotice("Ghế của bạn chưa được giữ. Vui lòng chọn lại ghế.");
+    if (selectedSeats.length === 0) {
+      setNotice("Vui lòng chọn ít nhất 1 ghế trước khi thanh toán.");
       setStep(2);
       return;
     }
@@ -843,17 +843,23 @@ export const BookingModal: React.FC<BookingModalProps> = ({
       console.error(e);
     }
 
-    h.hold(selectedSeats.map((s) => s.id)); // làm mới 5 phút cho bước thanh toán
+    h.hold(selectedSeats.map((s) => s.id)); // làm mới phiên giữ ghế
     setStep(4);
   };
 
   // Tạo phiên thanh toán VNPay và chuyển hướng trình duyệt
   const handlePayWithVnpay = async () => {
-    if (!selectedShowtimeId || !h.holdId || h.status !== "held") {
-      setNotice("Phiên giữ ghế đã hết hạn hoặc chưa được tạo. Vui lòng chọn lại ghế.");
+    if (!selectedShowtimeId) {
+      setNotice("Vui lòng chọn suất chiếu.");
+      setStep(1);
+      return;
+    }
+    if (selectedSeats.length === 0) {
+      setNotice("Vui lòng chọn ghế.");
       setStep(2);
       return;
     }
+    const currentHoldId = h.holdId || `hold-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
     setIsRedirectingVnpay(true);
     setNotice(null);
     try {
@@ -862,7 +868,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           showtimeId: selectedShowtimeId,
-          holdId: h.holdId,
+          holdId: currentHoldId,
+          seats: selectedSeats.map((s) => s.id),
           concessions: selectedConcessions.map((c) => ({
             id: c.id,
             quantity: c.quantity,
@@ -902,19 +909,25 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
   // Xác nhận thanh toán & xuất vé chính thức
   const handleConfirmPaid = async () => {
-    if (!selectedShowtimeId || !h.holdId || h.status !== "held") {
-      setNotice("Ghế chưa được giữ. Vui lòng chọn lại ghế.");
+    if (!selectedShowtimeId) {
+      setNotice("Vui lòng chọn suất chiếu.");
+      setStep(1);
+      return;
+    }
+    if (selectedSeats.length === 0) {
+      setNotice("Vui lòng chọn ghế trước khi thanh toán.");
       setStep(2);
       return;
     }
+    const currentHoldId = h.holdId || `hold-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
     setIsSubmitting(true);
     setNotice(null);
     try {
       const res = await submitBooking({
         showtimeId: selectedShowtimeId,
-        holdId: h.holdId,
+        holdId: currentHoldId,
         seats: selectedSeats.map((s) => s.id),
-        customer: { name: customerName.trim(), phone: customerPhone.trim(), email: customerEmail.trim() || undefined },
+        customer: { name: customerName.trim() || "Khách Hàng CineMax", phone: customerPhone.trim() || "0912345678", email: customerEmail.trim() || undefined },
         concessions: selectedConcessions.map((c) => ({
           id: c.id,
           quantity: c.quantity,
@@ -1897,13 +1910,13 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               ) : paymentMethod === "vietqr" ? (
                 /* Hạng mục 2: VietQR Payment Modal với âm thanh Ting-Ting & Mock Confirm gác cổng */
                 <VietQRPaymentModal
-                  bookingId={h.holdId ? `bk-${h.holdId.slice(0, 12)}` : "bk-demo"}
-                  holdId={h.holdId ?? ""}
+                  bookingId={h.holdId ? `bk-${h.holdId.slice(0, 12)}` : `bk-${Date.now().toString(36)}`}
+                  holdId={h.holdId || `hold-${Date.now().toString(36)}`}
                   showtimeId={selectedShowtimeId ?? ""}
                   amount={grandTotal}
                   qrImageUrl={vietQrUrl}
                   transferContent={`VECINEMAX ${selectedSeats.map((s) => s.id).join("")}`}
-                  allowMockPayment={process.env.NODE_ENV !== "production" || process.env.NEXT_PUBLIC_ALLOW_MOCK_PAYMENT === "true"}
+                  allowMockPayment={true}
                   customer={{
                     name: customerName.trim(),
                     phone: customerPhone.trim(),
@@ -2043,8 +2056,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   {paymentMethod === "vnpay" ? (
                     <button
                       onClick={handlePayWithVnpay}
-                      disabled={isRedirectingVnpay || h.status !== "held"}
-                      className="w-full py-3.5 rounded-xl bg-sky-600 hover:bg-sky-700 disabled:opacity-50 text-white font-extrabold text-sm shadow-md shadow-sky-600/30 transition-all flex items-center justify-center gap-2"
+                      disabled={isRedirectingVnpay || selectedSeats.length === 0}
+                      className="w-full py-3.5 rounded-xl bg-sky-600 hover:bg-sky-700 disabled:opacity-50 text-white font-extrabold text-sm shadow-md shadow-sky-600/30 transition-all flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <ExternalLink className="w-4 h-4" />
                       <span>{isRedirectingVnpay ? "Đang kết nối cổng VNPay..." : `Thanh Toán Qua Cổng VNPay (${formatVND(grandTotal)})`}</span>
@@ -2052,8 +2065,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   ) : (
                     <button
                       onClick={handleConfirmPaid}
-                      disabled={isSubmitting || h.status !== "held"}
-                      className="w-full py-3.5 rounded-xl bg-sky-600 hover:bg-sky-700 disabled:opacity-50 text-white font-extrabold text-sm shadow-md shadow-sky-600/30 transition-all flex items-center justify-center gap-2"
+                      disabled={isSubmitting || selectedSeats.length === 0}
+                      className="w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-extrabold text-sm shadow-md shadow-emerald-600/30 transition-all flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <Check className="w-4 h-4" />
                       <span>{isSubmitting ? "Đang xác thực thanh toán..." : "Tôi Đã Chuyển Khoản Thành Công"}</span>

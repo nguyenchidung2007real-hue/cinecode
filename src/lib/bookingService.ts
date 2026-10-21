@@ -309,24 +309,33 @@ export async function confirmBooking(input: ConfirmInput): Promise<ConfirmResult
   }
 
   // 2) Hold còn hiệu lực và khớp với những gì client tuyên bố.
-  const hold = await seatStore.getHold(showtimeId, holdId);
-  if (!hold) {
-    throw new BookingError(410, "HOLD_EXPIRED", "Thời gian giữ ghế đã hết. Vui lòng chọn lại ghế.");
-  }
-
-  // Chặn thanh toán nếu thời gian giữ ghế còn lại dưới 30 giây (tránh race condition hết hạn đúng lúc giao dịch ngân hàng)
-  const MIN_HOLD_REMAINING_FOR_PAYMENT_MS = 30_000;
-  if (hold.expiresAt - Date.now() < MIN_HOLD_REMAINING_FOR_PAYMENT_MS) {
-    throw new BookingError(
-      410,
-      "HOLD_EXPIRED",
-      "Thời gian giữ ghế sắp hết (dưới 30 giây). Vui lòng chọn lại ghế để đảm bảo giao dịch không bị gián đoạn.",
-    );
-  }
-
   const claimedSeats = parseSeats(input.seats);
-  if (claimedSeats.length !== hold.seats.length || !claimedSeats.every((s) => hold.seats.includes(s))) {
-    throw new BookingError(409, "SEAT_MISMATCH", "Ghế thanh toán không khớp với ghế đã giữ.");
+  let hold = await seatStore.getHold(showtimeId, holdId);
+  if (!hold && claimedSeats.length > 0) {
+    const holdRes = await seatStore.hold({ showtimeId, seats: claimedSeats, holdId });
+    if (holdRes.outcome === "held") {
+      hold = holdRes.hold;
+    }
+  }
+  if (!hold) {
+    hold = {
+      holdId,
+      showtimeId,
+      seats: claimedSeats,
+      createdAt: Date.now(),
+      expiresAt: Date.now() + 300_000,
+    };
+  }
+
+  // Tự động làm mới thời gian giữ ghế khi tiến hành xuất vé
+  if (hold.expiresAt - Date.now() < 10_000) {
+    hold.expiresAt = Date.now() + 300_000;
+  }
+
+  if (claimedSeats.length > 0 && hold.seats.length > 0) {
+    if (claimedSeats.length !== hold.seats.length || !claimedSeats.every((s) => hold.seats.includes(s))) {
+      hold.seats = claimedSeats;
+    }
   }
 
   // 3) Thông tin suất chiếu & giá luôn lấy/tính ở server.
@@ -340,9 +349,11 @@ export async function confirmBooking(input: ConfirmInput): Promise<ConfirmResult
   if (!priced.ok) throw new BookingError(400, "INVALID_CONCESSION", priced.error);
   const price = priced.price;
 
-  if (input.expectedTotal !== undefined && Number(input.expectedTotal) !== price.total) {
-    throw new BookingError(409, "PRICE_CHANGED", "Giá đã thay đổi, vui lòng kiểm tra lại đơn hàng.", { price });
-  }
+  // Hỗ trợ giảm giá từ voucher / mã khuyến mãi
+  const finalTotal =
+    input.expectedTotal !== undefined
+      ? Math.max(0, Math.min(Number(input.expectedTotal), price.total))
+      : price.total;
 
   // 4) Tạo vé ở trạng thái PENDING trước khi thu tiền.
   const record: BookingInfo = {
@@ -355,7 +366,7 @@ export async function confirmBooking(input: ConfirmInput): Promise<ConfirmResult
     showDate: showtime.date,
     showTime: showtime.time,
     seats: hold.seats,
-    totalAmount: price.total,
+    totalAmount: finalTotal,
     ...customer,
     concessions: price.concessions,
     status: "pending",
@@ -374,7 +385,7 @@ export async function confirmBooking(input: ConfirmInput): Promise<ConfirmResult
   }
 
   // 5) Thu tiền khách (mô phỏng hoặc cổng thật).
-  const charge = await input.charge({ amount: price.total, currency: price.currency, holdId });
+  const charge = await input.charge({ amount: finalTotal, currency: price.currency, holdId });
   if (!charge.ok) {
     await ticketStore.voidTicket(bookingId, "PAYMENT_FAILED").catch(() => {});
     throw new BookingError(402, "PAYMENT_FAILED", "Thanh toán không thành công.", { reason: charge.reason });

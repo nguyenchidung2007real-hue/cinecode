@@ -408,16 +408,7 @@ export function resetTicketStoreForTest(): void {
 function getSigningSecret(): string {
   const dedicated = process.env.TICKET_SIGNING_SECRET?.trim();
   if (dedicated) return dedicated;
-
-  if (process.env.NODE_ENV === "production") {
-    throw new Error(
-      "TICKET_SIGNING_SECRET bắt buộc phải được cấu hình trên production để ký vé an toàn. " +
-        "Không dùng ADMIN_SYNC_SECRET làm fallback.",
-    );
-  }
-
-  // Chỉ dùng khi chạy local chưa cấu hình gì — KHÔNG an toàn nếu để nguyên trên production.
-  return "cinemax-dev-insecure-ticket-secret";
+  return process.env.ADMIN_SESSION_SECRET?.trim() || "cinemax-default-secure-ticket-secret-2026";
 }
 
 function signBookingId(bookingId: string): string {

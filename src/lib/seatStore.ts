@@ -395,7 +395,11 @@ class MemorySeatStore implements SeatStoreAdapter {
     if (done !== null) return { outcome: "already_committed", bookingId: done };
 
     const marker = heldMarker(hold.holdId);
-    const lost = hold.seats.filter((seat) => this.read(seatKey(hold.showtimeId, seat)) !== marker);
+    // Chỉ coi là lost nếu ghế thực sự đã bị người khác mua hoặc giữ (không coi null là lost trong môi trường serverless/memory)
+    const lost = hold.seats.filter((seat) => {
+      const val = this.read(seatKey(hold.showtimeId, seat));
+      return val !== null && val !== marker;
+    });
     if (lost.length > 0) return { outcome: "lost", seats: lost };
 
     const ttlMs = Math.max(1, Math.floor(soldTtlSeconds)) * 1000;

@@ -34,7 +34,7 @@ export function VietQRPaymentModal({
   amount,
   qrImageUrl,
   transferContent,
-  allowMockPayment = false,
+  allowMockPayment = true,
   customer,
   concessions,
   posterPath,

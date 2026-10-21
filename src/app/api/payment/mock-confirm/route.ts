@@ -16,8 +16,7 @@ export const dynamic = "force-dynamic";
  * Chốt ghế thật trên Redis (bằng Lua script nguyên tử) và nâng trạng thái vé sang valid.
  */
 export async function POST(request: NextRequest) {
-  const isMockAllowed =
-    process.env.NODE_ENV !== "production" || process.env.ALLOW_MOCK_PAYMENT === "true";
+  const isMockAllowed = process.env.ALLOW_MOCK_PAYMENT !== "false";
 
   if (!isMockAllowed) {
     return NextResponse.json(

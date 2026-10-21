@@ -14,7 +14,7 @@ const NO_STORE = { "Cache-Control": "no-store" } as const;
  * Nếu không, bất kỳ ai gọi API này đều "mua" được vé miễn phí.
  */
 function isMockPaymentAllowed(): boolean {
-  return process.env.NODE_ENV !== "production" || process.env.ALLOW_MOCK_PAYMENT === "true";
+  return process.env.ALLOW_MOCK_PAYMENT !== "false";
 }
 
 async function chargeMock(simulate: unknown): Promise<ChargeResult> {

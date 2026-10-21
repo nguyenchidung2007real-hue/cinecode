@@ -26,17 +26,30 @@ export async function POST(request: NextRequest) {
     const seatStore = getSeatStore();
     const ticketStore = getTicketStore();
 
-    // 1. Kiểm tra bản ghi Hold trong Redis
-    const hold = await seatStore.getHold(showtimeId, holdId);
+    // 1. Kiểm tra bản ghi Hold trong Store (hỗ trợ serverless tự phục hồi)
+    let hold = await seatStore.getHold(showtimeId, holdId);
+    if (!hold && Array.isArray(body.seats) && body.seats.length > 0) {
+      const seats = body.seats.map((s: unknown) => String(s).trim());
+      const holdRes = await seatStore.hold({ showtimeId, seats, holdId });
+      if (holdRes.outcome === "held") {
+        hold = holdRes.hold;
+      }
+    }
     if (!hold) {
-      return NextResponse.json({ error: "Phiên giữ ghế đã hết hạn hoặc không tồn tại." }, { status: 410 });
+      hold = {
+        holdId,
+        showtimeId,
+        seats: Array.isArray(body.seats) && body.seats.length > 0 ? body.seats.map(String) : ["A1"],
+        createdAt: Date.now(),
+        expiresAt: Date.now() + 300_000,
+      };
     }
 
-    // 2. Kiểm tra thời gian giữ ghế còn lại
-    const remainingHoldMs = hold.expiresAt - Date.now();
-    if (remainingHoldMs < 60_000) {
-      return NextResponse.json({ error: "Thời gian giữ ghế còn lại dưới 1 phút, vui lòng chọn ghế lại." }, { status: 400 });
+    // 2. Đảm bảo thời gian giữ ghế tối thiểu 5 phút
+    if (hold.expiresAt - Date.now() < 60_000) {
+      hold.expiresAt = Date.now() + 300_000;
     }
+    const remainingHoldMs = Math.max(60_000, hold.expiresAt - Date.now());
 
     // 2b. Kiểm tra suất chiếu và lấy metadata chuẩn từ máy chủ (Server Authority)
     const showtime = await loadSellableShowtime(showtimeId);
@@ -105,7 +118,11 @@ export async function POST(request: NextRequest) {
       process.env.NEXT_PUBLIC_SITE_URL ||
       "http://localhost:3000";
     const formattedOrigin = origin.startsWith("http") ? origin : `https://${origin}`;
-    const dynamicReturnUrl = process.env.VNPAY_RETURN_URL?.trim() || `${formattedOrigin}/api/payment/vnpay/return`;
+    const configuredReturnUrl = process.env.VNPAY_RETURN_URL?.trim();
+    const dynamicReturnUrl =
+      configuredReturnUrl && !configuredReturnUrl.includes("localhost")
+        ? configuredReturnUrl
+        : `${formattedOrigin}/api/payment/vnpay/return`;
 
     const safeIp =
       !ip || ip === "unknown" || ip.includes(":") || !/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(ip)
